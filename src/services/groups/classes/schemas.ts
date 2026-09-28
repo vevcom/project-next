@@ -9,13 +9,16 @@ export const classSchemas = {
     readClassOfUser: z.object({
         userId: z.number(),
     }),
-    changeClassOfUser: z.object({
+    /**
+     * Who is being moved, and in which order. The order defaults to the one the class groups are
+     * currently in, which is where a class membership is normally created.
+     */
+    changeClassOfUserParams: z.object({
         userId: z.coerce.number(),
-        level: z.nativeEnum(ClassLevel),
-        /**
-         * Which order to change the user's class in. Defaults to the order the class groups are
-         * currently in, which is the order a class membership is normally created in.
-         */
         order: z.coerce.number().optional(),
+    }),
+    /** The class to move them into - what the form actually submits. */
+    changeClassOfUser: z.object({
+        level: z.nativeEnum(ClassLevel),
     }),
 } as const

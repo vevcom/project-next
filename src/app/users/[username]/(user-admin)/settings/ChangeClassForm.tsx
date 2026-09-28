@@ -28,7 +28,7 @@ export default function ChangeClassForm({ userId, currentLevel }: PropTypes) {
         <Form
             title="Klasse"
             submitText={currentLevel ? 'Endre klasse' : 'Sett klasse'}
-            action={configureAction(changeClassOfUserAction, { params: { userId, level } })}
+            action={configureAction(changeClassOfUserAction, { params: { userId } })}
             refreshOnSuccess
             confirmation={{
                 confirm: true,

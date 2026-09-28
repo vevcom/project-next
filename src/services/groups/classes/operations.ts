@@ -112,12 +112,13 @@ const readClassOfUser = defineOperation({
  * exists - the user's class is still the later one.
  */
 const changeClassOfUser = defineOperation({
-    paramsSchema: classSchemas.changeClassOfUser,
+    paramsSchema: classSchemas.changeClassOfUserParams,
+    dataSchema: classSchemas.changeClassOfUser,
     authorizer: () => classAuth.changeClassOfUser.dynamicFields({}),
     opensTransaction: true,
-    operation: async ({ prisma, params }) => {
+    operation: async ({ prisma, params, data }) => {
         const targetClass = await prisma.class.findUniqueOrThrow({
-            where: { level: params.level },
+            where: { level: data.level },
             select: {
                 groupId: true,
                 group: { select: { order: true } },

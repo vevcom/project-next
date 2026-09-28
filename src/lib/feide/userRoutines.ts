@@ -77,7 +77,8 @@ export async function inferClassFromStudyProgrammes(
     ))
 
     await classOperations.changeClassOfUser({
-        params: { userId, level: highestLevel },
+        params: { userId },
+        data: { level: highestLevel },
         bypassAuth: true,
     })
 }
