@@ -140,7 +140,8 @@ model StudyProgramme {
   code               String               @unique
   insititueCode      String?
   yearsLength        Int?
-  startYear          Int?
+  /// Which class a student of this programme starts in, i.e. a 2 year master starts in FOUR.
+  classLevel         ClassLevel?
   partOfOmega        Boolean              @default(false)
   CourseStudyProgram CourseStudyProgram[]
 }

@@ -1,3 +1,4 @@
+import { ClassLevel } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
 
 // Text inputs arrive as strings, and an empty one means "not set" rather than 0.
@@ -11,6 +12,12 @@ const optionalStringFromForm = z.preprocess(
     z.string().trim().nullable().optional()
 )
 
+// A select submits '' when nothing is picked, which means "not set" rather than a level.
+const optionalClassLevelFromForm = z.preprocess(
+    value => (value === '' ? null : value),
+    z.nativeEnum(ClassLevel).nullable().optional()
+)
+
 const booleanFromForm = z.union([
     z.boolean(),
     z.enum(['true', 'false']).transform(value => value === 'true'),
@@ -20,7 +27,7 @@ const baseSchema = z.object({
     name: z.string().min(1).trim(),
     code: z.string().min(1).trim(),
     insititueCode: optionalStringFromForm,
-    startYear: optionalIntFromForm,
+    classLevel: optionalClassLevelFromForm,
     yearsLength: optionalIntFromForm,
     partOfOmega: booleanFromForm.optional(),
 })
@@ -29,7 +36,7 @@ const writableFields = {
     name: true,
     code: true,
     insititueCode: true,
-    startYear: true,
+    classLevel: true,
     yearsLength: true,
     partOfOmega: true,
 } as const

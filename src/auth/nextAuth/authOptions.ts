@@ -3,7 +3,7 @@ import VevenAdapter from './VevenAdapter'
 import { compressJwt, decompressJwt } from './jwtCompression'
 import { decryptAndComparePassword } from '@/auth/passwordHash'
 import FeideProvider from '@/lib/feide/FeideProvider'
-import { updateUserStudyProgrammes } from '@/lib/feide/userRoutines'
+import { inferClassFromStudyProgrammes, updateUserStudyProgrammes } from '@/lib/feide/userRoutines'
 import { prisma } from '@/prisma-pn-client-instance'
 import { groupOperations } from '@/services/groups/operations'
 import { updateEmailForFeideAccount } from '@/services/auth/feideAccounts/update'
@@ -131,7 +131,8 @@ export const authOptions: AuthOptions = {
 
                         const userId = user ? Number(user.id) : token.user.id
 
-                        await updateUserStudyProgrammes(userId, account.access_token)
+                        const studyProgrammes = await updateUserStudyProgrammes(userId, account.access_token)
+                        await inferClassFromStudyProgrammes(userId, studyProgrammes)
                     }
                     logger.info('Log in', { userName: user.username, userId: user.id })
                     break

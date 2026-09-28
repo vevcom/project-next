@@ -11,6 +11,7 @@ import { standardImageCollectionOperations } from '@/services/images/standard/op
 import { expandedImageIncluder } from '@/services/images/subservice/constants'
 import { notificationSubscriptionOperations } from '@/services/notifications/subscription/operations'
 import { groupOperations } from '@/services/groups/operations'
+import { classOperations } from '@/services/groups/classes/operations'
 import { NTNUEmailDomain } from '@/services/mail/constants'
 import { sendVerifyEmail } from '@/lib/email/systemMail/verifyEmail'
 import { omegaMembershipGroupOperations } from '@/services/groups/omegaMembershipGroups/operations'
@@ -121,12 +122,6 @@ export const userOperations = {
                             OR: [
                                 {
                                     group: {
-                                        groupType: 'CLASS',
-                                    },
-                                    active: true,
-                                },
-                                {
-                                    group: {
                                         groupType: 'COMMITTEE'
                                     }
                                 },
@@ -134,21 +129,24 @@ export const userOperations = {
                                     group: {
                                         groupType: 'OMEGA_MEMBERSHIP_GROUP'
                                     },
-                                    active: true,
                                 },
                                 {
                                     group: {
                                         groupType: 'STUDY_PROGRAMME'
                                     },
-                                    active: true,
+                                },
+                                {
+                                    group: {
+                                        groupType: 'INTEREST_GROUP'
+                                    },
                                 },
                             ]
                         },
                         include: {
                             group: {
                                 include: {
-                                    class: true,
                                     committee: true,
+                                    interestGroup: true,
                                     omegaMembershipGroup: true,
                                     studyProgramme: true
                                 }
@@ -171,8 +169,17 @@ export const userOperations = {
                     userId: user.id
                 }
             })
+            // The class is resolved by the class service rather than dug out of the memberships
+            // above: a user has one class, and deciding which one that is when the data says
+            // otherwise is its job, not every reader's.
+            const userClass = await classOperations.readClassOfUser({
+                params: {
+                    userId: user.id
+                },
+                bypassAuth: true,
+            })
 
-            return { user, memberships, permissions }
+            return { user, memberships, permissions, class: userClass }
         }
     }),
 

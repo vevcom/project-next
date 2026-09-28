@@ -1,3 +1,4 @@
+import { ClassLevel } from '@/prisma-generated-pn-types'
 import type { PrismaClient } from '@/prisma-generated-pn-client'
 
 const standardStudyProgrammes = [
@@ -5,21 +6,21 @@ const standardStudyProgrammes = [
         name: 'Kybernetikk og robotikk - master (5-årig)',
         code: 'MTTK',
         yearsLength: 5,
-        startYear: 1,
+        classLevel: ClassLevel.ONE,
         partOfOmega: true,
     },
     {
         name: 'Elektronisk systemdesign og innovasjon - master (5-årig)',
         code: 'MTELSYS',
         yearsLength: 5,
-        startYear: 1,
+        classLevel: ClassLevel.ONE,
         partOfOmega: true,
     },
     {
         name: 'Kybernetikk og robotikk - master (2-årig)',
         code: 'MITK',
         yearsLength: 2,
-        startYear: 4,
+        classLevel: ClassLevel.FOUR,
         partOfOmega: true,
     },
 ]

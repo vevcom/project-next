@@ -6,6 +6,9 @@ export const classSchemas = {
         z.object({ id: z.number() }),
         z.object({ level: z.nativeEnum(ClassLevel) }),
     ]),
+    readClassOfUser: z.object({
+        userId: z.number(),
+    }),
     changeClassOfUser: z.object({
         userId: z.coerce.number(),
         level: z.nativeEnum(ClassLevel),

@@ -92,8 +92,9 @@
 
     display: grid;
     grid-template-columns: 250px 1fr;
-    grid-template-rows: 250px;
+    grid-template-rows: auto;
     align-items: start;
+    align-content: start;
 
     gap: 0.5em;
 
@@ -128,8 +129,33 @@
             color: ohma.$colors-text;
         }
 
+        // One labelled block per kind of membership, so the studies, the committees and the interest
+        // groups are told apart rather than running together as one list.
+        .groupSection {
+            margin-top: 1em;
+
+            h2 {
+                font-size: 1.1em;
+                color: ohma.$colors-ink-strong;
+            }
+
+            a {
+                text-decoration: none;
+
+                p {
+                    color: ohma.$colors-accent-blue;
+                }
+
+                &:hover p {
+                    text-decoration: underline;
+                }
+            }
+        }
+
         .committeesWrapper {
             display: flex;
+            flex-wrap: wrap;
+            gap: 0.5em;
 
             .committee {
                 margin-top: 0.5em;

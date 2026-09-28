@@ -36,7 +36,7 @@ export default async function StudyProgrammes() {
                     <th>Navn</th>
                     <th>Kode</th>
                     <th>Institutt kode</th>
-                    <th>Start år</th>
+                    <th>Startklasse</th>
                     <th>Lengde på studiet</th>
                     <th>Del av Omega</th>
                 </tr>

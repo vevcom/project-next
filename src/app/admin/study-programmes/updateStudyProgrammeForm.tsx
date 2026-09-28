@@ -5,6 +5,7 @@ import { SelectString } from '@/components/UI/Select'
 import TextInput from '@/components/UI/TextInput'
 import { updateStudyProgrammeAction, createStudyProgrammeAction } from '@/services/groups/studyProgrammes/actions'
 import { configureAction } from '@/services/configureAction'
+import { CLASS_LEVEL_ORDERING, ClassLevelConfig } from '@/services/groups/constants'
 import { useRouter } from 'next/navigation'
 import type { StudyProgramme } from '@/prisma-generated-pn-types'
 
@@ -30,7 +31,10 @@ export default function UpdateStudyProgrammeForm({
         <TextInput name="name" label="Navn" defaultValue={studyProgramme?.name ?? ''}/>
         <TextInput name="code" label="Kode" defaultValue={studyProgramme?.code ?? ''} />
         <TextInput name="insititueCode" label="Institutt kode" defaultValue={studyProgramme?.insititueCode ?? ''} />
-        <TextInput name="startYear" label="Start år" defaultValue={studyProgramme?.startYear ?? ''} />
+        <SelectString label="Startklasse" name="classLevel" options={[
+            { value: '', label: 'Ikke satt' },
+            ...CLASS_LEVEL_ORDERING.map(level => ({ value: level, label: ClassLevelConfig[level].name })),
+        ]} defaultValue={studyProgramme?.classLevel ?? ''} />
         <TextInput name="yearsLength" label="Studiets lengde" defaultValue={studyProgramme?.yearsLength ?? ''} />
         <SelectString label="Del av Omega" name="partOfOmega" options={[
             { value: 'false', label: 'Nei' },

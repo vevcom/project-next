@@ -48,14 +48,25 @@ export default async function User({ params }: PropTypes) {
     const committeeMemberships = profile.user.memberships.filter(membership => membership.group.groupType === 'COMMITTEE')
         .filter(membership => membership.group.committee !== null)
 
-    const studyProgrammes = profile.user.memberships.filter(membership => membership.group.groupType === 'STUDY_PROGRAMME')
+    // Which study programmes someone is on is a statement about now, so only the active ones.
+    const studyProgrammes = profile.user.memberships
+        .filter(membership => membership.group.groupType === 'STUDY_PROGRAMME' && membership.active)
         .map(membership => membership.group.studyProgramme).filter(membership => membership !== null)
 
-    const classes = profile.user.memberships.filter(membership => membership.group.groupType === 'CLASS')
-        .map(membership => membership.group.class).filter(membership => membership !== null)
+    const interestGroupMemberships = profile.user.memberships
+        .filter(membership => membership.group.groupType === 'INTEREST_GROUP')
+        .filter(membership => membership.group.interestGroup !== null)
 
-    const omegaMembership = profile.user.memberships
-        .find(membership => membership.group.groupType === 'OMEGA_MEMBERSHIP_GROUP')
+    // Newest order first: the history reads from the most recent membership downwards.
+    const byOrderDescending = <T extends { order: number }>(memberships: T[]) => [...memberships]
+        .sort((membershipOne, membershipTwo) => membershipTwo.order - membershipOne.order)
+
+    const committeeMembershipsByOrder = byOrderDescending(committeeMemberships)
+    const interestGroupMembershipsByOrder = byOrderDescending(interestGroupMemberships)
+    const activeCommitteeMemberships = committeeMemberships.filter(membership => membership.active)
+
+    const omegaMembership = byOrderDescending(profile.user.memberships
+        .filter(membership => membership.group.groupType === 'OMEGA_MEMBERSHIP_GROUP' && membership.active))[0]
     if (!omegaMembership) {
         throw new Error('Failed to load the omega membership level')
     }
@@ -109,30 +120,66 @@ export default async function User({ params }: PropTypes) {
                                     width={40}
                                 /></h1>
                             </div>
-                            {studyProgrammes.map((studyProgramme, i) =>
-                                <p key={i} className={styles.studyProgramme}>
-                                    {studyProgramme.name} {`(${studyProgramme.code})`}
-                                </p>
-                            )}
-                            {classes.map((classGroup, i) =>
-                                <p key={i} className={styles.studyProgramme}>{ClassLevelConfig[classGroup.level].name}</p>
-                            )}
-                            <div className={styles.committeesWrapper}>
-                                {
-                                    committeeMemberships.filter(membership => membership.active).map(membership =>
-                                        <div className={styles.committee} key={uuid()}>
-                                            <Link href={`/committees/${membership.group.committee?.shortName}`}>
-                                                <p>{membership.title}</p>
-                                            </Link>
-                                        </div>
-                                    )
-                                }
-                                {/* TODO change to your own committee title instead of committee name*/}
-                            </div>
-                            <hr />
                             <p className={styles.orderText}>
                                 { memberhipTitle() }
                             </p>
+
+                            <div className={styles.committeesWrapper}>
+                                {activeCommitteeMemberships.map(membership =>
+                                    <div className={styles.committee} key={uuid()}>
+                                        <Link href={`/committees/${membership.group.committee?.shortName}`}>
+                                            <p>{membership.title} i {membership.group.committee?.name}</p>
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+
+                            <hr />
+
+                            {committeeMembershipsByOrder.length > 0 && (
+                                <section className={styles.groupSection}>
+                                    <h2>Komitéer:</h2>
+                                    {committeeMembershipsByOrder.map(membership =>
+                                        <Link
+                                            key={uuid()}
+                                            href={`/committees/${membership.group.committee?.shortName}`}
+                                        >
+                                            <p className={styles.studyProgramme}>
+                                                {membership.title} udaf {membership.order}´dis orden i{' '}
+                                                {membership.group.committee?.name}
+                                            </p>
+                                        </Link>
+                                    )}
+                                </section>
+                            )}
+
+                            {interestGroupMembershipsByOrder.length > 0 && (
+                                <section className={styles.groupSection}>
+                                    <h2>Interessegrupper:</h2>
+                                    {interestGroupMembershipsByOrder.map(membership =>
+                                        <Link
+                                            key={uuid()}
+                                            href={`/interest-groups/${membership.group.interestGroup?.id}`}
+                                        >
+                                            <p className={styles.studyProgramme}>
+                                                {membership.title} udaf {membership.order}´dis orden i{' '}
+                                                {membership.group.interestGroup?.name}
+                                            </p>
+                                        </Link>
+                                    )}
+                                </section>
+                            )}
+
+                            {studyProgrammes.length > 0 && (
+                                <section className={styles.groupSection}>
+                                    <h2>Studier:</h2>
+                                    {studyProgrammes.map(studyProgramme =>
+                                        <p key={studyProgramme.id} className={styles.studyProgramme}>
+                                            {studyProgramme.name} {`(${studyProgramme.code})`}
+                                        </p>
+                                    )}
+                                </section>
+                            )}
                         </div>
                         <div className={styles.leftSection}>
                             <div className={styles.buttons}>
@@ -197,21 +244,10 @@ export default async function User({ params }: PropTypes) {
                                 <span className={styles.username}>Mobilnummer:</span>
                                 {profile.user.mobile}
                             </p>
-
-                            {(committeeMemberships.length > 0) && <div>
-                                <h2>Medlemsskap</h2>
-                                {committeeMemberships.map((membership, i) => (
-                                    <Link
-                                        className={styles.memberShipInCommitteeLink}
-                                        href={`/committees/${membership.group.committee?.shortName}`}
-                                        key={i}
-                                    >
-                                        <p className={styles.memberShipInCommittee}>
-                                            {membership.title} i {membership.group.committee?.name}
-                                        </p>
-                                    </Link>
-                                ))}
-                            </div>}
+                            <p>
+                                <span className={styles.username}>Klasse:</span>
+                                {profile.class ? ClassLevelConfig[profile.class.level].name : 'Ingen klasse'}
+                            </p>
                         </div>
                     </div>
                 </div>
