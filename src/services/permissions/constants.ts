@@ -56,19 +56,9 @@ export const permissionConfig = {
         description: 'kan lese Omega medlemsgrupper',
         category: 'groups',
     },
-    CLASS_CREATE: {
-        name: 'Lage klasse',
-        description: 'kan lage klasse',
-        category: 'groups',
-    },
-    CLASS_UPDATE: {
-        name: 'Oppdatere klasse',
-        description: 'kan oppdatere klasse',
-        category: 'groups',
-    },
-    CLASS_DESTROY: {
-        name: 'Slette klasse',
-        description: 'kan slette klasse',
+    OMEGA_MEMBERSHIP_GROUP_ADMIN: {
+        name: 'Administrer Omega medlemsgrupper',
+        description: 'kan endre hvilken medlemsgruppe en bruker tilhører',
         category: 'groups',
     },
     CLASS_READ: {
@@ -76,14 +66,9 @@ export const permissionConfig = {
         description: 'kan lese klasse',
         category: 'groups',
     },
-    COMMITTEE_CREATE: {
-        name: 'Lage komite',
-        description: 'kan lage komite',
-        category: 'groups',
-    },
-    COMMITTEE_DESTROY: {
-        name: 'Slette komite',
-        description: 'kan slette komite',
+    CLASS_ADMIN: {
+        name: 'Administrer klasser',
+        description: 'kan endre hvilken klasse en bruker er i og rykke opp klassene',
         category: 'groups',
     },
     COMMITTEE_READ: {
@@ -91,9 +76,9 @@ export const permissionConfig = {
         description: 'kan lese komite',
         category: 'groups',
     },
-    COMMITTEE_UPDATE: {
-        name: 'Oppdatere komite',
-        description: 'kan oppdatere komite',
+    COMMITTEE_ADMIN: {
+        name: 'Administrer komiteer',
+        description: 'kan lage, endre og slette komiteer, og administrere medlemmene i dem',
         category: 'groups',
     },
     INTEREST_GROUP_READ: {
@@ -106,29 +91,14 @@ export const permissionConfig = {
         description: 'Administrere interessegruppe uten å være admin i gruppen. Og lage nye grupper',
         category: 'groups',
     },
-    OMEGA_MEMBERSHIP_GROUP_UPDATE: {
-        name: 'Oppdatere Omega medlemsgrupper',
-        description: 'kan oppdatere Omega medlemsgrupper',
-        category: 'groups',
-    },
-    STUDY_PROGRAMME_CREATE: {
-        name: 'Lage studieprogram',
-        description: 'kan lage studieprogram',
-        category: 'groups',
-    },
-    STUDY_PROGRAMME_DESTROY: {
-        name: 'Slette studieprogram',
-        description: 'kan slette studieprogram',
-        category: 'groups',
-    },
     STUDY_PROGRAMME_READ: {
         name: 'Les studieprogram',
         description: 'kan lese studieprogram',
         category: 'groups',
     },
-    STUDY_PROGRAMME_UPDATE: {
-        name: 'Oppdatere studieprogram',
-        description: 'kan oppdatere studieprogram',
+    STUDY_PROGRAMME_ADMIN: {
+        name: 'Administrer studieprogram',
+        description: 'kan lage, endre og slette studieprogram, og administrere medlemmene i dem',
         category: 'groups',
     },
     MANUAL_GROUP_READ: {

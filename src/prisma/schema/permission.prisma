@@ -19,22 +19,22 @@ enum Permission {
   // There are no generic group permissions: a group is only ever reachable through its own group
   // type, and each group type below carries its own. Reading "all groups" is the union of the group
   // types the session may read, decided per type.
+  //
+  // Every group type carries the same two: _READ to see it, _ADMIN for everything else - creating,
+  // updating, destroying and managing members. Splitting those apart again would mean deciding, per
+  // type, which of them a half-administrator should hold, and nothing has ever needed that.
 
   // omega order
   OMEGA_ORDER_READ
   OMEGA_ORDER_CREATE
 
   // Groups - Classes
-  CLASS_CREATE
   CLASS_READ
-  CLASS_UPDATE
-  CLASS_DESTROY
+  CLASS_ADMIN
 
   // Groups - Committess
-  COMMITTEE_CREATE
   COMMITTEE_READ
-  COMMITTEE_UPDATE
-  COMMITTEE_DESTROY
+  COMMITTEE_ADMIN
 
   // Groups - InterestGroups
   INTEREST_GROUP_ADMIN
@@ -46,15 +46,11 @@ enum Permission {
 
   // Groups - OmegaMembershipGroup
   OMEGA_MEMBERSHIP_GROUP_READ
-  OMEGA_MEMBERSHIP_GROUP_UPDATE
-  // Since omega membership groups always need to exist there are no
-  // permissions to create or destroy them.
+  OMEGA_MEMBERSHIP_GROUP_ADMIN
 
   // Groups - StudyProgramme
-  STUDY_PROGRAMME_CREATE
   STUDY_PROGRAMME_READ
-  STUDY_PROGRAMME_UPDATE
-  STUDY_PROGRAMME_DESTROY
+  STUDY_PROGRAMME_ADMIN
 
   // Lockers
   LOCKER_ADMIN

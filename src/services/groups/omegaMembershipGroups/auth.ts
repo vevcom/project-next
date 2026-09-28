@@ -6,6 +6,6 @@ export const omegaMembershipGroupAuth = {
     readExpanded: RequirePermission.staticFields({ permission: 'OMEGA_MEMBERSHIP_GROUP_READ' }),
     readMembers: RequirePermission.staticFields({ permission: 'OMEGA_MEMBERSHIP_GROUP_READ' }),
     readUserLevel: RequirePermission.staticFields({ permission: 'OMEGA_MEMBERSHIP_GROUP_READ' }),
-    updateUserLevel: RequirePermission.staticFields({ permission: 'OMEGA_MEMBERSHIP_GROUP_UPDATE' }),
-    migrateGroups: RequirePermission.staticFields({ permission: 'OMEGA_MEMBERSHIP_GROUP_UPDATE' }),
+    updateUserLevel: RequirePermission.staticFields({ permission: 'OMEGA_MEMBERSHIP_GROUP_ADMIN' }),
+    migrateGroups: RequirePermission.staticFields({ permission: 'OMEGA_MEMBERSHIP_GROUP_ADMIN' }),
 } as const
