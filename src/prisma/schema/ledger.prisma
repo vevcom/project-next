@@ -95,8 +95,34 @@ model LedgerTransaction {
   // payout Payout
   // refund
 
+  // Present only for transactions migrated from OmegaWeb Basic (see LegacyLedgerTransaction).
+  legacy LegacyLedgerTransaction?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Identifies which OmegaWeb Basic (OW) table a migrated transaction originated from.
+enum LegacyTransactionSource {
+  MONEY_PAYMENT
+  MONEY_MANUAL_DEPOSIT
+  MONEY_STRIPE_DEPOSIT
+  MONEY_TRANSFER
+}
+
+// Side table holding everything needed to audit or rebuild a LedgerTransaction that was
+// migrated from OmegaWeb Basic. Never created for transactions originating in this system.
+model LegacyLedgerTransaction {
+  ledgerTransaction   LedgerTransaction       @relation(fields: [ledgerTransactionId], references: [id], onDelete: Cascade)
+  ledgerTransactionId Int                     @id
+  source              LegacyTransactionSource
+  originalId          Int // Primary key of the row in its OW source table.
+  data                Json // Raw snapshot of the OW row (+ directly related rows, e.g. commodity/confirmation) needed to rebuild it.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([source, originalId])
 }
 
 model LedgerEntry {

@@ -22,13 +22,17 @@ async function createVisibilities(pnPrisma: PrismaClientPn) {
     }
 }
 
+/**
+ * @returns IdMapper - Maps OW EventRegistrations.id to the PN EventRegistration.id created for it,
+ * so later migrations (e.g. money/ledger) can link a transaction back to the right registration.
+ */
 export default async function migrateEvents(
     pnPrisma: PrismaClientPn,
     owPrisma: PrismaClientOw,
     imageIdMap: IdMapper,
     userMigrator: UserMigrator,
     limits: Limits
-) {
+): Promise<IdMapper> {
     const events = await owPrisma.events.findMany({
         take: limits.events ? limits.events : undefined,
         orderBy: limits.events ? {
@@ -41,7 +45,7 @@ export default async function migrateEvents(
         }
     })
 
-    await Promise.all(events.map(async event => {
+    const registrationIdMapsPerEvent = await Promise.all(events.map(async event => {
         const coverId = owIdToPnId(imageIdMap, event.ImageId)
         const coverIage = await pnPrisma.cmsImage.create({
             data: {
@@ -85,7 +89,7 @@ export default async function migrateEvents(
             }
         })
 
-        await Promise.all(event.EventRegistrations.map(async registration => {
+        return await Promise.all(event.EventRegistrations.map(async registration => {
             const result = await pnPrisma.eventRegistration.create({
                 data: {
                     eventId: newEvent.id,
@@ -109,8 +113,11 @@ export default async function migrateEvents(
                     }
                 })
             }
+
+            return { owId: registration.id, pnId: result.id }
         }))
     }))
+    const eventRegistrationIdMap: IdMapper = registrationIdMapsPerEvent.flat()
 
     const simpleEvents = await owPrisma.simpleEvents.findMany({
         take: limits.events ? limits.events : undefined,
@@ -153,4 +160,6 @@ export default async function migrateEvents(
             }
         })
     }))
+
+    return eventRegistrationIdMap
 }

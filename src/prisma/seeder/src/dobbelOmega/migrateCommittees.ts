@@ -53,12 +53,16 @@ async function createCommitteArticleSection(
     }
 }
 
+/**
+ * @returns IdMapper - Maps OW Committees.id to the PN Group.id created for that committee
+ * (not the Committee.id) since downstream consumers, e.g. ledger group accounts, relate to Group.
+ */
 export default async function migrateCommittees(
     pnPrisma: PrismaClientPn,
     owPrisma: PrismaClientOw,
     userMigrator: UserMigrator,
     imageIdMap: IdMapper,
-) {
+): Promise<IdMapper> {
     const committees = await owPrisma.committees.findMany({
         include: {
             CommitteeMembers: true,
@@ -84,7 +88,7 @@ export default async function migrateCommittees(
         orderBy: { order: 'desc' },
     })
 
-    await Promise.all(committees.map(async committee => {
+    const committeeGroupIdMap: IdMapper = await Promise.all(committees.map(async committee => {
         // Omegaweb-basic's inactive committees are what we now call pensioned.
         const pensioned = !committee.active
         const committeeParagraph = await createCmsParagraph(
@@ -163,5 +167,9 @@ export default async function migrateCommittees(
                 }
             })
         }))
+
+        return { owId: committee.id, pnId: newCommittee.groupId }
     }))
+
+    return committeeGroupIdMap
 }

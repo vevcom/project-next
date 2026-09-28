@@ -8,6 +8,8 @@ import migrateMailAliases from './migrateMailAlias'
 import migrateEvents from './migrateEvents'
 import { UserMigrator } from './migrateUsers'
 import migrateCommittees from './migrateCommittees'
+import migrateLedgerAccounts from './migrateLedgerAccounts'
+import migrateLedgerTransactions from './migrateLedgerTransactions'
 import seedProdPermissions from './seedProdPermissions'
 import manifest from '@/prisma/seeder/src/dobbelOmega/manifest'
 import { PrismaClient as PrismaClientOw } from '@/prisma-generated-ow-basic/client'
@@ -41,8 +43,15 @@ export default async function dobbelOmega(pnPrisma: PrismaClientPn) {
     await migrateOmegaquotes(pnPrisma, owPrisma, userMigrator, limits)
     await migrateArticles(pnPrisma, owPrisma, imageIdMap, limits)
     await migrateMailAliases(pnPrisma, owPrisma, limits)
-    await migrateCommittees(pnPrisma, owPrisma, userMigrator, imageIdMap)
-    await migrateEvents(pnPrisma, owPrisma, imageIdMap, userMigrator, limits)
+    const committeeGroupIdMap = await migrateCommittees(pnPrisma, owPrisma, userMigrator, imageIdMap)
+    const eventRegistrationIdMap = await migrateEvents(pnPrisma, owPrisma, imageIdMap, userMigrator, limits)
+
+    const { userAccountIdMap, drainAccountIdMap, legacySuspenseAccountId } = await migrateLedgerAccounts(
+        pnPrisma, owPrisma, userMigrator, committeeGroupIdMap
+    )
+    await migrateLedgerTransactions({
+        pnPrisma, owPrisma, userAccountIdMap, drainAccountIdMap, eventRegistrationIdMap, legacySuspenseAccountId, limits
+    })
 
     await seedProdPermissions(pnPrisma)
 
