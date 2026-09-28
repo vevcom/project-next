@@ -8,6 +8,7 @@ import {
     removeManualGroupMembersAction,
     setManualGroupMemberAdminAction,
     setManualGroupMemberTitleAction,
+    pensionManualGroupAction,
 } from '@/services/groups/manualGroups/actions'
 import { readCurrentOmegaOrderAction } from '@/services/omegaOrder/actions'
 import { manualGroupAuth } from '@/services/groups/manualGroups/auth'
@@ -16,6 +17,7 @@ import { ServerSession } from '@/auth/session/ServerSession'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
 import MigrateGroup from '@/components/Group/MigrateGroup'
 import ManageGroupMembers from '@/components/Group/ManageGroupMembers'
+import PensionGroup from '@/components/Group/PensionGroup'
 import { groupMembersByOrder } from '@/components/Group/groupMembersByOrder'
 import { notFound } from 'next/navigation'
 
@@ -57,6 +59,7 @@ export default async function ManualGroupAdmin({ params }: PropTypes) {
     const canSetMemberTitle = manualGroupAuth.setMemberTitle.dynamicFields({
         groupId: manualGroup.groupId,
     }).auth(session).authorized
+    const canPension = manualGroupAuth.pension.dynamicFields({}).auth(session).authorized
     const canRemoveMembers = manualGroupAuth.removeMembers.dynamicFields({
         groupId: manualGroup.groupId,
     }).auth(session).authorized
@@ -75,7 +78,20 @@ export default async function ManualGroupAdmin({ params }: PropTypes) {
                     <span>Aktive medlemmer: {expanded.members}</span>
                 </div>
 
-                <div className={styles.section}>
+                {canPension && (
+                    <div className={styles.section}>
+                        <h2>Pensjonering</h2>
+                        <PensionGroup
+                            groupId={manualGroup.groupId}
+                            groupName={manualGroup.name}
+                            pensioned={manualGroup.pensioned}
+                            currentOmegaOrder={currentOrder.order}
+                            pensionGroupAction={pensionManualGroupAction}
+                        />
+                    </div>
+                )}
+
+                {!manualGroup.pensioned && <div className={styles.section}>
                     <h2>Medlemmer</h2>
                     <ManageGroupMembers
                         groupId={manualGroup.groupId}
@@ -86,9 +102,9 @@ export default async function ManualGroupAdmin({ params }: PropTypes) {
                         setMemberTitleAction={canSetMemberTitle ? setManualGroupMemberTitleAction : undefined}
                         removeMembersAction={canRemoveMembers ? removeManualGroupMembersAction : undefined}
                     />
-                </div>
+                </div>}
 
-                {canMigrate && (
+                {!manualGroup.pensioned && canMigrate && (
                     <div className={styles.section}>
                         <h2>Migrering</h2>
                         <MigrateGroup

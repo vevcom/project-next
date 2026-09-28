@@ -27,6 +27,7 @@ export function implementUpdateArticleSectionOperations<
     implementationParamsSchema,
     authorizer,
     ownedArticleSections,
+    beforeRun,
     destroyOnEmpty
 }: {
     implementationParamsSchema: ImplementationParamsSchema,
@@ -43,6 +44,16 @@ export function implementUpdateArticleSectionOperations<
         }
     ) => Promise<OwnedArticleSection[]>
     destroyOnEmpty: boolean
+    /**
+     * Runs after authorization and before any of these operations. It lets the owner refuse the
+     * whole set at once - a pensioned group, say, whose content may no longer be edited.
+     */
+    beforeRun?: (
+        args: {
+            prisma: PrismaPossibleTransaction<false>,
+            implementationParams: z.infer<ImplementationParamsSchema>
+        }
+    ) => void | Promise<void>,
 }) {
     const ownershipCheckArticleSection = async (
         args: Omit<ArgsAuthGetterAndOwnershipCheck<false, ParamsSchema, undefined, ImplementationParamsSchema>, 'data'>
@@ -74,22 +85,26 @@ export function implementUpdateArticleSectionOperations<
         update: articleSectionOperations.update.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: ownershipCheckArticleSection,
         }),
         addPart: articleSectionOperations.addPart.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: ownershipCheckArticleSection,
         }),
         removePart: articleSectionOperations.removePart.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: ownershipCheckArticleSection,
             operationImplementationFields: { destroyOnEmpty }
         }),
         cmsParagraph: cmsParagraphOperations.updateContent.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: async (args) => {
                 const { paragraphIds } = await getOwnedIds(args)
                 return paragraphIds.includes(args.params.paragraphId)
@@ -98,6 +113,7 @@ export function implementUpdateArticleSectionOperations<
         cmsImage: cmsImageOperations.update.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: async (args) => {
                 const { cmsImageIds } = await getOwnedIds(args)
                 return cmsImageIds.includes(args.params.cmsImageId)
@@ -106,6 +122,7 @@ export function implementUpdateArticleSectionOperations<
         cmsLink: cmsLinkOperations.update.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: async (args) => {
                 const { linkIds } = await getOwnedIds(args)
                 return linkIds.includes(args.params.linkId)

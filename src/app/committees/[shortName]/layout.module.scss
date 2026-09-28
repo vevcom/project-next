@@ -17,3 +17,10 @@
 .pageWrapper {
     border-radius: ohma.$rounding;
 }
+.pensioned {
+    padding: ohma.$gap calc(2 * #{ohma.$gap});
+    margin-bottom: calc(2 * #{ohma.$gap});
+    border-radius: ohma.$rounding;
+    border: 1px solid ohma.$colors-text-muted;
+    color: ohma.$colors-text-muted;
+}

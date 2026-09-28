@@ -53,38 +53,43 @@ export default async function ManualGroups() {
                         <th>Kortnavn</th>
                         <th>Orden</th>
                         <th>Aktive medlemmer</th>
+                        <th>Status</th>
                         {canAdmin && <th></th>}
                     </tr>
                 </thead>
                 <tbody>
-                    {manualGroups.map(manualGroup => (
-                        <tr key={manualGroup.id}>
-                            {canAdmin && (
-                                <td className={styles.editCell}>
-                                    <PopUp
-                                        showButtonContent={<FontAwesomeIcon icon={faPencil} />}
-                                        showButtonClass={styles.editButton}
-                                        popUpKey={`update manual group ${manualGroup.id}`}
-                                    >
-                                        <ManualGroupForm manualGroup={manualGroup} />
-                                    </PopUp>
-                                </td>
-                            )}
-                            <th>
-                                <Link href={`/admin/manual-groups/${manualGroup.id}`}>
-                                    {manualGroup.name}
-                                </Link>
-                            </th>
-                            <td>{manualGroup.shortName}</td>
-                            <td>{orderOfGroup(manualGroup.groupId)}</td>
-                            <td>{membersOfGroup(manualGroup.groupId)}</td>
-                            {canAdmin && (
-                                <td className={styles.rowActions}>
-                                    <DestroyManualGroup id={manualGroup.id} name={manualGroup.name} />
-                                </td>
-                            )}
-                        </tr>
-                    ))}
+                    {/* Pensioned groups are done with - they belong under the ones still running. */}
+                    {[...manualGroups]
+                        .sort((one, two) => Number(one.pensioned) - Number(two.pensioned))
+                        .map(manualGroup => (
+                            <tr key={manualGroup.id}>
+                                {canAdmin && (
+                                    <td className={styles.editCell}>
+                                        <PopUp
+                                            showButtonContent={<FontAwesomeIcon icon={faPencil} />}
+                                            showButtonClass={styles.editButton}
+                                            popUpKey={`update manual group ${manualGroup.id}`}
+                                        >
+                                            <ManualGroupForm manualGroup={manualGroup} />
+                                        </PopUp>
+                                    </td>
+                                )}
+                                <th>
+                                    <Link href={`/admin/manual-groups/${manualGroup.id}`}>
+                                        {manualGroup.name}
+                                    </Link>
+                                </th>
+                                <td>{manualGroup.shortName}</td>
+                                <td>{orderOfGroup(manualGroup.groupId)}</td>
+                                <td>{membersOfGroup(manualGroup.groupId)}</td>
+                                <td>{manualGroup.pensioned ? 'Pensjonert' : 'Aktiv'}</td>
+                                {canAdmin && (
+                                    <td className={styles.rowActions}>
+                                        <DestroyManualGroup id={manualGroup.id} name={manualGroup.name} />
+                                    </td>
+                                )}
+                            </tr>
+                        ))}
                 </tbody>
             </table>
         </PageWrapper>

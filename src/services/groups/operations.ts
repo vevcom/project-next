@@ -18,6 +18,7 @@ import { invalidateManyUserSessionData, invalidateOneUserSessionData } from '@/s
 import { inferGroupName } from '@/lib/groups/inferGroupName'
 import { z } from 'zod'
 import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
+import type { SetPensioned } from './types'
 import type { GroupType } from '@/prisma-generated-pn-types'
 import type {
     ExpandedGroup,
@@ -47,6 +48,44 @@ export async function isGroupOfType(
         select: { groupType: true },
     })
     return group?.groupType === type
+}
+
+/**
+ * Whether the group has been pensioned - retired rather than migrated. Only the group types that are
+ * migrated by hand carry the flag; for the rest this is always false.
+ */
+export async function isGroupPensioned(
+    prisma: PrismaPossibleTransaction<false>,
+    groupId: number,
+): Promise<boolean> {
+    const group = await prisma.group.findUnique({
+        where: { id: groupId },
+        select: {
+            committee: { select: { pensioned: true } },
+            interestGroup: { select: { pensioned: true } },
+            manualGroup: { select: { pensioned: true } },
+        },
+    })
+
+    return Boolean(
+        group?.committee?.pensioned || group?.interestGroup?.pensioned || group?.manualGroup?.pensioned
+    )
+}
+
+/**
+ * Refuses anything that would change a pensioned group. A pensioned group is history: the only thing
+ * that may still happen to it is being brought back.
+ */
+export async function assertGroupNotPensioned(
+    prisma: PrismaPossibleTransaction<false>,
+    groupId: number,
+): Promise<void> {
+    if (await isGroupPensioned(prisma, groupId)) {
+        throw new ServerError(
+            'BAD PARAMETERS',
+            'Gruppen er pensjonert og kan ikke endres. Gjenopprett den først.'
+        )
+    }
 }
 
 async function expandGroup(
@@ -277,6 +316,45 @@ export const groupOperations = {
     }),
 
     /**
+     * Retires a group instead of migrating it, or brings a retired one back.
+     *
+     * Pensioning ends the group: every active membership is deactivated, and the group stops counting
+     * towards the requirements for incrementing omega - it is no longer something anyone is waiting
+     * to migrate.
+     *
+     * Bringing one back puts it straight into the current order. There is nothing to migrate through
+     * - it has no active memberships - and leaving it behind would block the next increment.
+     *
+     * Where the flag itself lives differs per group type, so the implementing type passes in how to
+     * set it.
+     */
+    pension: defineSubOperation({
+        opensTransaction: true,
+        paramsSchema: () => groupSchemas.groupParams,
+        dataSchema: () => groupSchemas.pension,
+        operation: ({ setPensioned }: { setPensioned: SetPensioned }) => async ({ prisma, params, data }) => {
+            const { order: currentOmegaOrder } = await omegaOrderOperations.readCurrent({ bypassAuth: true })
+
+            await prisma.$transaction(async tx => {
+                await setPensioned(tx, params.groupId, data.pensioned)
+
+                if (data.pensioned) {
+                    await tx.membership.updateMany({
+                        where: { groupId: params.groupId, active: true },
+                        data: { active: false },
+                    })
+                    return
+                }
+
+                await tx.group.update({
+                    where: { id: params.groupId },
+                    data: { order: currentOmegaOrder },
+                })
+            })
+        }
+    }),
+
+    /**
      * Migrates one group that is behind the current omega order up to it, keeping the selected
      * users. Every membership of the group's old order is deactivated; the kept users additionally
      * get a fresh active membership of the new order, with the admin flag chosen for them and their
@@ -381,7 +459,8 @@ export const groupOperations = {
         operation: ({ type }: { type: GroupType }) => async ({ prisma }) => {
             const { order: currentOmegaOrder } = await omegaOrderOperations.readCurrent({ bypassAuth: true })
 
-            // TODO: Leave retired groups behind once the retired feature lands.
+            // No pensioning to account for here: only the group types migrated by hand can be
+            // retired, and these follow omega whether anyone is in them or not.
             const { count } = await prisma.group.updateMany({
                 where: {
                     groupType: type,

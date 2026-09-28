@@ -14,6 +14,7 @@ export const removeInterestGroupMembersAction = makeAction(interestGroupOperatio
 export const setInterestGroupMemberAdminAction = makeAction(interestGroupOperations.setMemberAdmin)
 export const setInterestGroupMemberTitleAction = makeAction(interestGroupOperations.setMemberTitle)
 export const migrateInterestGroupAction = makeAction(interestGroupOperations.migrateGroup)
+export const pensionInterestGroupAction = makeAction(interestGroupOperations.pension)
 export const updateInterestGroupAction = makeAction(interestGroupOperations.update)
 
 export const readSpecialCmsParagraphGeneralInfoAction = makeAction(

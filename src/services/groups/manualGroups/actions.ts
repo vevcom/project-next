@@ -15,3 +15,4 @@ export const removeManualGroupMembersAction = makeAction(manualGroupOperations.r
 export const setManualGroupMemberAdminAction = makeAction(manualGroupOperations.setMemberAdmin)
 export const setManualGroupMemberTitleAction = makeAction(manualGroupOperations.setMemberTitle)
 export const migrateManualGroupAction = makeAction(manualGroupOperations.migrateGroup)
+export const pensionManualGroupAction = makeAction(manualGroupOperations.pension)

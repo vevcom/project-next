@@ -24,6 +24,7 @@ export default async function AdminInterestGroups() {
             name: interestGroup.name,
             order: expanded.order,
             members: expanded.members,
+            pensioned: interestGroup.pensioned,
             href: `/interest-groups/${interestGroup.id}`,
         }] : []
     })

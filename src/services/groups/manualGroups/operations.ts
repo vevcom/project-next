@@ -8,6 +8,8 @@ import {
 } from '@/services/groups/implementGroupType'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { defineOperation } from '@/services/serviceOperation'
+import { ServerError } from '@/services/error'
+import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
 import { GroupType } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
 
@@ -33,7 +35,12 @@ const migration = implementManualMigrationPerGroup({
     type: GroupType.MANUAL_GROUP,
     auth: {
         migrateGroup: ({ groupId }) => manualGroupAuth.migrateGroup.dynamicFields({ groupId }),
+        pension: () => manualGroupAuth.pension.dynamicFields({}),
     },
+    setPensioned: (prisma, groupId, pensioned) => prisma.manualGroup.update({
+        where: { groupId },
+        data: { pensioned },
+    }),
 })
 
 const create = defineOperation({
@@ -71,16 +78,37 @@ const read = defineOperation({
     })
 })
 
+/**
+ * A pensioned group is history: nothing about it may be changed until someone brings it back.
+ */
+async function assertNotPensioned(prisma: PrismaPossibleTransaction<false>, id: number) {
+    const manualGroup = await prisma.manualGroup.findUniqueOrThrow({
+        where: { id },
+        select: { name: true, pensioned: true },
+    })
+
+    if (manualGroup.pensioned) {
+        throw new ServerError(
+            'BAD PARAMETERS',
+            `${manualGroup.name} er pensjonert og kan ikke endres. Gjenopprett gruppen først.`
+        )
+    }
+}
+
 const update = defineOperation({
     paramsSchema: z.object({
         id: z.number(),
     }),
     dataSchema: manualGroupSchemas.update,
     authorizer: () => manualGroupAuth.update.dynamicFields({}),
-    operation: async ({ prisma, params, data }) => prisma.manualGroup.update({
-        where: { id: params.id },
-        data,
-    })
+    operation: async ({ prisma, params, data }) => {
+        await assertNotPensioned(prisma, params.id)
+
+        return prisma.manualGroup.update({
+            where: { id: params.id },
+            data,
+        })
+    }
 })
 
 const destroy = defineOperation({
@@ -89,15 +117,19 @@ const destroy = defineOperation({
     }),
     authorizer: () => manualGroupAuth.destroy.dynamicFields({}),
     opensTransaction: true,
-    operation: async ({ prisma, params }) => prisma.$transaction(async tx => {
-        const manualGroup = await tx.manualGroup.delete({
-            where: { id: params.id },
+    operation: async ({ prisma, params }) => {
+        await assertNotPensioned(prisma, params.id)
+
+        return prisma.$transaction(async tx => {
+            const manualGroup = await tx.manualGroup.delete({
+                where: { id: params.id },
+            })
+            await tx.group.delete({
+                where: { id: manualGroup.groupId },
+            })
+            return manualGroup
         })
-        await tx.group.delete({
-            where: { id: manualGroup.groupId },
-        })
-        return manualGroup
-    })
+    }
 })
 
 export const manualGroupOperations = {
@@ -113,4 +145,5 @@ export const manualGroupOperations = {
     setMemberAdmin: memberManagement.setMemberAdmin,
     setMemberTitle: memberManagement.setMemberTitle,
     migrateGroup: migration.migrateGroup,
+    pension: migration.pension,
 } as const

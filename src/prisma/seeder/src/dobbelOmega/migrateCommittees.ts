@@ -66,7 +66,27 @@ export default async function migrateCommittees(
         }
     })
 
+    // A membership points at an omega order, and omegaweb-basic knew nothing of the OmegaOrder table,
+    // so every order a membership refers to has to exist before any of them can be written.
+    const membershipOrders = new Set(committees.flatMap(committee => [
+        ...committee.CommitteeMembers.map(member => member.order),
+        ...committee.CommitteeMembersHist.map(member => member.order),
+    ]))
+    await Promise.all(Array.from(membershipOrders, order => pnPrisma.omegaOrder.upsert({
+        where: { order },
+        update: {},
+        create: { order },
+    })))
+
+    // Committees land in the order omega is in now. Hardcoding one meant every migrated committee
+    // was behind from the moment it arrived, which blocks the next increment until each is migrated.
+    const { order: currentOrder } = await pnPrisma.omegaOrder.findFirstOrThrow({
+        orderBy: { order: 'desc' },
+    })
+
     await Promise.all(committees.map(async committee => {
+        // Omegaweb-basic's inactive committees are what we now call pensioned.
+        const pensioned = !committee.active
         const committeeParagraph = await createCmsParagraph(
             pnPrisma, await readCommitteMarkdown(`${committee.shortname}_p.md`)
         )
@@ -78,6 +98,7 @@ export default async function migrateCommittees(
             data: {
                 name: committee.name,
                 shortName: committee.shortname,
+                pensioned,
                 videoLink: committee.applicationVideo,
                 logoImage: logoImageId ? {
                     connect: {
@@ -104,7 +125,7 @@ export default async function migrateCommittees(
                 group: {
                     create: {
                         groupType: 'COMMITTEE',
-                        order: 106,
+                        order: currentOrder,
                     },
                 }
             }
@@ -120,7 +141,8 @@ export default async function migrateCommittees(
                 data: {
                     groupId: newCommittee.groupId,
                     userId: pnUserId,
-                    active: true,
+                    // A pensioned committee holds no active memberships, whatever basic said.
+                    active: !pensioned,
                     admin: member.admin,
                     order: member.order,
                     title: member.position || undefined,

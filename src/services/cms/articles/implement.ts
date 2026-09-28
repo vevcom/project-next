@@ -30,6 +30,7 @@ export function implementUpdateArticleOperations<
     implementationParamsSchema,
     authorizer,
     ownedArticles,
+    beforeRun,
 }: {
     implementationParamsSchema: ImplementationParamsSchema,
     authorizer: (
@@ -44,6 +45,16 @@ export function implementUpdateArticleOperations<
             implementationParams: z.infer<ImplementationParamsSchema>
         }
     ) => Promise<OwnedArticle[]>
+    /**
+     * Runs after authorization and before any of these operations. It lets the owner refuse the
+     * whole set at once - a pensioned group, say, whose content may no longer be edited.
+     */
+    beforeRun?: (
+        args: {
+            prisma: PrismaPossibleTransaction<false>,
+            implementationParams: z.infer<ImplementationParamsSchema>
+        }
+    ) => void | Promise<void>,
 }) {
     const ownershipCheckArticle = async (
         args: Omit<ArgsAuthGetterAndOwnershipCheck<false, ParamsSchema, undefined, ImplementationParamsSchema>, 'data'>
@@ -56,21 +67,25 @@ export function implementUpdateArticleOperations<
         update: articleOperations.update.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: ownershipCheckArticle
         }),
         addSection: articleOperations.addSection.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: ownershipCheckArticle
         }),
         reorderSections: articleOperations.reorderSections.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: ownershipCheckArticle
         }),
         coverImage: cmsImageOperations.update.implement({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownershipCheck: async (args) => {
                 const coverCmsImagesIds = (await ownedArticles(args)).map(article => article.coverImage.id)
                 return coverCmsImagesIds.includes(args.params.cmsImageId)
@@ -79,6 +94,7 @@ export function implementUpdateArticleOperations<
         articleSections: implementUpdateArticleSectionOperations({
             implementationParamsSchema,
             authorizer,
+            beforeRun,
             ownedArticleSections: async (args) => {
                 const ownedArticlesComputed = await ownedArticles(args)
                 const ownedArticleSections = ownedArticlesComputed.flatMap(article => article.articleSections)

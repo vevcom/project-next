@@ -1,6 +1,7 @@
 import type { membershipFieldsToExpose } from './constants'
 import type { groupOperations } from './operations'
 import type { ActionFromSubServiceOperation } from '@/services/actionTypes'
+import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
 import type {
     Class,
     Committee,
@@ -131,3 +132,19 @@ export type AddGroupMembersAction = ActionFromSubServiceOperation<typeof groupOp
 export type RemoveGroupMembersAction = ActionFromSubServiceOperation<typeof groupOperations.removeMembers>
 export type SetGroupMemberAdminAction = ActionFromSubServiceOperation<typeof groupOperations.setMemberAdmin>
 export type SetGroupMemberTitleAction = ActionFromSubServiceOperation<typeof groupOperations.setMemberTitle>
+
+/**
+ * The action retiring a group or bringing it back, shared by the group types that are migrated
+ * by hand - they are the only ones that can be pensioned.
+ */
+export type PensionGroupAction = ActionFromSubServiceOperation<typeof groupOperations.pension>
+
+/**
+ * How a group type sets its own pensioned flag. The flag lives on the group type's own model, so the
+ * common pension operation is handed the way to write it rather than knowing about every type.
+ */
+export type SetPensioned = (
+    prisma: PrismaPossibleTransaction<false>, // the transaction the pension operation opens
+    groupId: number,
+    pensioned: boolean,
+) => Promise<unknown>

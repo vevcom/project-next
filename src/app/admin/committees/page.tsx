@@ -28,6 +28,7 @@ export default async function AdminCommittee() {
             name: committee.name,
             order: expanded.order,
             members: expanded.members,
+            pensioned: committee.pensioned,
             href: `/committees/${committee.shortName}/admin`,
         }] : []
     })

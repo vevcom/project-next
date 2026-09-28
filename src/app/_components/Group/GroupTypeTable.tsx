@@ -12,6 +12,11 @@ export type GroupTypeTableRow = {
      * for instance, is not administered per group.
      */
     href?: string,
+    /**
+     * Whether the group has been pensioned. A pensioned group is not waiting to be migrated, so it
+     * is not flagged for being behind - it is simply done.
+     */
+    pensioned?: boolean,
 }
 
 type PropTypes = {
@@ -35,6 +40,11 @@ export default function GroupTypeTable({
     nameHeading = 'Navn',
     emptyText = 'Ingen grupper',
 }: PropTypes) {
+    // Pensioned groups are finished with rather than pending, so they sit under the rest.
+    const rowsPensionedLast = [...rows].sort(
+        (one, two) => Number(one.pensioned ?? false) - Number(two.pensioned ?? false)
+    )
+
     return (
         <table className={styles.GroupTypeTable}>
             <thead>
@@ -50,18 +60,24 @@ export default function GroupTypeTable({
                         <td className={styles.empty} colSpan={3}>{emptyText}</td>
                     </tr>
                 )}
-                {rows.map(row => {
-                    const behind = row.order < currentOrder
+                {rowsPensionedLast.map(row => {
+                    const behind = !row.pensioned && row.order < currentOrder
+                    const orderClass = [
+                        row.pensioned && styles.pensioned,
+                        !row.pensioned && (behind ? styles.behind : styles.caughtUp),
+                    ].filter(Boolean).join(' ')
+
                     return (
                         <tr key={row.key}>
                             <th>{row.href ? <Link href={row.href}>{row.name}</Link> : row.name}</th>
-                            <td className={behind ? styles.behind : styles.caughtUp}>
+                            <td className={orderClass}>
                                 <span className={styles.order}>{row.order}</span>
                                 {behind && (
                                     <span className={styles.note}>
                                         står i en tidligere orden og må migreres til orden {currentOrder}
                                     </span>
                                 )}
+                                {row.pensioned && <span className={styles.note}>pensjonert</span>}
                             </td>
                             <td>{row.members}</td>
                         </tr>

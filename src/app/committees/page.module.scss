@@ -30,3 +30,8 @@
         grid-template-columns: 1fr;
     }
 }
+
+.pensionedHeading {
+    margin-top: calc(4 * #{ohma.$gap});
+    color: ohma.$colors-text-muted;
+}

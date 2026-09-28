@@ -8,6 +8,7 @@ import {
     removeInterestGroupMembersAction,
     setInterestGroupMemberAdminAction,
     setInterestGroupMemberTitleAction,
+    pensionInterestGroupAction,
 } from '@/services/groups/interestGroups/actions'
 import { readCurrentOmegaOrderAction } from '@/services/omegaOrder/actions'
 import { interestGroupAuth } from '@/services/groups/interestGroups/auth'
@@ -16,6 +17,7 @@ import { ServerSession } from '@/auth/session/ServerSession'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
 import MigrateGroup from '@/components/Group/MigrateGroup'
 import ManageGroupMembers from '@/components/Group/ManageGroupMembers'
+import PensionGroup from '@/components/Group/PensionGroup'
 import { groupMembersByOrder } from '@/components/Group/groupMembersByOrder'
 import UserCard from '@/components/User/UserCard'
 import { notFound } from 'next/navigation'
@@ -52,6 +54,7 @@ export default async function InterestGroupMembers({ params }: PropTypes) {
     const canSetMemberTitle = interestGroupAuth.setMemberTitle.dynamicFields({
         groupId: interestGroup.groupId,
     }).auth(session).authorized
+    const canPension = interestGroupAuth.pension.dynamicFields({}).auth(session).authorized
     const canRemoveMembers = interestGroupAuth.removeMembers.dynamicFields({
         groupId: interestGroup.groupId,
     }).auth(session).authorized
@@ -73,7 +76,19 @@ export default async function InterestGroupMembers({ params }: PropTypes) {
 
     return (
         <PageWrapper title={interestGroup.name}>
-            {expanded && (canAddMembers || canRemoveMembers) && (
+            {canPension && expanded && (
+                <div className={styles.management}>
+                    <h2>Pensjonering</h2>
+                    <PensionGroup
+                        groupId={interestGroup.groupId}
+                        groupName={interestGroup.name}
+                        pensioned={interestGroup.pensioned}
+                        currentOmegaOrder={currentOrder.order}
+                        pensionGroupAction={pensionInterestGroupAction}
+                    />
+                </div>
+            )}
+            {!interestGroup.pensioned && expanded && (canAddMembers || canRemoveMembers) && (
                 <div className={styles.management}>
                     <h2>Administrer medlemmer</h2>
                     <ManageGroupMembers
@@ -87,7 +102,7 @@ export default async function InterestGroupMembers({ params }: PropTypes) {
                     />
                 </div>
             )}
-            {canMigrate && expanded && (
+            {!interestGroup.pensioned && canMigrate && expanded && (
                 <div className={styles.migration}>
                     <h2>Migrering</h2>
                     <MigrateGroup

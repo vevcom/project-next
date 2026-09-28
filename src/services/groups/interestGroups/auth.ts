@@ -14,6 +14,7 @@ export const interestGroupAuth = {
     migrateGroup: RequirePermissionOrGroupAdmin.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),
     update: RequirePermissionOrGroupAdmin.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),
     destroy: RequirePermission.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),
+    pension: RequirePermission.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),
     readSpecialCmsParagraphGeneralInfo: RequirePermission.staticFields({ permission: 'INTEREST_GROUP_READ' }),
     updateSpecialCmsParagraphContentGeneralInfo: RequirePermission.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),
     updateArticleSection: RequirePermissionOrGroupAdmin.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),

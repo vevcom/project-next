@@ -46,6 +46,9 @@ export const groupSchemas = {
         userId: z.number(),
         title: z.string().min(1, 'Tittelen kan ikke være tom'),
     }),
+    pension: z.object({
+        pensioned: z.boolean(),
+    }),
     migrateManually: z.object({
         /**
          * The users that are to be kept on into the new order, and whether each one administers the

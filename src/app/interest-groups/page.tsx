@@ -42,9 +42,17 @@ export default async function InterestGroups() {
                 </div>
                 <main className={styles.islands}>
                     {
-                        interestGroups.map(interestGroup => (
-                            <InterestGroup session={session} key={interestGroup.id} interestGroup={interestGroup} />
-                        ))
+                        // Pensioned groups are part of the history rather than something to join, so
+                        // they are listed after the ones that still run.
+                        [...interestGroups]
+                            .sort((one, two) => Number(one.pensioned) - Number(two.pensioned))
+                            .map(interestGroup => (
+                                <InterestGroup
+                                    session={session}
+                                    key={interestGroup.id}
+                                    interestGroup={interestGroup}
+                                />
+                            ))
                     }
                 </main>
             </div>

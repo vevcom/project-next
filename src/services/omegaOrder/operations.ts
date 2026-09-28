@@ -22,11 +22,17 @@ export const omegaOrderOperations = {
         operation: async ({ prisma }): Promise<OmegaOrderRequirement[]> => {
             const { order } = await omegaOrderOperations.readCurrent({ bypassAuth: true })
 
-            // TODO: Leave retired groups out of both counts once the retired feature lands.
             const groupsBehindByType = await prisma.group.groupBy({
                 by: ['groupType'],
                 where: {
                     order: { lt: order },
+                    NOT: {
+                        OR: [
+                            { committee: { pensioned: true } },
+                            { interestGroup: { pensioned: true } },
+                            { manualGroup: { pensioned: true } },
+                        ],
+                    },
                 },
                 _count: { _all: true },
             })

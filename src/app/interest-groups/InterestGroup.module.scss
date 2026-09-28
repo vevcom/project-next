@@ -23,3 +23,11 @@
         }
     }
 }
+.pensioned {
+    padding: 0 ohma.$gap;
+    border-radius: ohma.$rounding;
+    border: 1px solid ohma.$colors-text-muted;
+    color: ohma.$colors-text-muted;
+    font-size: ohma.$fonts-s;
+    white-space: nowrap;
+}

@@ -4,6 +4,7 @@ import Image from '@/components/Image/Image'
 import ImageUploader from '@/components/Image/ImageUploader'
 import MigrateGroup from '@/components/Group/MigrateGroup'
 import ManageGroupMembers from '@/components/Group/ManageGroupMembers'
+import PensionGroup from '@/components/Group/PensionGroup'
 import { groupMembersByOrder } from '@/components/Group/groupMembersByOrder'
 import { configureAction } from '@/services/configureAction'
 import {
@@ -14,6 +15,7 @@ import {
     removeCommitteeMembersAction,
     setCommitteeMemberAdminAction,
     setCommitteeMemberTitleAction,
+    pensionCommitteeAction,
     updateCommitteeLogoAction,
 } from '@/services/groups/committees/actions'
 import { readCurrentOmegaOrderAction } from '@/services/omegaOrder/actions'
@@ -42,6 +44,7 @@ export default async function ComitteeAdmin({ params }: PropTypes) {
     const canRemoveMembers = committeeAuth.removeMembers.dynamicFields({
         groupId: committee.groupId,
     }).auth(session).authorized
+    const canPension = committeeAuth.pension.dynamicFields({}).auth(session).authorized
 
     // Every membership, not just the active ones of the current order: the management UI can
     // address any order the committee has memberships in.
@@ -69,7 +72,7 @@ export default async function ComitteeAdmin({ params }: PropTypes) {
                 </div>
             </header>
 
-            <section className={styles.section}>
+            {!committee.pensioned && <section className={styles.section}>
                 <h3>Logo</h3>
                 <div className={styles.logo}>
                     <Image image={committee.logoImage} width={300} />
@@ -86,9 +89,22 @@ export default async function ComitteeAdmin({ params }: PropTypes) {
                         )
                     }
                 </div>
-            </section>
+            </section>}
 
-            {expanded && (canAddMembers || canRemoveMembers) && (
+            {canPension && (
+                <section className={styles.section}>
+                    <h3>Pensjonering</h3>
+                    <PensionGroup
+                        groupId={committee.groupId}
+                        groupName={committee.name}
+                        pensioned={committee.pensioned}
+                        currentOmegaOrder={currentOrder.order}
+                        pensionGroupAction={pensionCommitteeAction}
+                    />
+                </section>
+            )}
+
+            {!committee.pensioned && expanded && (canAddMembers || canRemoveMembers) && (
                 <section className={styles.section}>
                     <h3>Medlemmer</h3>
                     <ManageGroupMembers
@@ -103,7 +119,7 @@ export default async function ComitteeAdmin({ params }: PropTypes) {
                 </section>
             )}
 
-            {canMigrate && expanded && (
+            {!committee.pensioned && canMigrate && expanded && (
                 <section className={styles.section}>
                     <h3>Migrering</h3>
                     <MigrateGroup
