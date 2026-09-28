@@ -1,4 +1,4 @@
-import { readCabinBookingsAction } from '@/services/cabin/actions'
+import { readCabinBookingsAction } from '@/services/cabin/booking/actions'
 import PageWrapper from '@/app/_components/PageWrapper/PageWrapper'
 import SimpleTable from '@/app/_components/Table/SimpleTable'
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'

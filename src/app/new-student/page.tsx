@@ -1,22 +1,49 @@
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'
-import { readPublicArticle } from '@/services/publicArticles/actions'
-import PublicArticle from '@/components/Cms/PublicArticle/PublicArticle'
+import {
+    readNewStudentArticleAction,
+    updateNewStudentArticleAction,
+    updateNewStudentArticleAddSectionAction,
+    updateNewStudentArticleCmsImageAction,
+    updateNewStudentArticleCmsLinkAction,
+    updateNewStudentArticleCmsParagraphAction,
+    updateNewStudentArticleCoverImageAction,
+    updateNewStudentArticleReorderSectionsAction,
+    updateNewStudentArticleSectionAction,
+    updateNewStudentArticleSectionsAddPartAction,
+    updateNewStudentArticleSectionsRemovePartAction
+} from '@/services/newStudent/actions'
+import SpecialArticle from '@/cms/SpecialArticle/SpecialArticle'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
-import { publicArticleAuth } from '@/services/publicArticles/auth'
+import { newStudentAuth } from '@/services/newStudent/auth'
 import { ServerSession } from '@/auth/session/ServerSession'
 
 export default async function NewStudent() {
-    const newStudentArticle = unwrapActionReturn(
-        await readPublicArticle({ params: { special: 'NEW_STUDENT_PAGE' } })
-    )
+    const article = unwrapActionReturn(await readNewStudentArticleAction())
 
-    const canEdit = publicArticleAuth.update.dynamicFields({}).auth(
+    const canEdit = newStudentAuth.update.dynamicFields({}).auth(
         await ServerSession.fromNextAuth()
     ).toJsObject()
 
     return (
         <PageWrapper title="Ny student">
-            <PublicArticle article={newStudentArticle} canEdit={canEdit} />
+            <SpecialArticle
+                article={article}
+                canEdit={canEdit}
+                actions={{
+                    update: updateNewStudentArticleAction,
+                    addSection: updateNewStudentArticleAddSectionAction,
+                    reorderSections: updateNewStudentArticleReorderSectionsAction,
+                    coverImage: updateNewStudentArticleCoverImageAction,
+                    articleSections: {
+                        update: updateNewStudentArticleSectionAction,
+                        addPart: updateNewStudentArticleSectionsAddPartAction,
+                        removePart: updateNewStudentArticleSectionsRemovePartAction,
+                        cmsImage: updateNewStudentArticleCmsImageAction,
+                        cmsParagraph: updateNewStudentArticleCmsParagraphAction,
+                        cmsLink: updateNewStudentArticleCmsLinkAction,
+                    }
+                }}
+            />
         </PageWrapper>
     )
 }

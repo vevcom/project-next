@@ -3,7 +3,9 @@ import { cmsImageOperations } from '@/cms/images/operations'
 import { cmsParagraphOperations } from '@/cms/paragraphs/operations'
 import { cmsLinkOperations } from '@/cms/links/operations'
 import { articleOperations } from '@/cms/articles/operations'
-import { publicArticleOperations } from '@/services/publicArticles/operations'
+import { newStudentOperations } from '@/services/newStudent/operations'
+import { reportOperations } from '@/services/report/operations'
+import { cabinArticleOperations } from '@/services/cabin/article/operations'
 import { buildArticleFromConfig, CMS_PARAGRAPHS_DIR } from '@/seeder/src/buildArticleFromConfig'
 import { defineSeedOperation } from '@/seeder/src/defineSeedOperation'
 import { upsert } from '@/seeder/src/upsert'
@@ -59,9 +61,9 @@ const seedSpecialCmsLinkConfig: Record<SpecialCmsLink, SeedCmsLinkConfig> = {
 }
 
 /**
- * Special articles aren't necessarily all owned by the same service - publicArticles happens to
- * own both today, but a future split (e.g. a dedicated reportPage service) would only need to
- * change the updateOperations reference for that article, not the seeding logic itself.
+ * Every special article is owned by its own service - the one whose page renders it and whose
+ * permissions guard it - so the seeding logic cannot reach for a single shared operations object.
+ * Each entry names its owner's update operations instead.
  */
 type SeedSpecialArticleConfig = SeedArticleConfig & {
     updateOperations: UpdateArticleOperationsReference,
@@ -69,7 +71,7 @@ type SeedSpecialArticleConfig = SeedArticleConfig & {
 
 const seedSpecialCmsArticleConfig: Record<SpecialCmsArticle, SeedSpecialArticleConfig> = {
     REPORT_PAGE: {
-        updateOperations: publicArticleOperations.update,
+        updateOperations: reportOperations.update,
         name: 'Varslingside',
         coverImage: {
             image: { dynamicImageSeededForCmsName: 'ov' },
@@ -83,7 +85,7 @@ const seedSpecialCmsArticleConfig: Record<SpecialCmsArticle, SeedSpecialArticleC
         ]
     },
     NEW_STUDENT_PAGE: {
-        updateOperations: publicArticleOperations.update,
+        updateOperations: newStudentOperations.update,
         name: 'New Student',
         coverImage: {
             image: { dynamicImageSeededForCmsName: 'ov' },
@@ -92,6 +94,20 @@ const seedSpecialCmsArticleConfig: Record<SpecialCmsArticle, SeedSpecialArticleC
             {
                 cmsParagraph: {
                     file: 'new_student/new_student_1.md'
+                }
+            }
+        ]
+    },
+    CABIN_PAGE: {
+        updateOperations: cabinArticleOperations.update,
+        name: 'Hytta',
+        coverImage: {
+            image: { dynamicImageSeededForCmsName: 'ov' },
+        },
+        articleSections: [
+            {
+                cmsParagraph: {
+                    file: 'cabin/cabin_page_1.md'
                 }
             }
         ]

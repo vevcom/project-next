@@ -157,8 +157,11 @@ enum Permission {
   APPLICATION_ADMIN
   APPLICATION_WRITE
 
-  // Public articles
-  PUBLIC_ARTICLE_ADMIN
+  // New student page
+  NEW_STUDENT_ADMIN
+
+  // Report page
+  REPORT_ADMIN
 
   // Ledger permissions
   LEDGER_ADMIN

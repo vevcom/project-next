@@ -1,7 +1,8 @@
 'use server'
 import PageStateWrapper from './PageStateWrapper'
 import PageWrapper from '@/app/_components/PageWrapper/PageWrapper'
-import { readPricePeriodsAction, readReleasePeriodsAction } from '@/services/cabin/actions'
+import { readPricePeriodsAction } from '@/services/cabin/pricePeriod/actions'
+import { readReleasePeriodsAction } from '@/services/cabin/releasePeriod/actions'
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 
 

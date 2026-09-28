@@ -1,11 +1,12 @@
 import { articleOperations } from './operations'
 import { implementUpdateArticleSectionOperations } from '@/cms/articleSections/implement'
 import { cmsImageOperations } from '@/cms/images/operations'
+import { defineOperation } from '@/services/serviceOperation'
+import { z } from 'zod'
 import type { ArgsAuthGetterAndOwnershipCheck, PrismaPossibleTransaction } from '@/services/serviceOperation'
 import type { AuthorizerDynamicFieldsBound } from '@/auth/authorizer/Authorizer'
-import type { Prisma } from '@/prisma-generated-pn-types'
+import type { Prisma, SpecialCmsArticle } from '@/prisma-generated-pn-types'
 import type { articleSchemas } from './schemas'
-import type { z } from 'zod'
 
 type ParamsSchema = typeof articleSchemas.params
 type OwnedArticle = Prisma.ArticleGetPayload<{
@@ -102,5 +103,47 @@ export function implementUpdateArticleOperations<
             },
             destroyOnEmpty: true,
         })
+    } as const
+}
+
+/**
+ * Implements the whole operation set - the read and every update operation - for a service that
+ * owns exactly one article addressed by a fixed `special` enum value, rather than by id.
+ *
+ * The `special` passed in *is* the ownership check, which is why the owner never writes one: `read`
+ * takes no params at all, so a caller cannot ask it for another service's special article, and the
+ * update operations resolve their owned article from the same fixed value. Compare the alternative,
+ * where every owner repeats two `implement` calls and hand-writes a check that its operations only
+ * ever touch its own article - the kind of thing that is correct until someone adds a third special
+ * article and copies the wrong constant into it.
+ */
+export function implementSpecialArticle({
+    special,
+    readAuthorizer,
+    updateAuthorizer,
+}: {
+    special: SpecialCmsArticle,
+    readAuthorizer: AuthorizerDynamicFieldsBound,
+    updateAuthorizer: AuthorizerDynamicFieldsBound,
+}) {
+    /**
+     * The unauthorized read of the article. It self-heals: readSpecial creates the article from
+     * config if it is missing, so the update operations below always have exactly one owned article
+     * to check against, even on a database that has never been seeded.
+     */
+    const readInternal = (
+        { prisma }: { prisma: PrismaPossibleTransaction<false> }
+    ) => articleOperations.readSpecial.internalCall({ params: { special }, prisma })
+
+    return {
+        read: defineOperation({
+            authorizer: () => readAuthorizer,
+            operation: async ({ prisma }) => readInternal({ prisma }),
+        }),
+        update: implementUpdateArticleOperations({
+            implementationParamsSchema: z.undefined(),
+            authorizer: () => updateAuthorizer,
+            ownedArticles: async ({ prisma }) => [await readInternal({ prisma })],
+        }),
     } as const
 }

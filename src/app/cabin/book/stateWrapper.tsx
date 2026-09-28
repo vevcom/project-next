@@ -12,7 +12,7 @@ import {
     createBedBookingUserAttachedAction,
     createCabinBookingNoUserAction,
     createCabinBookingUserAttachedAction
-} from '@/services/cabin/actions'
+} from '@/services/cabin/booking/actions'
 import { getZodDateString } from '@/lib/dates/formatting'
 import { configureAction } from '@/services/configureAction'
 import { useSession } from '@/auth/session/useSession'

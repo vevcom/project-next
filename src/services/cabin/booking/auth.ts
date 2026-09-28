@@ -37,5 +37,5 @@ export const cabinBookingAuth = {
     updateSpecialCmsParagraphContentCabinContract: RequirePermission.staticFields({
         permission: 'CABIN_BOOKING_ADMIN'
     })
-}
+} as const
 

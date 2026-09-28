@@ -1,6 +1,6 @@
 'use client'
 
-import { createPricePeriodAction } from '@/services/cabin/actions'
+import { createPricePeriodAction } from '@/services/cabin/pricePeriod/actions'
 import Form from '@/app/_components/Form/Form'
 import Checkbox from '@/app/_components/UI/Checkbox'
 import DateInput from '@/app/_components/UI/DateInput'

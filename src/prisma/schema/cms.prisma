@@ -104,6 +104,7 @@ model ArticleSection {
 enum SpecialCmsArticle {
   REPORT_PAGE
   NEW_STUDENT_PAGE
+  CABIN_PAGE
 }
 
 model Article {

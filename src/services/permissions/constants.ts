@@ -146,9 +146,14 @@ export const permissionConfig = {
         description: 'kan administrere frontpage',
         category: 'public',
     },
-    PUBLIC_ARTICLE_ADMIN: {
-        name: 'Administrere offentlige artikler',
-        description: 'kan administrere offentlige artikler',
+    NEW_STUDENT_ADMIN: {
+        name: 'Administrere ny student siden',
+        description: 'kan administrere artikkelen på ny student siden',
+        category: 'public',
+    },
+    REPORT_ADMIN: {
+        name: 'Administrere varslingssiden',
+        description: 'kan administrere artikkelen på varslingssiden',
         category: 'public',
     },
     USERS_CREATE: {

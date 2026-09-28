@@ -54,14 +54,14 @@ export const cabinProductOperations = {
     }),
 
     readMany: defineOperation({
-        authorizer: () => cabinProductAuth.read.dynamicFields({}),
+        authorizer: () => cabinProductAuth.readMany.dynamicFields({}),
         operation: ({ prisma }) => prisma.cabinProduct.findMany({
             include: cabinProductPriceIncluder,
         }),
     }),
 
     readActive: defineOperation({
-        authorizer: () => cabinProductAuth.read.dynamicFields({}),
+        authorizer: () => cabinProductAuth.readActive.dynamicFields({}),
         operation: async ({ prisma }) => {
             const pricePeriods = await cabinPricePeriodOperations.readPublicPeriods({ bypassAuth: true })
 
