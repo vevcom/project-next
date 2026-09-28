@@ -44,6 +44,9 @@ model Company {
   description String
   logo        CmsImage           @relation(fields: [logoId], references: [id])
   logoId      Int                @unique
+  /// Where the company's logo links to in the sponsor strip. Optional: a company that is not a
+  /// sponsor has nowhere to link from, and a sponsor may simply not have given us a URL.
+  website     String?
   /// At most one company may hold MAIN. The uniqueness is enforced by the updateSponsorTier
   /// service operation, which demotes the sitting main sponsor in the same transaction.
   sponsorTier CompanySponsorTier @default(NONE)

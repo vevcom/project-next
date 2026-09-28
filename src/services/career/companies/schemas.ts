@@ -11,6 +11,12 @@ const baseSchema = z.object({
     description: z.string().max(
         200, 'Beskrivelsen kan maks være 200 tegn langt'
     ).trim(),
+    // An empty field means "no website", not an invalid one - the form always submits the input,
+    // so the empty string has to survive validation and land as null.
+    website: z.union([
+        z.literal('').transform(() => null),
+        z.string().trim().url('Nettsiden må være en full URL, f.eks. https://omega.ntnu.no'),
+    ]).nullable(),
     sponsorTier: z.nativeEnum(CompanySponsorTier, {
         errorMap: () => ({ message: 'Velg en gyldig samarbeidsgrad' }),
     }),
@@ -24,6 +30,7 @@ export const companySchemas = {
     update: baseSchema.partial().pick({
         name: true,
         description: true,
+        website: true,
     }),
     updateSponsorTier: baseSchema.pick({
         sponsorTier: true,

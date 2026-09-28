@@ -1,12 +1,13 @@
 import '@pn-server-only'
 import { companyAuth } from './auth'
-import { companySponsorOrdering, logoIncluder } from './constants'
+import { companySponsorOrdering, logoIncluder, sponsorSelection } from './constants'
 import { companySchemas } from './schemas'
 import { defineOperation } from '@/services/serviceOperation'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
 import { cmsImageOperations } from '@/cms/images/operations'
 import { CompanySponsorTier } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
+import type { SponsorCompany } from './types'
 
 export const companyOperations = {
     create: defineOperation({
@@ -25,6 +26,20 @@ export const companyOperations = {
                 }
             })
         }
+    }),
+    /**
+     * The sponsors, in the order they should be shown - main sponsor first. Public: this backs the
+     * sponsor strip in the site footer, which anonymous visitors see.
+     */
+    readSponsors: defineOperation({
+        authorizer: () => companyAuth.readSponsors,
+        operation: async ({ prisma }): Promise<SponsorCompany[]> => await prisma.company.findMany({
+            where: {
+                sponsorTier: { not: CompanySponsorTier.NONE },
+            },
+            orderBy: companySponsorOrdering,
+            select: sponsorSelection,
+        })
     }),
     readPage: defineOperation({
         paramsSchema: companySchemas.readPage,

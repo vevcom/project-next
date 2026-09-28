@@ -46,3 +46,20 @@ export const companySponsorOrdering = [
     { sponsorTier: 'asc' },
     { id: 'asc' },
 ] as const satisfies Prisma.CompanyOrderByWithRelationInput[]
+
+/**
+ * What the public sponsor strip in the footer needs, and nothing else. Spelled out as a selection
+ * rather than reusing logoIncluder because this operation is readable without a session: every field
+ * named here is published to anyone who loads the front page.
+ */
+export const sponsorSelection = {
+    id: true,
+    name: true,
+    website: true,
+    sponsorTier: true,
+    logo: {
+        include: {
+            image: { include: expandedImageIncluder }
+        }
+    },
+} as const satisfies Prisma.CompanySelect

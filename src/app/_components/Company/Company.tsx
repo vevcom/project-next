@@ -81,6 +81,11 @@ export default function Company({
                             >
                                 <TextInput name="name" label="Navn" defaultValue={company.name} />
                                 <TextInput name="description" label="Beskrivelse" defaultValue={company.description} />
+                                <TextInput
+                                    name="website"
+                                    label="Nettside"
+                                    defaultValue={company.website ?? ''}
+                                />
                             </Form>
                             {
                                 canUpdateSponsorTier.authorized && <CompanySponsorTierForm
