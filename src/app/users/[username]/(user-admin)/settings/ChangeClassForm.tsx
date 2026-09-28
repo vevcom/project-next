@@ -3,7 +3,7 @@ import Form from '@/components/Form/Form'
 import { SelectString } from '@/components/UI/Select'
 import { changeClassOfUserAction } from '@/services/groups/classes/actions'
 import { CLASS_LEVEL_ORDERING, ClassLevelConfig } from '@/services/groups/constants'
-import { useRouter } from 'next/navigation'
+import { configureAction } from '@/services/configureAction'
 import { useState } from 'react'
 import type { ClassLevel } from '@/prisma-generated-pn-types'
 
@@ -22,15 +22,14 @@ type PropTypes = {
  * they were in then.
  */
 export default function ChangeClassForm({ userId, currentLevel }: PropTypes) {
-    const { refresh } = useRouter()
     const [level, setLevel] = useState<ClassLevel>(currentLevel ?? CLASS_LEVEL_ORDERING[0])
 
     return (
         <Form
             title="Klasse"
             submitText={currentLevel ? 'Endre klasse' : 'Sett klasse'}
-            action={() => changeClassOfUserAction({ params: { userId, level } })}
-            successCallback={refresh}
+            action={configureAction(changeClassOfUserAction, { params: { userId, level } })}
+            refreshOnSuccess
             confirmation={{
                 confirm: true,
                 text: `Sette brukeren i ${ClassLevelConfig[level].name}? `

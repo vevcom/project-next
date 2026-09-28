@@ -1,8 +1,6 @@
-'use client'
 import { destroyManualGroupAction } from '@/services/groups/manualGroups/actions'
 import { configureAction } from '@/services/configureAction'
 import Form from '@/components/Form/Form'
-import { useRouter } from 'next/navigation'
 
 type PropTypes = {
     id: number,
@@ -10,12 +8,10 @@ type PropTypes = {
 }
 
 export default function DestroyManualGroup({ id, name }: PropTypes) {
-    const { refresh } = useRouter()
-
     return (
         <Form
             action={configureAction(destroyManualGroupAction, { params: { id } })}
-            successCallback={refresh}
+            refreshOnSuccess
             submitText="Slett"
             submitColor="red"
             confirmation={{

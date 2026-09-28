@@ -2,7 +2,7 @@
 import styles from './MigrateGroup.module.scss'
 import Form from '@/components/Form/Form'
 import Checkbox from '@/components/UI/Checkbox'
-import { useRouter } from 'next/navigation'
+import { configureAction } from '@/services/configureAction'
 import { useState } from 'react'
 import type { MigrateGroupAction } from '@/services/groups/types'
 
@@ -51,7 +51,6 @@ export default function MigrateGroup({
     candidates,
     migrateGroupAction,
 }: PropTypes) {
-    const { refresh } = useRouter()
     // Keyed by user: present means kept, and the value is whether they administer the new order.
     const [keep, setKeep] = useState<Map<number, boolean>>(new Map())
 
@@ -135,8 +134,10 @@ export default function MigrateGroup({
             )}
 
             <Form
-                action={() => migrateGroupAction({ params: { groupId } }, { data: { keep: kept } })}
-                successCallback={refresh}
+                action={() => configureAction(
+                    migrateGroupAction, { params: { groupId } }
+                )({ data: { keep: kept } })}
+                refreshOnSuccess
                 submitText={`Migrer til orden ${currentOmegaOrder}`}
                 confirmation={{
                     confirm: true,

@@ -1,9 +1,7 @@
-'use client'
 import { createManualGroupAction, updateManualGroupAction } from '@/services/groups/manualGroups/actions'
 import { configureAction } from '@/services/configureAction'
 import Form from '@/components/Form/Form'
 import TextInput from '@/components/UI/TextInput'
-import { useRouter } from 'next/navigation'
 import type { ManualGroup } from '@/prisma-generated-pn-types'
 
 type PropTypes = {
@@ -11,7 +9,6 @@ type PropTypes = {
 }
 
 export default function ManualGroupForm({ manualGroup }: PropTypes) {
-    const { refresh } = useRouter()
     const create = manualGroup === undefined
 
     return (
@@ -22,7 +19,7 @@ export default function ManualGroupForm({ manualGroup }: PropTypes) {
                 ? createManualGroupAction
                 : configureAction(updateManualGroupAction, { params: { id: manualGroup.id } })
             }
-            successCallback={refresh}
+            refreshOnSuccess
         >
             <TextInput name="name" label="Navn" defaultValue={manualGroup?.name ?? ''} />
             <TextInput name="shortName" label="Kortnavn" defaultValue={manualGroup?.shortName ?? ''} />

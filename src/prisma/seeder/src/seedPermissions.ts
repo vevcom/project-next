@@ -26,6 +26,7 @@ export default async function seedPermissions(prisma: PrismaClientPn) {
     const defaultPermissions: Permission[] = [
         'MANUAL_GROUP_READ',
         'CLASS_READ',
+        'OMEGA_ORDER_READ',
         'JOBAD_READ',
         'SCHOOLS_READ',
         'COURSES_READ',

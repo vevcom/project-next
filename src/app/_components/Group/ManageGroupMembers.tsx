@@ -5,9 +5,9 @@ import PopUp from '@/components/PopUp/PopUp'
 import TextInput from '@/components/UI/TextInput'
 import { SelectNumber } from '@/components/UI/Select'
 import UserList from '@/components/User/UserList/UserList'
+import { configureAction } from '@/services/configureAction'
 import UsersSelectionProvider, { UsersSelectionContext } from '@/contexts/UsersSelection'
 import { UserPagingProvider } from '@/contexts/paging/UserPaging'
-import { useRouter } from 'next/navigation'
 import { useContext, useState } from 'react'
 import type { CSSProperties } from 'react'
 import type {
@@ -70,7 +70,6 @@ function AddMembers({ groupId, order, addMembersAction, popUpKey }: {
     addMembersAction: AddGroupMembersAction,
     popUpKey: PopUpKeyType,
 }) {
-    const { refresh } = useRouter()
     const selection = useContext(UsersSelectionContext)
     const selectedUsers = selection?.users ?? []
 
@@ -79,15 +78,12 @@ function AddMembers({ groupId, order, addMembersAction, popUpKey }: {
             {selectedUsers.length > 0 && (
                 <Form
                     submitText={`Legg til ${selectedUsers.length} bruker(e) i orden ${order}`}
-                    action={() => addMembersAction(
-                        { params: { groupId, order } },
-                        {
-                            data: {
-                                users: selectedUsers.map(user => ({ userId: user.id, admin: false })),
-                            },
-                        }
-                    )}
-                    successCallback={refresh}
+                    action={() => configureAction(addMembersAction, { params: { groupId, order } })({
+                        data: {
+                            users: selectedUsers.map(user => ({ userId: user.id, admin: false })),
+                        },
+                    })}
+                    refreshOnSuccess
                     closePopUpOnSuccess={popUpKey}
                 />
             )}
@@ -105,7 +101,6 @@ export default function ManageGroupMembers({
     setMemberAdminAction,
     setMemberTitleAction,
 }: PropTypes) {
-    const { refresh } = useRouter()
     const [selectedOrder, setSelectedOrder] = useState(groupOrder)
     const addPopUpKey: PopUpKeyType = `Add members to group ${groupId} order ${selectedOrder}`
 
@@ -199,16 +194,15 @@ export default function ManageGroupMembers({
                                     buttonClassName={styles.titleSave}
                                     submitText="Lagre"
                                     submitColor="secondary"
-                                    action={formData => setMemberTitleAction(
-                                        { params: { groupId, order: selectedOrder } },
-                                        {
-                                            data: {
-                                                userId: member.userId,
-                                                title: String(formData.get('title') ?? ''),
-                                            },
-                                        }
-                                    )}
-                                    successCallback={refresh}
+                                    action={formData => configureAction(
+                                        setMemberTitleAction, { params: { groupId, order: selectedOrder } }
+                                    )({
+                                        data: {
+                                            userId: member.userId,
+                                            title: String(formData.get('title') ?? ''),
+                                        },
+                                    })}
+                                    refreshOnSuccess
                                 >
                                     <TextInput
                                         className={styles.titleInput}
@@ -231,11 +225,10 @@ export default function ManageGroupMembers({
                                     <Form
                                         submitText={member.admin ? 'Fjern admin' : 'Gjør til admin'}
                                         submitColor="secondary"
-                                        action={() => setMemberAdminAction(
-                                            { params: { groupId, order: selectedOrder } },
-                                            { data: { userId: member.userId, admin: !member.admin } }
-                                        )}
-                                        successCallback={refresh}
+                                        action={() => configureAction(
+                                            setMemberAdminAction, { params: { groupId, order: selectedOrder } }
+                                        )({ data: { userId: member.userId, admin: !member.admin } })}
+                                        refreshOnSuccess
                                     />
                                 </span>
                             )}
@@ -245,11 +238,10 @@ export default function ManageGroupMembers({
                                         <Form
                                             submitText="Fjern"
                                             submitColor="red"
-                                            action={() => removeMembersAction(
-                                                { params: { groupId, order: selectedOrder } },
-                                                { data: { userIds: [member.userId] } }
-                                            )}
-                                            successCallback={refresh}
+                                            action={() => configureAction(
+                                                removeMembersAction, { params: { groupId, order: selectedOrder } }
+                                            )({ data: { userIds: [member.userId] } })}
+                                            refreshOnSuccess
                                             confirmation={{
                                                 confirm: true,
                                                 text: `Fjerne ${member.name} fra gruppen i orden `

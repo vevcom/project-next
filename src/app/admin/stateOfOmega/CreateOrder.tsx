@@ -1,7 +1,5 @@
-'use client'
 import { createOmegaOrderAction } from '@/services/omegaOrder/actions'
 import Form from '@/components/Form/Form'
-import { useRouter } from 'next/navigation'
 import React from 'react'
 
 type PropTypes = {
@@ -9,12 +7,10 @@ type PropTypes = {
 }
 
 export default function CreateOrder({ allRequirementsFulfilled }: PropTypes) {
-    const { refresh } = useRouter()
-
     return (
         <Form
             action={createOmegaOrderAction}
-            successCallback={refresh}
+            refreshOnSuccess
             submitText="Inkrementer omega"
             submitColor={allRequirementsFulfilled ? 'primary' : 'red'}
             confirmation={{
