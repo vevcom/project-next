@@ -8,17 +8,14 @@ import type { StudyProgramme } from '@/prisma-generated-pn-types'
 /**
  * Brings a user's study programme memberships in line with what Feide reports about them.
  *
- * Every programme Feide reports is upserted, and the user is then added to each of them through the
- * study programme service. That service places the membership at the study programme group's own
- * order - study programmes follow omega's order, so always the current one - and reactivates an
- * existing membership of that order instead of duplicating it.
+ * Every programme Feide reports is upserted, and the user is added to the ones Feide has not
+ * reported for them before. That last part is what makes manual membership possible: Feide keeps
+ * reporting a programme whether anyone acts on it or not, so adding on every login would put a
+ * membership an administrator removed straight back. Which programmes have been acted on is
+ * remembered per user, and only the ones seen for the first time are added.
  *
- * The operation is therefore idempotent, and it also brings a user who was left behind in an earlier
- * order up to the current one.
- *
- * Note that a programme the user has *left* is not deactivated here: this only ever adds. Dropping
- * stale programme memberships would need Feide to be treated as the whole truth about a user, which
- * it is not - a membership may also have been granted by hand.
+ * A programme the user has *left* is still not deactivated here: this only ever adds. Feide is not
+ * treated as the whole truth about a user, since a membership may also have been granted by hand.
  *
  * @returns the user's study programmes as they are stored, so the caller can reason about them.
  */
@@ -33,13 +30,30 @@ export async function updateUserStudyProgrammes(
         bypassAuth: true,
     })
 
-    await Promise.all(studyProgrammes.map(studyProgramme =>
+    const alreadyReturned = await studyProgrammeOperations.readFeideReturnedForUser({
+        params: { userId },
+        bypassAuth: true,
+    })
+    const alreadyReturnedIds = new Set(alreadyReturned.map(studyProgramme => studyProgramme.id))
+    const reportedForTheFirstTime = studyProgrammes.filter(
+        studyProgramme => !alreadyReturnedIds.has(studyProgramme.id)
+    )
+
+    if (reportedForTheFirstTime.length === 0) return studyProgrammes
+
+    await Promise.all(reportedForTheFirstTime.map(studyProgramme =>
         studyProgrammeOperations.addMembers({
             params: { groupId: studyProgramme.groupId },
             data: { users: [{ userId, admin: false }] },
             bypassAuth: true,
         })
     ))
+
+    await studyProgrammeOperations.recordFeideReturnedForUser({
+        params: { userId },
+        data: { studyProgrammeIds: reportedForTheFirstTime.map(studyProgramme => studyProgramme.id) },
+        bypassAuth: true,
+    })
 
     return studyProgrammes
 }

@@ -154,4 +154,7 @@ model StudyProgramme {
   classLevel         ClassLevel?
   partOfOmega        Boolean              @default(false)
   CourseStudyProgram CourseStudyProgram[]
+
+  /// The users Feide has already reported this programme for - see the matching field on User.
+  usersFeideHasAlreadyReturnedItFor User[] @relation("StudyProgrammesFeideHasAlreadyReturned")
 }

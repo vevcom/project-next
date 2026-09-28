@@ -152,9 +152,54 @@ const destroy = defineOperation({
     })
 })
 
+/**
+ * The study programmes Feide has already reported for this user at some point.
+ *
+ * A programme is only added to a user the first time Feide mentions it. Without that record, a
+ * membership someone removed by hand would be put straight back at the user's next login - Feide
+ * keeps reporting the programme whether we act on it or not.
+ */
+const readFeideReturnedForUser = defineOperation({
+    paramsSchema: z.object({
+        userId: z.number(),
+    }),
+    authorizer: () => studyProgrammeAuth.readFeideReturnedForUser.dynamicFields({}),
+    operation: async ({ prisma, params }) => prisma.studyProgramme.findMany({
+        where: {
+            usersFeideHasAlreadyReturnedItFor: { some: { id: params.userId } },
+        },
+        select: { id: true },
+    })
+})
+
+/**
+ * Notes that Feide has now reported these programmes for the user, so that they are not acted on
+ * again. Recording one that is already recorded changes nothing.
+ */
+const recordFeideReturnedForUser = defineOperation({
+    paramsSchema: z.object({
+        userId: z.number(),
+    }),
+    dataSchema: z.object({
+        studyProgrammeIds: z.number().array(),
+    }),
+    authorizer: () => studyProgrammeAuth.recordFeideReturnedForUser.dynamicFields({}),
+    operation: async ({ prisma, params, data }) => prisma.user.update({
+        where: { id: params.userId },
+        data: {
+            studyProgrammesFeideHasAlreadyReturned: {
+                connect: data.studyProgrammeIds.map(id => ({ id })),
+            },
+        },
+        select: { id: true },
+    })
+})
+
 export const studyProgrammeOperations = {
     create,
     upsertMany,
+    readFeideReturnedForUser,
+    recordFeideReturnedForUser,
     read,
     readMany,
     update,

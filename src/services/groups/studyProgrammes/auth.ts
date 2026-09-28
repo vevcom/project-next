@@ -4,6 +4,8 @@ import { RequirePermissionOrGroupAdmin } from '@/auth/authorizer/RequirePermissi
 export const studyProgrammeAuth = {
     create: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_ADMIN' }),
     upsertMany: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_ADMIN' }),
+    readFeideReturnedForUser: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_ADMIN' }),
+    recordFeideReturnedForUser: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_ADMIN' }),
     read: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_READ' }),
     readMany: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_READ' }),
     readExpanded: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_READ' }),

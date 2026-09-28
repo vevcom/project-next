@@ -41,6 +41,11 @@ model User {
   // Memberships to groups (committees, interest groups, classes, etc...).
   memberships Membership[]
 
+  // The study programmes Feide has told us about for this user at some point. A programme is only
+  // ever added to the user the first time Feide mentions it, so that a membership someone has
+  // removed by hand is not put straight back on the next login.
+  studyProgrammesFeideHasAlreadyReturned StudyProgramme[] @relation("StudyProgrammesFeideHasAlreadyReturned")
+
   // Lockers used by the user.
   LockerReservation LockerReservation[]
 
