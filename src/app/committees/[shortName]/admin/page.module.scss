@@ -10,3 +10,11 @@
     align-items: flex-start;
     gap: 1em;
 }
+
+.migration {
+    margin-top: calc(3 * #{ohma.$gap});
+}
+
+.members {
+    margin-top: calc(3 * #{ohma.$gap});
+}

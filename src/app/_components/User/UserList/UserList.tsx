@@ -7,6 +7,7 @@ import { UserPagingContext } from '@/contexts/paging/UserPaging'
 import EndlessScroll from '@/components/PagingWrappers/EndlessScroll'
 import UserRow from '@/components/User/UserList/UserRow'
 import { useGroups } from '@/contexts/ClientData'
+import { flattenExpandedGroups } from '@/services/groups/flattenExpandedGroups'
 import { orderOptions } from '@/lib/groups/groupOptions'
 import { UsersSelectionContext } from '@/contexts/UsersSelection'
 import { UserSelectionContext } from '@/contexts/UserSelection'
@@ -17,7 +18,7 @@ import { faCheck, faSort, faSortDown, faSortUp } from '@fortawesome/free-solid-s
 import type { UserPagingReturn } from '@/services/users/types'
 import type { ChangeEvent, MouseEvent, ReactNode } from 'react'
 import type { GroupType } from '@/prisma-generated-pn-types'
-import type { ExpandedGroup } from '@/services/groups/types'
+import type { ExpandedGroup, ExpandedGroupsOfAllTypes } from '@/services/groups/types'
 
 type GroupSelectionType = Exclude<GroupType, 'INTEREST_GROUP' | 'MANUAL_GROUP'>
 
@@ -34,12 +35,12 @@ type PropTypes = {
     linksToUser?: boolean
 }
 
-function getGroupType(groups: ExpandedGroup[] | null, type: GroupType) {
-    return groups ? groups.filter(group => group.groupType === type) : []
+function getGroupType(groups: ExpandedGroupsOfAllTypes | null, type: GroupType) {
+    return groups?.[type] ?? []
 }
 
 function getGroupOptions(
-    groups: ExpandedGroup[] | null,
+    groups: ExpandedGroupsOfAllTypes | null,
     type: GroupType
 ): { value: number | 'NULL', label: string, key: string }[] {
     return [
@@ -172,7 +173,7 @@ export default function UserList({
             ...groupSelection,
             [type]: {
                 ...groupSelection[type],
-                group: groups.find(group => group.id === groupId) ?? null,
+                group: flattenExpandedGroups(groups).find(group => group.id === groupId) ?? null,
             }
         })
     }

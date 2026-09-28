@@ -1,17 +1,28 @@
+import { CLASS_LEVEL_ORDERING } from '@/services/groups/constants'
 import type { PrismaClient } from '@/prisma-generated-pn-client'
 
 /**
- * Seeds classes.
- * @param prisma - The prisma client
+ * Upserts the one class group per class level.
+ *
+ * Classes follow omega's order, so they are always seeded into - and brought up to - the current
+ * order. A class group left behind in an earlier order would block omega from incrementing.
  */
 export default async function seedClasses(prisma: PrismaClient) {
-    const omegaOrder = await prisma.omegaOrder.findFirst()
-    if (!omegaOrder) throw new Error('No omega order found')
-    const order = omegaOrder.order
+    const { order } = await prisma.omegaOrder.findFirstOrThrow({
+        orderBy: {
+            order: 'desc',
+        },
+    })
 
-    await Promise.all([1, 2, 3, 4, 5, 6].map(i => prisma.class.create({
-        data: {
-            year: i,
+    await Promise.all(CLASS_LEVEL_ORDERING.map(level => prisma.class.upsert({
+        where: { level },
+        update: {
+            group: {
+                update: { order },
+            },
+        },
+        create: {
+            level,
             group: {
                 create: {
                     groupType: 'CLASS',

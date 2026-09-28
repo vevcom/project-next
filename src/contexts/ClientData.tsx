@@ -1,11 +1,11 @@
 'use client'
 import { readDefaultPermissionsAction } from '@/services/permissions/actions'
 import { readAllStandardImagesAction } from '@/services/images/standard/actions'
-import { readGroupsExpandedAction } from '@/services/groups/actions'
+import { readExpandedGroupsOfAllTypesAction } from '@/services/groups/actions'
 import { specialImagePanels } from '@/services/images/specialPanels/constants'
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
 import type { ErrorCode } from '@/services/error'
-import type { ExpandedGroup } from '@/services/groups/types'
+import type { ExpandedGroupsOfAllTypes } from '@/services/groups/types'
 import type { ExpandedImage, ExpandedImageCollection } from '@/services/images/subservice/types'
 import type { Permission, StandardImage } from '@/prisma-generated-pn-types'
 import type { ReactNode } from 'react'
@@ -19,7 +19,7 @@ type ClientDataResult<Key extends string, Data> =
 type ClientDataContext = {
     defaultPermissions: ClientDataResult<'defaultPermissions', Permission[]> | null,
     standardImages: ClientDataResult<'standardImages', Record<StandardImage, ExpandedImage>> | null,
-    groups: ClientDataResult<'groups', ExpandedGroup[]> | null,
+    groups: ClientDataResult<'groups', ExpandedGroupsOfAllTypes> | null,
     specialCollections: ClientDataResult<'specialCollections', ExpandedImageCollection[]> | null,
     loadDefaultPermissions: () => void,
     loadStandardImages: () => void,
@@ -34,7 +34,7 @@ type PropTypes = {
     session: SessionMaybeUser,
     defaultPermissions?: Permission[],
     standardImages?: Record<StandardImage, ExpandedImage>,
-    groups?: ExpandedGroup[],
+    groups?: ExpandedGroupsOfAllTypes,
     specialCollections?: ExpandedImageCollection[],
 }
 
@@ -62,7 +62,7 @@ export default function ClientDataProvider({
             : null
     )
     const [groups, setGroups] = useState<
-        ClientDataResult<'groups', ExpandedGroup[]> | null
+        ClientDataResult<'groups', ExpandedGroupsOfAllTypes> | null
     >(
         initialData.groups
             ? { status: 'success', groups: initialData.groups }
@@ -109,7 +109,7 @@ export default function ClientDataProvider({
         if (groupsInFlight.current) return
         groupsInFlight.current = true
         setGroups({ status: 'loading' })
-        const res = await readGroupsExpandedAction()
+        const res = await readExpandedGroupsOfAllTypesAction()
         setGroups(
             res.success
                 ? { status: 'success', groups: res.data }
@@ -181,7 +181,7 @@ export function useStandardImages(): ClientDataResult<'standardImages', Record<S
     return standardImages ?? { status: 'loading' }
 }
 
-export function useGroups(): ClientDataResult<'groups', ExpandedGroup[]> {
+export function useGroups(): ClientDataResult<'groups', ExpandedGroupsOfAllTypes> {
     const { groups, loadGroups } = useClientData()
     useEffect(() => {
         if (groups === null) loadGroups()

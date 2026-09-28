@@ -1,4 +1,5 @@
 import styles from './page.module.scss'
+import { ClassLevelConfig } from '@/services/groups/constants'
 import Button from '@/components/UI/Button'
 import ProfilePicture from '@/components/User/ProfilePicture'
 import UserDisplayName from '@/components/User/UserDisplayName'
@@ -114,7 +115,7 @@ export default async function User({ params }: PropTypes) {
                                 </p>
                             )}
                             {classes.map((classGroup, i) =>
-                                <p key={i} className={styles.studyProgramme}>{classGroup.year}. årstrinn</p>
+                                <p key={i} className={styles.studyProgramme}>{ClassLevelConfig[classGroup.level].name}</p>
                             )}
                             <div className={styles.committeesWrapper}>
                                 {

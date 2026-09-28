@@ -8,7 +8,7 @@ import { visibilityOperations } from '@/services/visibility/operations'
 import { implementDoubleLevelVisibilityOperations } from '@/services/visibility/implement'
 import { beforeAll, beforeEach, describe, expect, test } from '@jest/globals'
 import { z } from 'zod'
-import type { MembershipFiltered } from '@/services/groups/memberships/types'
+import type { MembershipFiltered } from '@/services/groups/types'
 import type { VisibilityMatrix } from '@/services/visibility/types'
 
 /**

@@ -1,4 +1,4 @@
-import { OmegaMembershipLevelConfig } from '@/services/groups/constants'
+import { ClassLevelConfig, OmegaMembershipLevelConfig } from '@/services/groups/constants'
 import type { GroupWithRelationsNameInferencer } from '@/services/groups/types'
 
 /**
@@ -11,7 +11,7 @@ export function inferGroupName(group: GroupWithRelationsNameInferencer): string 
         case 'MANUAL_GROUP':
             return group.manualGroup.name
         case 'CLASS':
-            return `${group.class.year}. Klasse`
+            return ClassLevelConfig[group.class.level].name
         case 'INTEREST_GROUP':
             return group.interestGroup.name
         case 'OMEGA_MEMBERSHIP_GROUP':

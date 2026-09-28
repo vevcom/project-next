@@ -1,0 +1,106 @@
+@use '@/styles/ohma';
+
+.ManageGroupMembers {
+    display: flex;
+    flex-direction: column;
+    gap: calc(2 * #{ohma.$gap});
+}
+
+.addButton {
+    @include ohma.secondaryBtn;
+    align-self: flex-start;
+    padding: ohma.$gap calc(2 * #{ohma.$gap});
+    font-size: ohma.$fonts-s;
+}
+
+.addPanel {
+    display: flex;
+    flex-direction: column;
+    gap: ohma.$gap;
+    min-width: min(80vw, 700px);
+}
+
+.orderPicker {
+    display: flex;
+    flex-direction: column;
+    gap: calc(#{ohma.$gap} / 2);
+    align-items: flex-start;
+}
+
+.historyNote {
+    color: ohma.$colors-text-muted;
+    font-size: ohma.$fonts-s;
+}
+
+.memberRows {
+    display: flex;
+    flex-direction: column;
+    gap: calc(#{ohma.$gap} / 2);
+}
+
+.memberRow {
+    display: flex;
+    align-items: center;
+    gap: calc(2 * #{ohma.$gap});
+    padding: ohma.$gap calc(2 * #{ohma.$gap});
+    border-radius: ohma.$rounding;
+    @include ohma.layer;
+
+    .name {
+        color: ohma.$colors-text;
+        white-space: nowrap;
+    }
+
+    .title {
+        color: ohma.$colors-text-muted;
+        font-size: ohma.$fonts-s;
+    }
+
+    .spacer {
+        margin-left: auto;
+    }
+
+    .adminBadge {
+        padding: 0 calc(#{ohma.$gap});
+        border-radius: ohma.$rounding;
+        border: 1px solid ohma.$colors-accent-blue;
+        color: ohma.$colors-accent-blue;
+        font-size: ohma.$fonts-s;
+        white-space: nowrap;
+    }
+
+    .inactiveBadge {
+        padding: 0 calc(#{ohma.$gap});
+        border-radius: ohma.$rounding;
+        border: 1px solid ohma.$colors-text-muted;
+        color: ohma.$colors-text-muted;
+        font-size: ohma.$fonts-s;
+        white-space: nowrap;
+    }
+
+    // The title is an inline form when it may be edited, so it has to sit on the row rather than
+    // fill it and stack the way a form normally does.
+    .titleForm {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: ohma.$gap;
+        width: auto;
+
+        .titleInput {
+            width: 11rem;
+        }
+
+        // Form's own submit wrapper carries a top margin meant for a stacked form. Its class is
+        // hashed inside Form's module and cannot be named from here, so it is reached by position:
+        // it is always the last child of the form.
+        > *:last-child {
+            margin-top: 0;
+        }
+    }
+}
+
+.empty {
+    color: ohma.$colors-text-muted;
+    font-style: italic;
+}

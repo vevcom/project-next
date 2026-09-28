@@ -24,7 +24,7 @@ export default async function Committee({ params }: PropTypes) {
     if (!paragraphRes.success) throw new Error('Kunne ikke hente komitéparagrafen')
     const members = unwrapActionReturn(await readCommitteeMembersAction({
         params: {
-            shortName: (await params).shortName,
+            groupId: committee.groupId,
             active: true,
         },
     }))

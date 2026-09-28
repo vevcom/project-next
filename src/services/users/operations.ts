@@ -10,12 +10,11 @@ import { userProfileImageOperations } from './profileImageCollection'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
 import { expandedImageIncluder } from '@/services/images/subservice/constants'
 import { notificationSubscriptionOperations } from '@/services/notifications/subscription/operations'
-import { readMembershipsOfUser } from '@/services/groups/memberships/read'
+import { groupOperations } from '@/services/groups/operations'
 import { NTNUEmailDomain } from '@/services/mail/constants'
 import { sendVerifyEmail } from '@/lib/email/systemMail/verifyEmail'
-import { updateUserOmegaMembershipGroup } from '@/services/groups/omegaMembershipGroups/update'
+import { omegaMembershipGroupOperations } from '@/services/groups/omegaMembershipGroups/operations'
 import { sendUserInvitationEmail } from '@/lib/email/systemMail/userInvitivation'
-import { readOmegaMembershipGroup } from '@/services/groups/omegaMembershipGroups/read'
 import { defineOperation } from '@/services/serviceOperation'
 import { ServerError } from '@/services/error'
 import { getMembershipFilter } from '@/auth/getMembershipFilter'
@@ -35,7 +34,10 @@ export const userOperations = {
         dataSchema: userSchemas.create,
         authorizer: () => userAuth.create.dynamicFields({}),
         operation: async ({ prisma, data }) => {
-            const omegaMembership = await readOmegaMembershipGroup('EXTERNAL')
+            const omegaMembership = await omegaMembershipGroupOperations.read({
+                params: { omegaMembershipLevel: 'EXTERNAL' },
+                bypassAuth: true,
+            })
             const omegaOrder = await omegaOrderOperations.readCurrent({ bypassAuth: true })
 
             const user = await prisma.user.create({
@@ -159,7 +161,11 @@ export const userOperations = {
                 image: userData.image || defaultProfileImage,
             }))
 
-            const memberships = await readMembershipsOfUser(user.id)
+            const memberships = await groupOperations.readMembershipsOfUser.internalCall({
+                params: {
+                    userId: user.id,
+                }
+            })
             const permissions = await permissionOperations.readPermissionsOfUser.internalCall({
                 params: {
                     userId: user.id
@@ -209,7 +215,7 @@ export const userOperations = {
                             groupId: true,
                             group: {
                                 select: {
-                                    class: { select: { year: true } },
+                                    class: { select: { level: true } },
                                     studyProgramme: { select: { code: true } },
                                     omegaMembershipGroup: { select: { omegaMembershipLevel: true } }
                                 }
@@ -264,7 +270,7 @@ export const userOperations = {
             })
             return users.map(user => {
                 const clas = user.memberships.find(
-                    membership => membership.group.class !== null)?.group.class?.year
+                    membership => membership.group.class !== null)?.group.class?.level
                 const studyProgramme = user.memberships.find(
                     membership => membership.group.studyProgramme !== null)?.group.studyProgramme?.code
                 const membershipType = user.memberships.find(
@@ -518,7 +524,14 @@ export const userOperations = {
                 false
             )
 
-            await updateUserOmegaMembershipGroup(params.id, partOfOmega ? 'SOELLE' : 'EXTERNAL', true)
+            await omegaMembershipGroupOperations.updateUserLevel({
+                params: {
+                    userId: params.id,
+                    omegaMembershipLevel: partOfOmega ? 'SOELLE' : 'EXTERNAL',
+                    onlyUpgrade: true,
+                },
+                bypassAuth: true,
+            })
 
             return results[0]
         }

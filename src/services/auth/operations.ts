@@ -11,7 +11,6 @@ import logger from '@/lib/logger'
 import { z } from 'zod'
 
 export const authOperations = {
-
     verifyEmail: defineOperation({
         paramsSchema: z.object({
             token: z.string(),

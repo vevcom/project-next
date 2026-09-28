@@ -3,6 +3,7 @@ import { type IdMapper, owIdToPnId } from './IdMapper'
 import manifest from '@/prisma/seeder/src/dobbelOmega/manifest'
 import { Prisma, type PrismaClient as PrismaClientPn, type SEX } from '@/prisma-generated-pn-client'
 import logger from '@/lib/logger'
+import { CLASS_LEVEL_ORDERING } from '@/services/groups/constants'
 import { v4 as uuid } from 'uuid'
 import type { User } from '@/prisma-generated-pn-client'
 import type {
@@ -118,12 +119,13 @@ export class UserMigrator {
     }
 
     yearIdMap(x: number) {
-        const year = this.classes.find(cls => cls.year === x)
-        if (!year) {
+        const level = CLASS_LEVEL_ORDERING[x - 1]
+        const classGroup = level ? this.classes.find(cls => cls.level === level) : undefined
+        if (!classGroup) {
             manifest.error(`Year ${x} not found - dobbelOmega failed :(`)
             throw new Error(`Year ${x} not found`)
         }
-        return year.group.id
+        return classGroup.group.id
     }
 
     async migrateUsers(limits: Limits) {

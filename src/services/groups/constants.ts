@@ -1,4 +1,7 @@
-import type { GroupType, OmegaMembershipLevel, Prisma } from '@/prisma-generated-pn-types'
+import { createSelection } from '@/services/createSelection'
+import { userFilterSelection } from '@/services/users/constants'
+import { expandedImageIncluder } from '@/services/images/subservice/constants'
+import type { ClassLevel, GroupType, Membership, OmegaMembershipLevel, Prisma } from '@/prisma-generated-pn-types'
 import type { GroupTypeInfo } from './types'
 
 /**
@@ -39,8 +42,27 @@ export const groupTypesConfig = {
     [key in GroupType]: GroupTypeInfo
 }
 
-export const GroupTypeOrdering: string[] = ['OMEGA_MEMBERSHIP_GROUP', 'CLASS', 'STUDY_PROGRAMME',
-    'COMMITTEE', 'INTEREST_GROUP', 'MANUAL_GROUP'] satisfies GroupType[]
+/**
+ * The class levels in the order a user moves through them. The class bump moves a user to the next
+ * level in this list; GRADUATED is last and terminal.
+ */
+export const CLASS_LEVEL_ORDERING = [
+    'ONE',
+    'TWO',
+    'THREE',
+    'FOUR',
+    'FIVE',
+    'GRADUATED',
+] as const satisfies readonly ClassLevel[]
+
+export const ClassLevelConfig = {
+    ONE: { name: '1. Klasse' },
+    TWO: { name: '2. Klasse' },
+    THREE: { name: '3. Klasse' },
+    FOUR: { name: '4. Klasse' },
+    FIVE: { name: '5. Klasse' },
+    GRADUATED: { name: 'Uteksaminert' },
+} as const satisfies Record<ClassLevel, { name: string }>
 
 export const OmegaMembershipLevelConfig = {
     SOELLE: {
@@ -71,7 +93,7 @@ export const OMEGA_MEMBERSHIP_LEVEL_RANKING: OmegaMembershipLevel[] = [
 export const groupsWithRelationsIncluder = {
     committee: { select: { name: true } },
     manualGroup: { select: { name: true } },
-    class: { select: { year: true } },
+    class: { select: { level: true } },
     interestGroup: { select: { name: true } },
     omegaMembershipGroup: { select: { omegaMembershipLevel: true } },
     studyProgramme: { select: { name: true } },
@@ -99,3 +121,24 @@ export const readGroupsOfUserIncluder = {
     studyProgramme: true,
 
 } as const satisfies Prisma.GroupInclude
+
+export const membershipFieldsToExpose = [
+    'active',
+    'order',
+    'groupId',
+    'admin'
+] as const satisfies (keyof Membership)[]
+export const membershipFilterSelection = createSelection([...membershipFieldsToExpose])
+
+/**
+ * A membership together with the user it belongs to, as the common `readMembers` operation
+ * returns it. The profile image is resolved against the default profile image at read time.
+ */
+export const groupMembershipIncluder = {
+    user: {
+        select: {
+            ...userFilterSelection,
+            image: { include: expandedImageIncluder },
+        }
+    }
+} as const satisfies Prisma.MembershipInclude

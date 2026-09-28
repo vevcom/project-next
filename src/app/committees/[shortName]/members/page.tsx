@@ -1,14 +1,15 @@
 import styles from './page.module.scss'
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { readCommitteeMembersAction } from '@/services/groups/committees/actions'
+import getCommittee from '@/app/committees/[shortName]/getCommittee'
 import UserCard from '@/components/User/UserCard'
 import type { PropTypes } from '@/app/committees/[shortName]/page'
 
 export default async function CommiteeMembers({ params }: PropTypes) {
-    const shortName = (await params).shortName
+    const committee = await getCommittee(params)
     const members = unwrapActionReturn(await readCommitteeMembersAction({
         params: {
-            shortName,
+            groupId: committee.groupId,
         }
     }))
 

@@ -1,3 +1,6 @@
+import type { membershipFieldsToExpose } from './constants'
+import type { groupOperations } from './operations'
+import type { ActionFromSubServiceOperation } from '@/services/actionTypes'
 import type {
     Class,
     Committee,
@@ -5,6 +8,7 @@ import type {
     GroupType,
     InterestGroup,
     ManualGroup,
+    Membership,
     OmegaMembershipGroup,
     StudyProgramme
 } from '@/prisma-generated-pn-types'
@@ -67,7 +71,7 @@ export type GroupWithRelations<
 })
 
 export type GroupWithRelationsNameInferencer = GroupWithRelations<
-    'name', 'name', 'year', 'name', 'omegaMembershipLevel', 'name'
+    'name', 'name', 'level', 'name', 'omegaMembershipLevel', 'name'
 >
 
 /**
@@ -88,8 +92,42 @@ export type ExpandedGroup = Group & {
     members: number
 }
 
-export type GroupsStructured = {
-    [key in GroupType]: GroupTypeInfo & {
-        groups: ExpandedGroup[]
-    }
-}
+
+export type MembershipFiltered = Pick<Membership, typeof membershipFieldsToExpose[number]>
+
+/**
+ * This type is ment to abstract away selecting memberships on order.
+ * - A number means a spesific order
+ * - ACTIVE means all active memberships (regardless of order)
+ * - ALL means all active and inactive of all orders.
+ */
+export type MembershipSelectorType = number | 'ACTIVE' | 'ALL'
+
+/**
+ * The expanded groups of every group type, as the client side group cache holds them. A group type
+ * the session may not read is `null` rather than an empty list, so that "no access" stays
+ * distinguishable from "none exist".
+ */
+export type ExpandedGroupsOfAllTypes = Record<GroupType, ExpandedGroup[] | null>
+
+/**
+ * The action every group type that migrates one group at a time exposes. All three of them implement
+ * the same underlying sub-operation, so a single type covers committees, interest groups and manual
+ * groups - which is what lets one component drive the migration of any of them.
+ */
+export type MigrateGroupAction = ActionFromSubServiceOperation<typeof groupOperations.migrateManually>
+
+/**
+ * The action reading the members of one group, shared by every group type for the same reason.
+ */
+export type ReadGroupMembersAction = ActionFromSubServiceOperation<typeof groupOperations.readMembers>
+
+/**
+ * The member management actions of the group types that let members simply be added and removed.
+ * As with migration they all implement the same underlying sub-operations, so one component can
+ * drive any of them.
+ */
+export type AddGroupMembersAction = ActionFromSubServiceOperation<typeof groupOperations.addMembers>
+export type RemoveGroupMembersAction = ActionFromSubServiceOperation<typeof groupOperations.removeMembers>
+export type SetGroupMemberAdminAction = ActionFromSubServiceOperation<typeof groupOperations.setMemberAdmin>
+export type SetGroupMemberTitleAction = ActionFromSubServiceOperation<typeof groupOperations.setMemberTitle>

@@ -1,10 +1,15 @@
 import '@pn-server-only'
 import { committeeAuth } from './auth'
-import { committeeExpandedIncluder, committeeLogoIncluder, membershipIncluder } from './constants'
+import { committeeExpandedIncluder, committeeLogoIncluder } from './constants'
 import { committeeSchemas } from './schemas'
 import { committeeLogoImageOperations } from './committeeLogoCollection'
 import { cmsParagraphOperations } from '@/cms/paragraphs/operations'
 import { defineOperation } from '@/services/serviceOperation'
+import {
+    implementGroupType,
+    implementManualMigrationPerGroup,
+    implementSimpleAddRemoveMembersOperation,
+} from '@/services/groups/implementGroupType'
 import { articleRealtionsIncluder } from '@/cms/articles/constants'
 import { implementUpdateArticleOperations } from '@/cms/articles/implement'
 import { articleOperations } from '@/cms/articles/operations'
@@ -68,45 +73,6 @@ const read = defineOperation({
                 }))
             }
         }
-    }
-})
-
-const readMembers = defineOperation({
-    authorizer: () => committeeAuth.readMembers.dynamicFields({}),
-    paramsSchema: z.object({
-        shortName: z.string(),
-        active: z.boolean().optional(),
-    }),
-    operation: async ({ prisma, params }) => {
-        const defaultProfileImage = await standardImageCollectionOperations.readStandardImage({
-            params: { standardImage: 'DEFAULT_PROFILE_IMAGE' },
-        })
-
-        const commitee = await prisma.committee.findUniqueOrThrow({
-            where: {
-                shortName: params.shortName
-            },
-            select: {
-                group: {
-                    select: {
-                        memberships: {
-                            include: membershipIncluder,
-                            where: {
-                                active: params.active
-                            }
-                        }
-                    }
-                }
-            }
-        })
-
-        return commitee.group.memberships.map(member => ({
-            ...member,
-            user: {
-                ...member.user,
-                image: member.user.image ?? defaultProfileImage
-            }
-        }))
     }
 })
 
@@ -345,13 +311,44 @@ const updateArticle = implementUpdateArticleOperations({
     }
 })
 
+const commonGroupOperations = implementGroupType({
+    type: GroupType.COMMITTEE,
+    auth: {
+        readExpanded: committeeAuth.readExpanded.dynamicFields({}),
+        readMembers: () => committeeAuth.readMembers.dynamicFields({}),
+    },
+})
+
+const memberManagement = implementSimpleAddRemoveMembersOperation({
+    type: GroupType.COMMITTEE,
+    auth: {
+        addMembers: ({ groupId }) => committeeAuth.addMembers.dynamicFields({ groupId }),
+        removeMembers: ({ groupId }) => committeeAuth.removeMembers.dynamicFields({ groupId }),
+        setMemberAdmin: ({ groupId }) => committeeAuth.setMemberAdmin.dynamicFields({ groupId }),
+        setMemberTitle: ({ groupId }) => committeeAuth.setMemberTitle.dynamicFields({ groupId }),
+    },
+})
+
+const migration = implementManualMigrationPerGroup({
+    type: GroupType.COMMITTEE,
+    auth: {
+        migrateGroup: ({ groupId }) => committeeAuth.migrateGroup.dynamicFields({ groupId }),
+    },
+})
+
 export const committeeOperations = {
     create,
     update,
     updateLogo,
     readAll,
     read,
-    readMembers,
+    readExpanded: commonGroupOperations.readExpanded,
+    readMembers: commonGroupOperations.readMembers,
+    addMembers: memberManagement.addMembers,
+    removeMembers: memberManagement.removeMembers,
+    setMemberAdmin: memberManagement.setMemberAdmin,
+    setMemberTitle: memberManagement.setMemberTitle,
+    migrateGroup: migration.migrateGroup,
     readArticle,
     readParagraph,
     updateParagraphContent,

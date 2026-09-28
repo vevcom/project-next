@@ -1,4 +1,4 @@
-import type { MembershipSelectorType } from '@/services/groups/memberships/types'
+import type { MembershipSelectorType } from '@/services/groups/types'
 import type { Prisma } from '@/prisma-generated-pn-types'
 
 /**

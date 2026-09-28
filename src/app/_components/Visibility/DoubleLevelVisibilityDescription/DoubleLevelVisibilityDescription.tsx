@@ -2,6 +2,7 @@
 import styles from './DoubleLevelVisibilityDescription.module.scss'
 import { describeMatrix } from '@/auth/visibility/describeVisibility'
 import { useGroups } from '@/contexts/ClientData'
+import { flattenExpandedGroups } from '@/services/groups/flattenExpandedGroups'
 import type { DoubleLevelVisibilityMatrix } from '@/services/visibility/types'
 
 type PropTypes = {
@@ -14,7 +15,7 @@ type PropTypes = {
  */
 export default function DoubleLevelVisibilityDescription({ doubleLevelVisibility }: PropTypes) {
     const groupsResult = useGroups()
-    const groups = groupsResult.status === 'success' ? groupsResult.groups : null
+    const groups = groupsResult.status === 'success' ? flattenExpandedGroups(groupsResult.groups) : null
 
     return (
         <p className={styles.DoubleLevelVisibilityDescription}>

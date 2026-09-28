@@ -131,19 +131,14 @@ export const permissionConfig = {
         description: 'kan oppdatere studieprogram',
         category: 'groups',
     },
-    GROUP_READ: {
-        name: 'Les grupper',
-        description: 'kan lese grupper',
+    MANUAL_GROUP_READ: {
+        name: 'Les andre grupper',
+        description: 'kan lese andre grupper',
         category: 'groups',
     },
-    GROUP_DESTROY: {
-        name: 'Slette grupper',
-        description: 'kan slette grupper',
-        category: 'groups',
-    },
-    GROUP_ADMIN: {
-        name: 'Gruppeadministrator',
-        description: 'kan administrere grupper',
+    MANUAL_GROUP_ADMIN: {
+        name: 'Administrer andre grupper',
+        description: 'kan opprette, oppdatere og slette andre grupper, og styre medlemmene deres',
         category: 'groups',
     },
     JOBAD_CREATE: {

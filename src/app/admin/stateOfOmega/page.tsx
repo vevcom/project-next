@@ -1,29 +1,26 @@
 import styles from './page.module.scss'
 import CreateOrder from './CreateOrder'
 import Requirements from './Requirements'
-import { readCurrentOmegaOrderAction } from '@/services/omegaOrder/actions'
+import { readCurrentOmegaOrderAction, readOmegaOrderRequirementsAction } from '@/services/omegaOrder/actions'
 import { omegaOrderAuth } from '@/services/omegaOrder/auth'
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { ServerSession } from '@/auth/session/ServerSession'
 import Date from '@/components/Date/Date'
-import type { OmegaOrderRequirement } from './Requirements'
+import PageTitleSetter from '@/contexts/PageTitleSetter'
 
 export default async function stateOfOmega() {
     omegaOrderAuth.create.dynamicFields({}).auth(
         await ServerSession.fromNextAuth()
-    ).redirectOnUnauthorized({ returnUrl: '/admin/state-of-omega' })
+    ).redirectOnUnauthorized({ returnUrl: '/admin/stateOfOmega' })
 
     const currentOrder = unwrapActionReturn(await readCurrentOmegaOrderAction())
+    const requirements = unwrapActionReturn(await readOmegaOrderRequirementsAction())
 
-    // TODO: Read requirements through a service action once implemented.
-    const requirements: OmegaOrderRequirement[] = [
-        { description: 'Alle komiteer er på nåværende orden eller pensjonert', fulfilled: true },
-        { description: 'Alle interessegrupper er på nåværende orden eller pensjonert', fulfilled: false },
-    ]
     const allRequirementsFulfilled = requirements.every(requirement => requirement.fulfilled)
 
     return (
         <div className={styles.wrapper}>
+            <PageTitleSetter title={'Omegas tilstand'} />
             <div className={styles.plaque}>
                 <p className={styles.label}>Omega er i orden</p>
                 <h1 className={styles.order}>{ currentOrder.order }</h1>

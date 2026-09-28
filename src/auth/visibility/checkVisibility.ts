@@ -1,4 +1,4 @@
-import type { MembershipFiltered } from '@/services/groups/memberships/types'
+import type { MembershipFiltered } from '@/services/groups/types'
 import type { VisibilityMatrix } from '@/services/visibility/types'
 
 

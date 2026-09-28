@@ -5,7 +5,7 @@ import { decryptAndComparePassword } from '@/auth/passwordHash'
 import FeideProvider from '@/lib/feide/FeideProvider'
 import { updateUserStudyProgrammes } from '@/lib/feide/userRoutines'
 import { prisma } from '@/prisma-pn-client-instance'
-import { readMembershipsOfUser } from '@/services/groups/memberships/read'
+import { groupOperations } from '@/services/groups/operations'
 import { updateEmailForFeideAccount } from '@/services/auth/feideAccounts/update'
 import { userOperations } from '@/services/users/operations'
 import { permissionOperations } from '@/services/permissions/operations'
@@ -184,7 +184,11 @@ export const authOptions: AuthOptions = {
                         userId,
                     }
                 }),
-                memberships: await readMembershipsOfUser(userId),
+                memberships: await groupOperations.readMembershipsOfUser.internalCall({
+                    params: {
+                        userId,
+                    }
+                }),
             }
         }
     },

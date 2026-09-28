@@ -1,65 +1,35 @@
 import '@pn-server-only'
 import { fetchStudyProgrammesFromFeide } from './api'
-import { upsertStudyProgrammes } from '@/services/groups/studyProgrammes/create'
-import { omegaOrderOperations } from '@/services/omegaOrder/operations'
-import { prisma } from '@/prisma-pn-client-instance'
+import { studyProgrammeOperations } from '@/services/groups/studyProgrammes/operations'
 
+/**
+ * Brings a user's study programme memberships in line with what Feide reports about them.
+ *
+ * Every programme Feide reports is upserted, and the user is then added to each of them through the
+ * study programme service. That service places the membership at the study programme group's own
+ * order - study programmes follow omega's order, so always the current one - and reactivates an
+ * existing membership of that order instead of duplicating it.
+ *
+ * The operation is therefore idempotent, and it also brings a user who was left behind in an earlier
+ * order up to the current one.
+ *
+ * Note that a programme the user has *left* is not deactivated here: this only ever adds. Dropping
+ * stale programme memberships would need Feide to be treated as the whole truth about a user, which
+ * it is not - a membership may also have been granted by hand.
+ */
 export async function updateUserStudyProgrammes(userId: number, accessToken: string) {
     const feideStudyProgrammes = await fetchStudyProgrammesFromFeide(accessToken)
-    const studyProgrammes = await upsertStudyProgrammes(feideStudyProgrammes)
 
-    const { order } = await omegaOrderOperations.readCurrent({ bypassAuth: true })
-
-    // Find current user study programmes
-    const memberships = await prisma.membership.findMany({
-        where: {
-            userId,
-            group: {
-                groupType: 'STUDY_PROGRAMME',
-            },
-        },
-        include: {
-            group: {
-                include: {
-                    studyProgramme: true,
-                },
-            },
-        },
+    const studyProgrammes = await studyProgrammeOperations.upsertMany({
+        data: { studyProgrammes: feideStudyProgrammes },
+        bypassAuth: true,
     })
 
-    const userStudyProgrammeCodes = new Set(memberships
-        .map(membership => membership.group.studyProgramme?.code)
-        .filter(studyCode => studyCode) as string[]
-    )
-
-    const addStudyProgrammes = studyProgrammes.filter(studyProg => !userStudyProgrammeCodes.has(studyProg.code))
-
-    const feideStudyProgrammesCodes = new Set(
-        feideStudyProgrammes.map(feideStudyProgram => feideStudyProgram.code)
-    )
-
-    const updateStudyProgrammes = memberships.filter(membership =>
-        membership.group.studyProgramme?.insititueCode &&
-        feideStudyProgrammesCodes.has(membership.group.studyProgramme?.insititueCode)
-    ).filter(membership => membership.order !== order)
-
-    await prisma.membership.createMany({
-        data: addStudyProgrammes.map(studyProg => ({
-            groupId: studyProg.groupId,
-            order,
-            admin: false,
-            active: true,
-            userId,
-        }))
-    })
-
-    await prisma.membership.createMany({
-        data: updateStudyProgrammes.map(membership => ({
-            groupId: membership.groupId,
-            order,
-            admin: membership.admin,
-            active: membership.active,
-            userId,
-        }))
-    })
+    await Promise.all(studyProgrammes.map(studyProgramme =>
+        studyProgrammeOperations.addMembers({
+            params: { groupId: studyProgramme.groupId },
+            data: { users: [{ userId, admin: false }] },
+            bypassAuth: true,
+        })
+    ))
 }

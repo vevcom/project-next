@@ -3,6 +3,7 @@ import styles from './VisibilityMatrixEditor.module.scss'
 import Button from '@/components/UI/Button'
 import { SelectNumber, SelectString } from '@/components/UI/Select'
 import { useGroups } from '@/contexts/ClientData'
+import { flattenExpandedGroups } from '@/services/groups/flattenExpandedGroups'
 import { describeMatrix } from '@/auth/visibility/describeVisibility'
 import { findGroup, orderOptions } from '@/lib/groups/groupOptions'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -22,7 +23,7 @@ type PropTypes = {
  */
 export default function VisibilityMatrixEditor({ requirements, onChange }: PropTypes) {
     const groupsResult = useGroups()
-    const groups = groupsResult.status === 'success' ? groupsResult.groups : null
+    const groups = groupsResult.status === 'success' ? flattenExpandedGroups(groupsResult.groups) : null
 
     function addRequirement() {
         const defaultGroupId = groups?.[0]?.id

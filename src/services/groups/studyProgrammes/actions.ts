@@ -1,30 +1,13 @@
 'use server'
 
-import { createZodActionError, safeServerCall } from '@/services/actionError'
-import { createStudyProgramme } from '@/services/groups/studyProgrammes/create'
-import { readStudyProgrammes } from '@/services/groups/studyProgrammes/read'
-import { updateStudyProgramme } from '@/services/groups/studyProgrammes/update'
-import { createStudyProgrammeValidation, updateStudyProgrammeValidation } from '@/services/groups/studyProgrammes/validation'
-import type { ActionReturn } from '@/services/actionTypes'
-import type { StudyProgramme } from '@/prisma-generated-pn-types'
+import { makeAction } from '@/services/serverAction'
+import { studyProgrammeOperations } from '@/services/groups/studyProgrammes/operations'
 
-export async function createStudyProgrammeAction(rawdata: FormData): Promise<ActionReturn<StudyProgramme>> {
-    const parse = createStudyProgrammeValidation.typeValidate(rawdata)
-    if (!parse.success) return createZodActionError(parse)
-
-    return await safeServerCall(() => createStudyProgramme(parse.data))
-}
-
-export async function readStudyProgrammesAction(): Promise<ActionReturn<StudyProgramme[]>> {
-    return await safeServerCall(() => readStudyProgrammes())
-}
-
-export async function updateStudyProgrammeAction(id: number, rawdata: FormData): Promise<ActionReturn<StudyProgramme>> {
-    const parse = updateStudyProgrammeValidation.typeValidate(rawdata)
-    if (!parse.success) return createZodActionError(parse)
-
-    return await safeServerCall(() => updateStudyProgramme({
-        ...parse.data,
-        id,
-    }))
-}
+export const createStudyProgrammeAction = makeAction(studyProgrammeOperations.create)
+export const readStudyProgrammeAction = makeAction(studyProgrammeOperations.read)
+export const readStudyProgrammesAction = makeAction(studyProgrammeOperations.readMany)
+export const updateStudyProgrammeAction = makeAction(studyProgrammeOperations.update)
+export const destroyStudyProgrammeAction = makeAction(studyProgrammeOperations.destroy)
+export const readStudyProgrammesExpandedAction = makeAction(studyProgrammeOperations.readExpanded)
+export const readStudyProgrammeMembersAction = makeAction(studyProgrammeOperations.readMembers)
+export const migrateStudyProgrammesAction = makeAction(studyProgrammeOperations.migrateGroups)

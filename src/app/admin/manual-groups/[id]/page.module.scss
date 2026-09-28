@@ -1,0 +1,28 @@
+@use '@/styles/ohma';
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: calc(3 * #{ohma.$gap});
+}
+
+.facts {
+    display: flex;
+    gap: calc(3 * #{ohma.$gap});
+    color: ohma.$colors-text-muted;
+}
+
+.section {
+    h2 {
+        margin-bottom: ohma.$gap;
+    }
+}
+
+.memberList {
+    @include ohma.ImageCardListLayout;
+}
+
+.empty {
+    color: ohma.$colors-text-muted;
+    font-style: italic;
+}

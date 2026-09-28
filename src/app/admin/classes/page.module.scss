@@ -1,5 +1,13 @@
 @use '@/styles/ohma';
 
-.wrapper {
-    
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: ohma.$gap;
+    margin-top: calc(3 * #{ohma.$gap});
+}
+
+.explanation {
+    color: ohma.$colors-text-muted;
+    max-width: 70ch;
 }

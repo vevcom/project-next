@@ -1,6 +1,6 @@
 import type { Permission } from '@/prisma-generated-pn-types'
 import type { UserFiltered } from '@/services/users/types'
-import type { MembershipFiltered } from '@/services/groups/memberships/types'
+import type { MembershipFiltered } from '@/services/groups/types'
 
 export type UserGuaranteeOption = 'HAS_USER' | 'NO_USER'
 

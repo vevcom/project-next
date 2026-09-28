@@ -4,6 +4,7 @@ import Form from '@/components/Form/Form'
 import { SelectString } from '@/components/UI/Select'
 import TextInput from '@/components/UI/TextInput'
 import { updateStudyProgrammeAction, createStudyProgrammeAction } from '@/services/groups/studyProgrammes/actions'
+import { configureAction } from '@/services/configureAction'
 import { useRouter } from 'next/navigation'
 import type { StudyProgramme } from '@/prisma-generated-pn-types'
 
@@ -20,7 +21,10 @@ export default function UpdateStudyProgrammeForm({
     return <Form
         title={`${create ? 'Legg til' : 'Oppdater'} studieprogram`}
         submitText={create ? 'Legg til' : 'Oppdater'}
-        action={create ? createStudyProgrammeAction : updateStudyProgrammeAction.bind(null, studyProgramme.id)}
+        action={create
+            ? createStudyProgrammeAction
+            : configureAction(updateStudyProgrammeAction, { params: { id: studyProgramme.id } })
+        }
         successCallback={true ? () => {} : refresh}
     >
         <TextInput name="name" label="Navn" defaultValue={studyProgramme?.name ?? ''}/>

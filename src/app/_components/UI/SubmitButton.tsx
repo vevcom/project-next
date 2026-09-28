@@ -10,6 +10,12 @@ import type { ErrorMessage } from '@/services/error'
 import type { ReactNode } from 'react'
 import type { PropTypes as ButtonPropTypes } from '@/components/UI/Button'
 
+/**
+ * How long the confirmation dialog stays up after a successful submit, so that the check mark is
+ * seen before the dialog closes itself.
+ */
+const CONFIRMATION_CLOSE_DELAY = 2000
+
 export type Colors = ButtonPropTypes['color']
 export type Confirmation = {
     confirm: boolean,
@@ -81,11 +87,25 @@ export default function SubmitButton({
         </Button>
     )
 
+    // The confirmation asks a question that a successful submit has now answered - leaving it up
+    // means the user has to dismiss a dialog for something that already happened. Nothing else
+    // closes it: the X and 'Nei' are the only other ways out.
     useEffect(() => {
-        if (!popUpContext) return
+        if (!success) return undefined
+        const timeout = setTimeout(() => setConfirmedOpen(false), CONFIRMATION_CLOSE_DELAY)
+        return () => clearTimeout(timeout)
+    }, [success])
+
+    // The dialog is teleported into the app-wide PopUpProvider, so it outlives this button unless it
+    // is taken down explicitly. A successful submit often removes the form from the page - a
+    // migrated group stops offering migration, a removed member stops offering removal - and the
+    // dialog would then be left on screen with nothing able to close it. The cleanup runs with the
+    // context of the last render, which is the one that knows this dialog is the open one.
+    useEffect(() => {
+        if (!popUpContext) return undefined
         if (!confirmedOpen) {
             popUpContext.remove(popUpKey)
-            return
+            return undefined
         }
         popUpContext.teleport(
             <div className={popUpStyles.PopUp}>
@@ -121,6 +141,7 @@ export default function SubmitButton({
             </div>,
             popUpKey
         )
+        return () => popUpContext.remove(popUpKey)
     }, [confirmedOpen, pending, success, popUpKey])
 
     return (

@@ -11,6 +11,9 @@ import {
 } from '@/services/groups/interestGroups/actions'
 import { interestGroupAuth } from '@/services/groups/interestGroups/auth'
 import { configureAction } from '@/services/configureAction'
+import Link from 'next/link'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faGear } from '@fortawesome/free-solid-svg-icons'
 import type { SessionMaybeUser } from '@/auth/session/Session'
 import type { ExpandedInterestGroup } from '@/services/groups/interestGroups/types'
 
@@ -26,12 +29,33 @@ export default function InterestGroup({ interestGroup, session }: PropTypes) {
         groupId: interestGroup.groupId
     }).auth(session).toJsObject()
 
+    // The interest group's own page is where its members and migration are administered. The link
+    // shows for anyone who may do one of those things - which includes the group's own admins, not
+    // just holders of the interest group permission.
+    const dynamicFields = { groupId: interestGroup.groupId }
+    const canAdministrate = [
+        interestGroupAuth.addMembers,
+        interestGroupAuth.removeMembers,
+        interestGroupAuth.setMemberAdmin,
+        interestGroupAuth.setMemberTitle,
+        interestGroupAuth.migrateGroup,
+    ].some(authorizer => authorizer.dynamicFields(dynamicFields).auth(session).authorized)
+
     const cmsArticleActionConfig = { implementationParams: { interestGroupId: interestGroup.id } }
 
     return (
         <div className={styles.interestGroup}>
             <div className={styles.title}>
                 <h2>{interestGroup.name}</h2>
+                {canAdministrate && (
+                    <Link
+                        className={styles.administrate}
+                        href={`/interest-groups/${interestGroup.id}`}
+                        aria-label={`Administrer ${interestGroup.name}`}
+                    >
+                        <FontAwesomeIcon icon={faGear} />
+                    </Link>
+                )}
                 <InterestGroupSettings
                     interestGroupId={interestGroup.id}
                     interestGroupName={interestGroup.name}

@@ -7,10 +7,8 @@ import { Fragment, useState } from 'react'
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-    faBeer,
     faChild,
     faKey,
-    faNewspaper,
     faUser,
     faUserGroup,
     faPaperPlane,
@@ -43,38 +41,10 @@ const navigations = [
     },
     {
         header: {
-            icon: faNewspaper,
-            title: 'CMS'
-        },
-        links: [
-            {
-                title: 'Rediger cms',
-                href: '/admin/cms'
-            }
-        ],
-    },
-    {
-        header: {
-            icon: faBeer,
-            title: 'Komitéer'
-        },
-        links: [
-            {
-                title: 'Opprett komité',
-                href: '/admin/committees'
-            }
-        ],
-    },
-    {
-        header: {
             icon: faChild,
-            title: 'Opptak'
+            title: 'Opptak og tilstand'
         },
         links: [
-            {
-                title: 'Phaestum',
-                href: '/admin/phaestum'
-            },
             {
                 title: 'Opptak',
                 href: '/admin/admission'
@@ -92,16 +62,28 @@ const navigations = [
         },
         links: [
             {
-                title: 'Grupper',
-                href: '/admin/groups'
-            },
-            {
                 title: 'Klasser',
                 href: '/admin/classes'
             },
             {
+                title: 'Komitéer',
+                href: '/admin/committees'
+            },
+            {
+                title: 'Interessegrupper',
+                href: '/admin/interest-groups'
+            },
+            {
+                title: 'Medlemsgrupper',
+                href: '/admin/omega-membership-groups'
+            },
+            {
                 title: 'Studieprogrammer',
                 href: '/admin/study-programmes'
+            },
+            {
+                title: 'Andre grupper',
+                href: '/admin/manual-groups'
             }
         ],
     },

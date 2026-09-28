@@ -1,19 +1,15 @@
 import styles from './Requirements.module.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faXmark } from '@fortawesome/free-solid-svg-icons'
-
-export type OmegaOrderRequirement = {
-    description: string
-    fulfilled: boolean
-}
+import type { OmegaOrderRequirement } from '@/services/omegaOrder/types'
 
 type PropTypes = {
     requirements: OmegaOrderRequirement[]
 }
 
 /**
- * Renders the list of requirements that must be fulfilled before omega can be incremented,
- * each with a check or cross depending on whether it is fulfilled.
+ * The conditions that must hold before omega can be incremented, each with a check or a cross
+ * depending on whether it is met.
  */
 export default function Requirements({ requirements }: PropTypes) {
     const fulfilledCount = requirements.filter(requirement => requirement.fulfilled).length
@@ -30,11 +26,12 @@ export default function Requirements({ requirements }: PropTypes) {
             <ul>
                 {requirements.map(requirement => (
                     <li
-                        key={requirement.description}
+                        key={requirement.key}
                         className={requirement.fulfilled ? styles.fulfilled : styles.unfulfilled}
                     >
                         <FontAwesomeIcon icon={requirement.fulfilled ? faCheck : faXmark} />
                         <span>{requirement.description}</span>
+                        {requirement.detail && <i className={styles.detail}>{requirement.detail}</i>}
                     </li>
                 ))}
             </ul>

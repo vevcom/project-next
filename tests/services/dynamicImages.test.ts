@@ -4,7 +4,7 @@ import { prisma } from '@/prisma-pn-client-instance'
 import { dynamicImageOperations } from '@/services/images/dynamic/operations'
 import { beforeAll, beforeEach, describe, expect, test } from '@jest/globals'
 import type { SessionMaybeUser } from '@/auth/session/Session'
-import type { MembershipFiltered } from '@/services/groups/memberships/types'
+import type { MembershipFiltered } from '@/services/groups/types'
 import type { VisibilityMatrix } from '@/services/visibility/types'
 
 /**

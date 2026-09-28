@@ -55,12 +55,24 @@ model Group {
 // Bellow are all the specific types of groups. These models should contain
 // the specific information that only that type of group requires.
 
+// The level a class group represents. A user holds at most one class membership per order, and a
+// class group is one per level - so there are exactly as many class groups as there are levels.
+// GRADUATED is terminal: a user keeps that membership active forever, at the order they got it.
+enum ClassLevel {
+  ONE
+  TWO
+  THREE
+  FOUR
+  FIVE
+  GRADUATED
+}
+
 model Class {
   group   Group @relation(fields: [groupId], references: [id])
   groupId Int   @unique
   id      Int   @id @default(autoincrement())
 
-  year Int @unique
+  level ClassLevel @unique
 }
 
 model Committee {

@@ -15,18 +15,14 @@ enum Permission {
   OMBUL_UPDATE
   OMBUL_DESTROY
 
-  // Groups - Generic
-  GROUP_READ
-  GROUP_DESTROY
-  GROUP_ADMIN //TODO: Temp needs discussion about this
-  // Since groups can only be created with a specific type, there is no need to
-  // have permissions to create or update a generic group.
+  // Groups
+  // There are no generic group permissions: a group is only ever reachable through its own group
+  // type, and each group type below carries its own. Reading "all groups" is the union of the group
+  // types the session may read, decided per type.
 
   // omega order
   OMEGA_ORDER_READ
   OMEGA_ORDER_CREATE
-  // Since groups can only be created with a specific type, there is no need to
-  // have permissions to create or update a generic group.
 
   // Groups - Classes
   CLASS_CREATE
@@ -43,6 +39,10 @@ enum Permission {
   // Groups - InterestGroups
   INTEREST_GROUP_ADMIN
   INTEREST_GROUP_READ
+
+  // Groups - ManualGroups
+  MANUAL_GROUP_ADMIN
+  MANUAL_GROUP_READ
 
   // Groups - OmegaMembershipGroup
   OMEGA_MEMBERSHIP_GROUP_READ
