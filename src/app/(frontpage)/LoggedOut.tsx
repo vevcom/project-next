@@ -38,7 +38,7 @@ export default async function LoggedOutLandingPage() {
                         </div>
 
                         <Link href="login">Logg inn</Link>
-                        <Link className={styles.primaryCta} href="infopages/nystudent">Ny student</Link>
+                        <Link className={styles.primaryCta} href="/new-student">Ny student</Link>
                         <Link href="/career">For bedrifter</Link>
 
                         <Link className={styles.scrollDown} href="#firstSection">
