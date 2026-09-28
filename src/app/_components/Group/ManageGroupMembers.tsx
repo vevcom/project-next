@@ -9,6 +9,7 @@ import UsersSelectionProvider, { UsersSelectionContext } from '@/contexts/UsersS
 import { UserPagingProvider } from '@/contexts/paging/UserPaging'
 import { useRouter } from 'next/navigation'
 import { useContext, useState } from 'react'
+import type { CSSProperties } from 'react'
 import type {
     AddGroupMembersAction,
     RemoveGroupMembersAction,
@@ -110,6 +111,18 @@ export default function ManageGroupMembers({
 
     const members = orders.find(order => order.order === selectedOrder)?.members ?? []
 
+    // Every row is its own grid, so the columns only line up across rows if they are all laid out
+    // against the same track list. The actions that are not offered at all drop their column rather
+    // than leaving a gap.
+    const memberColumns = [
+        'minmax(6rem, 1fr)',
+        setMemberTitleAction ? '20rem' : 'minmax(6rem, 1fr)',
+        '9rem',
+        ...(setMemberAdminAction ? ['10.5rem'] : []),
+        ...(removeMembersAction ? ['6rem'] : []),
+    ].join(' ')
+    const columnStyle = { '--member-columns': memberColumns } as CSSProperties
+
     return (
         <div className={styles.ManageGroupMembers}>
             <div className={styles.orderPicker}>
@@ -162,16 +175,28 @@ export default function ManageGroupMembers({
                 <p className={styles.empty}>Gruppen har ingen medlemskap i orden {selectedOrder}.</p>
             ) : (
                 <div className={styles.memberRows}>
+                    <div className={styles.memberHeader} style={columnStyle}>
+                        <span>Navn</span>
+                        <span>Tittel</span>
+                        <span>Status</span>
+                        {setMemberAdminAction && <span />}
+                        {removeMembersAction && <span />}
+                    </div>
                     {members.map(member => (
                         // Keyed by order as well as user: the title input is uncontrolled, so a row
                         // React reuses across an order change would keep the value it already has
                         // and ignore the new order's `defaultValue`. The same user is usually a
                         // member of several orders, which is exactly when that bites.
-                        <div className={styles.memberRow} key={`${selectedOrder}-${member.userId}`}>
+                        <div
+                            className={styles.memberRow}
+                            style={columnStyle}
+                            key={`${selectedOrder}-${member.userId}`}
+                        >
                             <span className={styles.name}>{member.name}</span>
                             {setMemberTitleAction ? (
                                 <Form
                                     className={styles.titleForm}
+                                    buttonClassName={styles.titleSave}
                                     submitText="Lagre"
                                     submitColor="secondary"
                                     action={formData => setMemberTitleAction(
@@ -195,36 +220,43 @@ export default function ManageGroupMembers({
                             ) : (
                                 <span className={styles.title}>{member.title}</span>
                             )}
-                            {member.admin && <span className={styles.adminBadge}>Admin</span>}
-                            {!member.active && <span className={styles.inactiveBadge}>Inaktiv</span>}
-                            <span className={styles.spacer} />
+                            <span className={styles.badges}>
+                                {member.admin && <span className={styles.adminBadge}>Admin</span>}
+                                {!member.active && <span className={styles.inactiveBadge}>Inaktiv</span>}
+                            </span>
+                            {/* The action cells are rendered even when this member cannot use them,
+                                so that a row without them keeps the grid's columns. */}
                             {setMemberAdminAction && (
-                                <Form
-                                    submitText={member.admin ? 'Fjern admin' : 'Gjør til admin'}
-                                    submitColor="secondary"
-                                    action={() => setMemberAdminAction(
-                                        { params: { groupId, order: selectedOrder } },
-                                        { data: { userId: member.userId, admin: !member.admin } }
-                                    )}
-                                    successCallback={refresh}
-                                />
-                            )}
-                            {removeMembersAction && member.active && (
-                                <span>
+                                <span className={styles.action}>
                                     <Form
-                                        submitText="Fjern"
-                                        submitColor="red"
-                                        action={() => removeMembersAction(
+                                        submitText={member.admin ? 'Fjern admin' : 'Gjør til admin'}
+                                        submitColor="secondary"
+                                        action={() => setMemberAdminAction(
                                             { params: { groupId, order: selectedOrder } },
-                                            { data: { userIds: [member.userId] } }
+                                            { data: { userId: member.userId, admin: !member.admin } }
                                         )}
                                         successCallback={refresh}
-                                        confirmation={{
-                                            confirm: true,
-                                            text: `Fjerne ${member.name} fra gruppen i orden ${selectedOrder}? `
-                                                + 'Medlemskapet blir satt inaktivt.'
-                                        }}
                                     />
+                                </span>
+                            )}
+                            {removeMembersAction && (
+                                <span className={styles.action}>
+                                    {member.active && (
+                                        <Form
+                                            submitText="Fjern"
+                                            submitColor="red"
+                                            action={() => removeMembersAction(
+                                                { params: { groupId, order: selectedOrder } },
+                                                { data: { userIds: [member.userId] } }
+                                            )}
+                                            successCallback={refresh}
+                                            confirmation={{
+                                                confirm: true,
+                                                text: `Fjerne ${member.name} fra gruppen i orden `
+                                                    + `${selectedOrder}? Medlemskapet blir satt inaktivt.`
+                                            }}
+                                        />
+                                    )}
                                 </span>
                             )}
                         </div>

@@ -60,25 +60,37 @@ export default async function ComitteeAdmin({ params }: PropTypes) {
 
     return (
         <div className={styles.wrapper}>
-            <h2>Admin</h2>
-            <div className={styles.logo}>
-                <Image image={committee.logoImage} width={300} />
-                {
-                    canEditLogo.authorized && (
-                        <ImageUploader
-                            title="Endre komitelogo"
-                            refreshOnSuccess
-                            uploadImageAction={configureAction(
-                                updateCommitteeLogoAction,
-                                { params: { shortName: committee.shortName } }
-                            )}
-                        />
-                    )
-                }
-            </div>
+            <header className={styles.pageHeader}>
+                <h2>Administrer {committee.name}</h2>
+                <div className={styles.facts}>
+                    <span>Kortnavn: {committee.shortName}</span>
+                    {expanded && <span>Orden: {expanded.order}</span>}
+                    {expanded && <span>Aktive medlemmer: {expanded.members}</span>}
+                </div>
+            </header>
+
+            <section className={styles.section}>
+                <h3>Logo</h3>
+                <div className={styles.logo}>
+                    <Image image={committee.logoImage} width={300} />
+                    {
+                        canEditLogo.authorized && (
+                            <ImageUploader
+                                title="Endre komitelogo"
+                                refreshOnSuccess
+                                uploadImageAction={configureAction(
+                                    updateCommitteeLogoAction,
+                                    { params: { shortName: committee.shortName } }
+                                )}
+                            />
+                        )
+                    }
+                </div>
+            </section>
+
             {expanded && (canAddMembers || canRemoveMembers) && (
-                <div className={styles.members}>
-                    <h2>Medlemmer</h2>
+                <section className={styles.section}>
+                    <h3>Medlemmer</h3>
                     <ManageGroupMembers
                         groupId={committee.groupId}
                         groupOrder={expanded.order}
@@ -88,11 +100,12 @@ export default async function ComitteeAdmin({ params }: PropTypes) {
                         setMemberTitleAction={canSetMemberTitle ? setCommitteeMemberTitleAction : undefined}
                         removeMembersAction={canRemoveMembers ? removeCommitteeMembersAction : undefined}
                     />
-                </div>
+                </section>
             )}
+
             {canMigrate && expanded && (
-                <div className={styles.migration}>
-                    <h2>Migrering</h2>
+                <section className={styles.section}>
+                    <h3>Migrering</h3>
                     <MigrateGroup
                         groupId={committee.groupId}
                         groupOrder={expanded.order}
@@ -105,7 +118,7 @@ export default async function ComitteeAdmin({ params }: PropTypes) {
                         }))}
                         migrateGroupAction={migrateCommitteeAction}
                     />
-                </div>
+                </section>
             )}
         </div>
     )
