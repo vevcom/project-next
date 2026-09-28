@@ -1,4 +1,5 @@
 import { readPageInputSchemaObject } from '@/lib/paging/schema'
+import { CompanySponsorTier } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
 
 const baseSchema = z.object({
@@ -10,6 +11,9 @@ const baseSchema = z.object({
     description: z.string().max(
         200, 'Beskrivelsen kan maks være 200 tegn langt'
     ).trim(),
+    sponsorTier: z.nativeEnum(CompanySponsorTier, {
+        errorMap: () => ({ message: 'Velg en gyldig samarbeidsgrad' }),
+    }),
 })
 
 export const companySchemas = {
@@ -20,6 +24,9 @@ export const companySchemas = {
     update: baseSchema.partial().pick({
         name: true,
         description: true,
+    }),
+    updateSponsorTier: baseSchema.pick({
+        sponsorTier: true,
     }),
     readPage: readPageInputSchemaObject(
         z.object({

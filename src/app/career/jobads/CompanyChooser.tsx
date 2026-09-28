@@ -23,10 +23,16 @@ export default function CompanyChooser({ className }: PropTypes) {
     }
 
     return (
-        <div className={`${styles.CompanyChooser} ${className}`}>
-            <TextInput className={styles.filter} label="Søk Navn" name="name" onChange={handleNameFilter} />
-            <Link href="/career/companies">Administrer bedrifter</Link>
-            <CompanyList disableEditing serverRenderedData={[]} />
+        <div className={`${styles.CompanyChooser} ${className ?? ''}`}>
+            <div className={styles.header}>
+                <TextInput className={styles.filter} label="Søk Navn" name="name" onChange={handleNameFilter} />
+                <Link href="/career/companies">Administrer bedrifter</Link>
+            </div>
+            {/* The list is the only part that scrolls, so the search field and the link stay put
+                while paging pulls in more companies. */}
+            <div className={styles.list}>
+                <CompanyList disableEditing serverRenderedData={[]} />
+            </div>
         </div>
     )
 }

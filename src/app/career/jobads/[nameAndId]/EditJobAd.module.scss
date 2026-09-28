@@ -1,28 +1,77 @@
 @use "@/styles/ohma";
 
+// The admin tools for a job ad, shown under the article when edit mode is on. It is a panel of its
+// own rather than a strip of loose controls, so it reads as "this is the editor" and not as more
+// article content.
 .EditJobAd {
-    @include ohma.card;
+    // The chooser inside this panel lists every company. Without a bound on this panel's height it
+    // grew with that list, and the article above it - which sizes itself to the remaining flex
+    // space - collapsed to nothing and spilled its content over the top of these controls.
+    flex-shrink: 0;
+    max-height: 80vh;
+    display: grid;
+    gap: calc(3 * #{ohma.$gap});
+    padding: calc(3 * #{ohma.$gap});
+    margin: calc(2 * #{ohma.$gap}) ohma.$minimalPagePadding;
+    border-radius: ohma.$rounding;
     background-color: ohma.$colors-surface-raised;
     color: ohma.$colors-text;
-    display: grid;
-    gap: 1em;
+
     @include ohma.screenLg {
-        grid-template-columns: 250px 1fr;
-        margin: 1em 3em;
+        // The form needs a readable field width; the chooser takes whatever is left.
+        grid-template-columns: minmax(240px, 320px) 1fr;
+        align-items: start;
     }
+
     @include ohma.screenMobile {
         grid-template-columns: 1fr;
-        margin: 1em .5em;
+        margin: calc(2 * #{ohma.$gap}) ohma.$gap;
+        max-height: none;
     }
-    .update {
-        margin-right: 1em;
-        max-width: 200px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: ohma.$gap;
+    // Lets the chooser column shrink to the panel's height so its list, not the panel, scrolls.
+    min-height: 0;
+    min-width: 0;
+
+    @include ohma.screenLg {
+        max-height: calc(80vh - 6 * #{ohma.$gap});
     }
-    .visibility {
-        margin-right: 1em;
-        flex: 1;
-        button[type="submit"] {
-            width: 200px; 
-        }
+}
+
+.heading {
+    font-size: ohma.$fonts-s;
+    font-weight: ohma.$fonts-weight-m;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: ohma.$colors-text-muted;
+    flex-shrink: 0;
+}
+
+// The two forms are separate submissions, so a rule between them makes clear that "slett annonse"
+// is not the delete button of the form above it.
+.update {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: ohma.$gap;
+
+    form {
+        margin: 0;
     }
+
+    .destroy {
+        margin-top: calc(2 * #{ohma.$gap});
+        padding-top: calc(2 * #{ohma.$gap});
+        border-top: 1px solid ohma.$colors-surface-hover;
+    }
+}
+
+.companyChooser {
+    flex: 1;
+    min-height: 0;
 }

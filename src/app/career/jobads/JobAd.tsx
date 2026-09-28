@@ -1,5 +1,6 @@
 import styles from './JobAd.module.scss'
 import Image from '@/components/Image/Image'
+import SponsorBadge from '@/components/Company/SponsorBadge'
 import { formatVevenUri } from '@/lib/urlEncoding'
 import { jobAdType } from '@/services/career/jobAds/constants'
 import Link from 'next/link'
@@ -41,7 +42,16 @@ export default function JobAd({ jobAd }: PropTypes) {
 
             <div className={styles.main}>
                 <h2>{jobAd.articleName}</h2>
-                <p>{jobAd.companyName} — {jobAdType[jobAd.type].label}</p>
+                <p>
+                    {/* The mark rides with the company name rather than sitting in the meta column,
+                        so the reason this ad is at the top of the list survives a narrow row. */}
+                    <SponsorBadge
+                        sponsorTier={jobAd.companySponsorTier}
+                        iconOnly
+                        className={styles.sponsorMark}
+                    />
+                    {jobAd.companyName} — {jobAdType[jobAd.type].label}
+                </p>
             </div>
 
             <div className={styles.meta}>

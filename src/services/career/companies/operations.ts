@@ -1,10 +1,11 @@
 import '@pn-server-only'
 import { companyAuth } from './auth'
-import { logoIncluder } from './constants'
+import { companySponsorOrdering, logoIncluder } from './constants'
 import { companySchemas } from './schemas'
 import { defineOperation } from '@/services/serviceOperation'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
 import { cmsImageOperations } from '@/cms/images/operations'
+import { CompanySponsorTier } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
 
 export const companyOperations = {
@@ -36,6 +37,7 @@ export const companyOperations = {
                     mode: 'insensitive'
                 }
             },
+            orderBy: companySponsorOrdering,
             include: logoIncluder,
         })
     }),
@@ -51,6 +53,37 @@ export const companyOperations = {
                 data,
             })
         },
+    }),
+    /**
+     * Moves a company between the sponsor tiers that decide how far up it - and its job ads - sit in
+     * the career listings. The main tier holds a single company, so promoting a new one has to step
+     * the sitting main sponsor down in the same transaction. It is demoted to the ordinary sponsor
+     * tier rather than all the way out, since losing the main slot does not mean the company stopped
+     * being a sponsor.
+     */
+    updateSponsorTier: defineOperation({
+        paramsSchema: z.object({
+            id: z.number(),
+        }),
+        dataSchema: companySchemas.updateSponsorTier,
+        authorizer: () => companyAuth.updateSponsorTier,
+        opensTransaction: true,
+        operation: async ({ prisma, params: { id }, data: { sponsorTier } }) =>
+            await prisma.$transaction(async tx => {
+                if (sponsorTier === CompanySponsorTier.MAIN) {
+                    await tx.company.updateMany({
+                        where: {
+                            sponsorTier: CompanySponsorTier.MAIN,
+                            id: { not: id },
+                        },
+                        data: { sponsorTier: CompanySponsorTier.SPONSOR },
+                    })
+                }
+                await tx.company.update({
+                    where: { id },
+                    data: { sponsorTier },
+                })
+            })
     }),
     updateCmsImageLogo: cmsImageOperations.update.implement({
         implementationParamsSchema: z.object({

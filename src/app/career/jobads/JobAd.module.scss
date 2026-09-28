@@ -20,3 +20,10 @@
     border-radius: calc(#{ohma.$rounding} - #{ohma.$gap});
     font-weight: ohma.$fonts-weight-m;
 }
+
+.sponsorMark {
+    // Rides along on the company-name line, so it has to sit on the text baseline rather than
+    // stretch the line box the way a default inline-flex child would.
+    vertical-align: middle;
+    margin-right: calc(0.75 * #{ohma.$gap});
+}

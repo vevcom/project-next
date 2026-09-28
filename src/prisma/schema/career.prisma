@@ -6,6 +6,18 @@ enum JobType {
   OTHER
 }
 
+/// How far up a company - and by extension its job ads - is lifted in the career listings.
+///
+/// The values are declared in priority order on purpose: Postgres sorts an enum by the order its
+/// values were declared, so `orderBy: { sponsorTier: 'asc' }` yields main sponsor first, then the
+/// ordinary sponsors, then everyone else. Reordering these values silently reorders every listing
+/// that sorts on this column, so treat the order as part of the contract.
+enum CompanySponsorTier {
+  MAIN
+  SPONSOR
+  NONE
+}
+
 model JobAd {
   id                  Int          @id @default(autoincrement())
   article             Article      @relation(fields: [articleId, articleName], references: [id, name], onDelete: Cascade)
@@ -27,13 +39,18 @@ model JobAd {
 }
 
 model Company {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int                @id @default(autoincrement())
+  name        String             @unique
   description String
-  logo        CmsImage @relation(fields: [logoId], references: [id])
-  logoId      Int      @unique
+  logo        CmsImage           @relation(fields: [logoId], references: [id])
+  logoId      Int                @unique
+  /// At most one company may hold MAIN. The uniqueness is enforced by the updateSponsorTier
+  /// service operation, which demotes the sitting main sponsor in the same transaction.
+  sponsorTier CompanySponsorTier @default(NONE)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   JobAd     JobAd[]
+
+  @@index([sponsorTier])
 }
