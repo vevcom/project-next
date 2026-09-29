@@ -46,12 +46,14 @@ services:
             SEED_ADMIN_USERNAME: ${SEED_ADMIN_USERNAME}
             SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL}
             SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
+            RELEASE_COUNTDOWN_PASSWORD: ${RELEASE_COUNTDOWN_PASSWORD}
         healthcheck:
             test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/api/health"]
             interval: 10s
             timeout: 3s
             retries: 5
             start_period: 30s
+            SERVER_LINK_PREFIX: ${SERVER_LINK_PREFIX}
         depends_on:
             db:
                 condition: service_healthy
