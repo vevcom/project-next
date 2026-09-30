@@ -53,7 +53,6 @@ services:
             timeout: 3s
             retries: 5
             start_period: 30s
-            SERVER_LINK_PREFIX: ${SERVER_LINK_PREFIX}
         depends_on:
             db:
                 condition: service_healthy
