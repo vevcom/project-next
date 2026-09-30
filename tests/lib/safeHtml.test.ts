@@ -1,4 +1,5 @@
-import { markdownToSafeHtml, sanitizeHtml } from '@/lib/html/safeHtml'
+import { markdownToSafeHtml } from '@/lib/html/safeHtml'
+import { sanitizeHtml } from '@/lib/html/sanitizeHtml'
 import { describe, expect, test } from '@jest/globals'
 
 // Everything a CMS editor or notification author could use to get script into a page or an email.
@@ -46,12 +47,12 @@ describe('markdownToSafeHtml', () => {
 })
 
 describe('sanitizeHtml', () => {
-    test.each(Object.entries(dangerousHtml))('neutralizes %s', async (_, html) => {
-        expectNothingExecutable(await sanitizeHtml(html))
+    test.each(Object.entries(dangerousHtml))('neutralizes %s', (_, html) => {
+        expectNothingExecutable(sanitizeHtml(html))
     })
 
-    test('keeps ordinary html', async () => {
-        expect(await sanitizeHtml('<p><em>hei</em> <a href="https://omega.ntnu.no">lenke</a></p>'))
+    test('keeps ordinary html', () => {
+        expect(sanitizeHtml('<p><em>hei</em> <a href="https://omega.ntnu.no">lenke</a></p>'))
             .toBe('<p><em>hei</em> <a href="https://omega.ntnu.no">lenke</a></p>')
     })
 })

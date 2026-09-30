@@ -1,6 +1,5 @@
 import '@pn-server-only'
 import rehypeFormat from 'rehype-format'
-import rehypeParse from 'rehype-parse'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeStringify from 'rehype-stringify'
 import remarkParse from 'remark-parse'
@@ -25,14 +24,3 @@ export async function markdownToSafeHtml(markdown: string): Promise<string> {
         .process(markdown)).toString()
 }
 
-/**
- * Sanitizes html that did not come from `markdownToSafeHtml` - imported html, or html stored
- * before it was sanitized - with the same schema.
- */
-export async function sanitizeHtml(html: string): Promise<string> {
-    return (await unified()
-        .use(rehypeParse, { fragment: true })
-        .use(rehypeSanitize)
-        .use(rehypeStringify)
-        .process(html)).toString()
-}
