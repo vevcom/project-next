@@ -1,6 +1,11 @@
 import '@pn-server-only'
 import { companyAuth } from './auth'
-import { companySponsorOrdering, logoIncluder, sponsorSelection } from './constants'
+import {
+    companySponsorOrdering,
+    companySponsorTierLockKey,
+    logoIncluder,
+    sponsorSelection,
+} from './constants'
 import { companySchemas } from './schemas'
 import { defineOperation } from '@/services/serviceOperation'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
@@ -27,10 +32,7 @@ export const companyOperations = {
             })
         }
     }),
-    /**
-     * The sponsors, in the order they should be shown - main sponsor first. Public: this backs the
-     * sponsor strip in the site footer, which anonymous visitors see.
-     */
+    // Public: backs the sponsor strip in the site footer, which anonymous visitors see.
     readSponsors: defineOperation({
         authorizer: () => companyAuth.readSponsors,
         operation: async ({ prisma }): Promise<SponsorCompany[]> => await prisma.company.findMany({
@@ -69,13 +71,8 @@ export const companyOperations = {
             })
         },
     }),
-    /**
-     * Moves a company between the sponsor tiers that decide how far up it - and its job ads - sit in
-     * the career listings. The main tier holds a single company, so promoting a new one has to step
-     * the sitting main sponsor down in the same transaction. It is demoted to the ordinary sponsor
-     * tier rather than all the way out, since losing the main slot does not mean the company stopped
-     * being a sponsor.
-     */
+    // The MAIN tier holds a single company, so promoting one demotes the sitting main sponsor in
+    // the same transaction - down to SPONSOR, not out of the sponsors entirely.
     updateSponsorTier: defineOperation({
         paramsSchema: z.object({
             id: z.number(),
@@ -85,6 +82,10 @@ export const companyOperations = {
         opensTransaction: true,
         operation: async ({ prisma, params: { id }, data: { sponsorTier } }) =>
             await prisma.$transaction(async tx => {
+                // Held until the transaction ends; see companySponsorTierLockKey. Selected from
+                // rather than selected: the lock returns void, which $queryRaw cannot deserialize.
+                await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(${companySponsorTierLockKey}::bigint)`
+
                 if (sponsorTier === CompanySponsorTier.MAIN) {
                     await tx.company.updateMany({
                         where: {

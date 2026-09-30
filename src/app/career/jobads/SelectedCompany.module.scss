@@ -1,7 +1,7 @@
 @use '@/styles/ohma';
 
-// Reads as one of the form's fields rather than as a stray line of text: the company is chosen in
-// the list beside the form, so this is the only place the form says which one is going to be saved.
+// Reads as one of the form's fields: the company is chosen in the list beside the form, so this is
+// the only place the form says which one will be saved.
 .SelectedCompany {
     display: flex;
     flex-direction: column;
@@ -27,8 +27,7 @@
     white-space: nowrap;
 }
 
-// Nothing picked yet is a state the user has to act on, so it is called out rather than left to
-// look like an empty field.
+// Nothing picked yet is a state the user has to act on, so it is called out.
 .empty {
     border-color: color-mix(in srgb, ohma.$colors-accent-yellow, transparent 60%);
 

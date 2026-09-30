@@ -11,9 +11,7 @@ export type CompanyExpanded = Company & {
     logo: ExpandedCmsImage
 }
 
-/**
- * A sponsor as the public footer strip needs it - see sponsorSelection in constants.ts.
- */
+// Matches sponsorSelection in constants.ts.
 export type SponsorCompany = Pick<Company, 'id' | 'name' | 'website' | 'sponsorTier'> & {
     logo: ExpandedCmsImage
 }

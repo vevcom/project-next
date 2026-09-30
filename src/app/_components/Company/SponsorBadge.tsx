@@ -11,14 +11,14 @@ const sponsorTierIcon = {
 
 type PropTypes = {
     sponsorTier: CompanySponsorTier,
-    /** Drops the label, for the slots that only have room for the mark itself. */
     iconOnly?: boolean,
     className?: string,
 }
 
 /**
- * The mark a sponsor company carries through the career listings. Companies on the ordinary tier
- * render nothing at all, so callers can hand this every company without branching first.
+ * The mark a sponsor company carries through the career listings. NONE renders nothing, so callers
+ * can pass any company without branching. The label stays in the document even when `iconOnly`
+ * hides it, so the badge keeps an accessible name.
  */
 export default function SponsorBadge({ sponsorTier, iconOnly = false, className }: PropTypes) {
     if (sponsorTier === 'NONE') return <></>
@@ -30,8 +30,8 @@ export default function SponsorBadge({ sponsorTier, iconOnly = false, className 
             className={`${styles.SponsorBadge} ${styles[sponsorTier]} ${className ?? ''}`}
             title={`${label} — ${description}`}
         >
-            <FontAwesomeIcon icon={sponsorTierIcon[sponsorTier]} />
-            {!iconOnly && <span className={styles.label}>{label}</span>}
+            <FontAwesomeIcon icon={sponsorTierIcon[sponsorTier]} aria-hidden />
+            <span className={iconOnly ? styles.labelHidden : styles.label}>{label}</span>
         </span>
     )
 }

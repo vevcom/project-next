@@ -1,7 +1,6 @@
 @use '@/styles/ohma';
 
-// Same two-column shape as the edit panel - form on the left, company picker on the right - so
-// creating an ad and editing one are the same task in the same layout.
+// Same two-column shape as the edit panel: form on the left, company picker on the right.
 .CreateJobAdForm {
     @include ohma.screenLg {
         display: grid;
@@ -9,10 +8,14 @@
         gap: calc(4 * #{ohma.$gap});
         min-width: 80vw;
         max-height: 80vh;
+        // The chooser sets the row height; the form keeps its own rather than stretching to match.
+        align-items: start;
 
-        // The chooser scrolls its own list, so it only needs to be told how tall it may get.
+        // Definite, not a max: the grid row is auto-sized, so a max would let the chooser grow with
+        // the company list and scroll the popup instead of the list.
         .companyList {
             min-height: 0;
+            height: 80vh;
         }
     }
 

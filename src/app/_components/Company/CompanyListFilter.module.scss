@@ -8,8 +8,8 @@
     width: 100%;
     max-width: 360px;
 
-    // Sits beside the field rather than inside it: TextInput owns its own padding, and an overlaid
-    // icon would run underneath whatever the user types.
+    // Beside the field, not inside it: TextInput owns its padding, and an overlaid icon would run
+    // underneath the text.
     .icon {
         flex-shrink: 0;
         color: ohma.$colors-text-muted;

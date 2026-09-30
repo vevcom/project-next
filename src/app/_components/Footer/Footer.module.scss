@@ -65,7 +65,7 @@
     }
 }
 
-// Just the column the strip sits in - FooterSponsors owns the layout of the logos themselves.
+// Just the column - FooterSponsors owns the layout of the logos.
 .sponsors {
     flex: 1 1 calc(30 * #{ohma.$gap});
     display: flex;

@@ -1,12 +1,10 @@
 @use "@/styles/ohma";
 
-// The admin tools for a job ad, shown under the article when edit mode is on. It is a panel of its
-// own rather than a strip of loose controls, so it reads as "this is the editor" and not as more
-// article content.
+// The admin tools for a job ad, shown under the article in edit mode. A panel of its own so it does
+// not read as more article content.
 .EditJobAd {
-    // The chooser inside this panel lists every company. Without a bound on this panel's height it
-    // grew with that list, and the article above it - which sizes itself to the remaining flex
-    // space - collapsed to nothing and spilled its content over the top of these controls.
+    // Without a bound, the panel grows with the chooser's company list and the article above -
+    // sized to the remaining flex space - collapses and spills over these controls.
     flex-shrink: 0;
     max-height: 80vh;
     display: grid;
@@ -18,7 +16,6 @@
     color: ohma.$colors-text;
 
     @include ohma.screenLg {
-        // The form needs a readable field width; the chooser takes whatever is left.
         grid-template-columns: minmax(240px, 320px) 1fr;
         align-items: start;
     }
@@ -34,7 +31,7 @@
     display: flex;
     flex-direction: column;
     gap: ohma.$gap;
-    // Lets the chooser column shrink to the panel's height so its list, not the panel, scrolls.
+    // Lets the chooser shrink to the panel's height so its list, not the panel, scrolls.
     min-height: 0;
     min-width: 0;
 
@@ -52,8 +49,7 @@
     flex-shrink: 0;
 }
 
-// The two forms are separate submissions, so a rule between them makes clear that "slett annonse"
-// is not the delete button of the form above it.
+// Separate submissions: the rule makes clear "slett annonse" is not the form above it's button.
 .update {
     flex: 1;
     min-height: 0;
@@ -74,4 +70,10 @@
 .companyChooser {
     flex: 1;
     min-height: 0;
+
+    @include ohma.screenMobile {
+        // The panel is unbounded on mobile, so the chooser has to stop the list pushing the page
+        // down - the same bound the create form gives it.
+        max-height: 50vh;
+    }
 }

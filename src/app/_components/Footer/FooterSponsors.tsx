@@ -5,8 +5,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import type { SponsorCompany } from '@/services/career/companies/types'
 
-// The main sponsor is the one thing in this strip that is meant to be noticed first, so it is drawn
-// at a size the others are measured against rather than at a size of its own.
+// The main sponsor is drawn at a size the others are measured against.
 const MAIN_LOGO_WIDTH = 190
 const SPONSOR_LOGO_WIDTH = 110
 
@@ -33,8 +32,7 @@ function Sponsor({ sponsor, width }: { sponsor: SponsorCompany, width: number })
                     disableLinkingToLicense
                 />
             ) : (
-                // A sponsor whose logo has not been uploaded yet still belongs in the strip - the
-                // name is a better placeholder than a gap the reader cannot account for.
+                // A sponsor without an uploaded logo still belongs in the strip.
                 <span className={styles.fallbackName}>{sponsor.name}</span>
             )}
         </SponsorLink>
@@ -42,10 +40,8 @@ function Sponsor({ sponsor, width }: { sponsor: SponsorCompany, width: number })
 }
 
 /**
- * The sponsor strip in the site footer, driven by the sponsor tiers set on the companies in
- * /career/companies. The main sponsor is shown on its own line above the rest; the remaining
- * sponsors share a row in whatever order the listing gives them, since they are not ranked
- * against each other.
+ * The sponsor strip in the site footer, driven by the sponsor tiers set in /career/companies. The
+ * main sponsor gets its own line above the rest, which share a row unranked.
  */
 export default async function FooterSponsors() {
     const res = await readSponsorsAction()

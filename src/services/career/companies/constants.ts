@@ -10,10 +10,6 @@ export const logoIncluder = {
     }
 } as const satisfies Prisma.CompanyInclude
 
-/**
- * The labels and blurbs shown wherever a sponsor tier is displayed or picked. Keyed by the enum so
- * adding a tier to the schema is a type error here until it has been given a label.
- */
 export const companySponsorTierDetails = {
     MAIN: {
         label: 'Hovedsamarbeidspartner',
@@ -37,21 +33,15 @@ export const companySponsorTierOptions = Object.values(CompanySponsorTier).map(
     })
 )
 
-/**
- * The ordering every career listing sorts by: sponsors first, then the rest. `sponsorTier` ascending
- * relies on the enum being declared in priority order in career.prisma, and `id` is only there to
- * make the order total - companies within a tier have no ranking of their own.
- */
+// Sponsors first: relies on the enum being declared in priority order in career.prisma. `id` only
+// makes the order total.
 export const companySponsorOrdering = [
     { sponsorTier: 'asc' },
     { id: 'asc' },
 ] as const satisfies Prisma.CompanyOrderByWithRelationInput[]
 
-/**
- * What the public sponsor strip in the footer needs, and nothing else. Spelled out as a selection
- * rather than reusing logoIncluder because this operation is readable without a session: every field
- * named here is published to anyone who loads the front page.
- */
+// Spelled out rather than reusing logoIncluder: this read needs no session, so every field here is
+// public.
 export const sponsorSelection = {
     id: true,
     name: true,
@@ -63,3 +53,11 @@ export const sponsorSelection = {
         }
     },
 } as const satisfies Prisma.CompanySelect
+
+/**
+ * Transaction-scoped advisory lock for sponsor tier updates. Promoting a company to MAIN demotes the
+ * sitting main sponsor and promotes its own, so concurrent promotions can each miss the row the other
+ * writes. A partial unique index would be the database's own answer, but Prisma cannot express one.
+ * The number is arbitrary; it only has to stay unique among the application's advisory locks.
+ */
+export const companySponsorTierLockKey = 581_000_001

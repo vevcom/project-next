@@ -6,9 +6,8 @@
     flex-direction: column;
 }
 
-// Grows to fill a short page, but never shrinks below its own content: the edit panel below is a
-// tall sibling, and a shrinking main would leave Article - which is height: 100% - with less room
-// than it needs, spilling the article over the top of the editor.
+// Grows to fill a short page but never shrinks below its content: the edit panel is a tall sibling,
+// and a shrinking main would leave Article (height: 100%) spilling over the editor.
 .main {
     flex: 1 0 auto;
 }

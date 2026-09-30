@@ -3,17 +3,15 @@
 .CompanyList {
     margin-top: calc(3 * #{ohma.$gap});
     display: grid;
-    // Cards share the leftover space instead of leaving a ragged gutter on the right, and drop to
-    // one column on a phone rather than shrinking below a readable logo. Contexts that show the
-    // list as a picker rather than as the page's content override the floor to fit more in view.
+    // Cards share the leftover space and drop to one column on a phone rather than shrinking below
+    // a readable logo. Picker contexts override the floor to fit more in view.
     grid-template-columns: repeat(auto-fill, minmax(var(--company-card-min, 200px), 1fr));
     align-items: stretch;
     gap: calc(3 * #{ohma.$gap});
     width: 100%;
 }
 
-// The endless-scroll footer is a grid item like the cards are, so it has to be told to take the
-// whole row - otherwise it sits in the next free cell as a stray narrow column.
+// The endless-scroll footer is a grid item too, so it has to be told to take the whole row.
 .loadingControl {
     grid-column: 1 / -1;
 }

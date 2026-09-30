@@ -16,8 +16,7 @@
     }
 
     dt {
-        // Keeps the two descriptions left-aligned with each other even though the badges differ in
-        // width, so the legend reads as two rows rather than as ragged text.
+        // Keeps the descriptions left-aligned with each other even though the badges differ in width.
         flex-shrink: 0;
         min-width: 15em;
     }

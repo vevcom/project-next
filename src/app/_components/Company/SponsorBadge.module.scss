@@ -1,7 +1,7 @@
 @use '@/styles/ohma';
 
-// A tinted pill rather than a solid one: the badge sits on top of company logos of every possible
-// colour, so it needs its own opaque ground to stay readable without shouting over the logo.
+// Tinted rather than solid: the badge sits on logos of every colour, so it needs its own opaque
+// ground without shouting over the logo.
 .SponsorBadge {
     display: inline-flex;
     align-items: center;
@@ -23,7 +23,7 @@
 }
 
 .label {
-    // Long enough tier names would otherwise push the pill past the card it sits on.
+    // Long tier names would otherwise push the pill past the card.
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -38,4 +38,18 @@
     color: ohma.$colors-accent-cyan;
     border-color: color-mix(in srgb, ohma.$colors-accent-cyan, transparent 60%);
     background-color: color-mix(in srgb, ohma.$colors-accent-cyan, ohma.$colors-surface-raised 88%);
+}
+
+// The icon-only slots keep the tier name for screen readers, out of flow so it takes no space and
+// draws no flex gap.
+.labelHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }

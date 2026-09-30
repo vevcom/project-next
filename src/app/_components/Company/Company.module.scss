@@ -25,8 +25,8 @@
     overflow: hidden;
     display: flex;
     align-items: center;
-    // The logos arrive in every aspect ratio and with transparent backgrounds, so they get their own
-    // ground inside the card instead of sitting straight on the card surface.
+    // Logos arrive in every aspect ratio and with transparent backgrounds, so they get their own
+    // ground inside the card.
     background-color: ohma.$colors-surface-base;
     border-radius: calc(#{ohma.$rounding} - #{ohma.$gap});
 }
@@ -34,9 +34,8 @@
 .logoSq {
     aspect-ratio: 1/1;
 
-    // The image components size their wrapper divs off the image's intrinsic width, which would let
-    // a wide logo overflow the square. Pin every wrapper to the frame and let the image letterbox
-    // inside it - a logo cropped to fill is worse than one with air around it.
+    // The image components size their wrappers off the image's intrinsic width, which would let a
+    // wide logo overflow the square. Pinned to the frame instead, letterboxing rather than cropping.
     div {
         width: 100%;
         height: 100%;
@@ -54,7 +53,6 @@
     top: ohma.$gap;
     left: ohma.$gap;
     max-width: calc(100% - 4 * #{ohma.$gap});
-    // Above the logo, but below the SelectCompany overlay that covers the whole card.
     z-index: 1;
 }
 
@@ -62,7 +60,6 @@
     margin: 0 ohma.$gap;
     padding-bottom: ohma.$gap;
     position: relative;
-    // Pushes the settings cog to the card's right edge no matter how short the description is.
     flex: 1;
 
     h2 {
@@ -81,20 +78,16 @@
         position: absolute;
         top: 0;
         right: 0;
-        // The SelectCompany overlay is a later sibling of .info, so without this the cog would sit
-        // underneath it and never take a click.
+        // The SelectCompany overlay is a later sibling, so the cog would otherwise never take a click.
         z-index: 2;
     }
 }
 
-// Only the cards that actually render the cog reserve room for it - readers without the permission
-// would otherwise lose a chunk of every company name to an empty corner.
 .withSettings {
     padding-right: calc(5 * #{ohma.$gap});
 }
 
-// The sponsor tiers get a ring in their badge colour rather than a different card shape, so a list
-// of companies still scans as one grid.
+// A ring in the badge colour rather than a different card shape, so the list still scans as a grid.
 .MAIN {
     border-color: color-mix(in srgb, ohma.$colors-accent-yellow, transparent 50%);
     background-color: color-mix(in srgb, ohma.$colors-accent-yellow, ohma.$colors-surface-raised 94%);
