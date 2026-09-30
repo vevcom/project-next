@@ -10,6 +10,9 @@ import { PageTitleProvider } from '@/contexts/PageTitle'
 import { readDefaultPermissionsAction } from '@/services/permissions/actions'
 import { readAllStandardImagesAction } from '@/services/images/standard/actions'
 import { readUserProfileAction } from '@/services/users/actions'
+import { readReleaseCountdownIsActiveAction } from '@/services/releaseCountdown/actions'
+import { RELEASE_DATE } from '@/services/releaseCountdown/constants'
+import ReleaseCountdown from '@/components/ReleaseCountdown/ReleaseCountdown'
 import { ServerSession } from '@/auth/session/ServerSession'
 import ThemeEnabler from '@/UI/ThemeEnabler'
 import ServiceWorkerRegister from '@/UI/ServiceWorkerRegister'
@@ -74,6 +77,7 @@ export default async function RootLayout({ children }: PropTypes) {
     // The nav components get the fields they actually render rather than the whole profile,
     // so nothing beyond these reaches the client components among them.
     const navUser = profile?.user ?? null
+    const releaseCountdownIsActive = unwrapActionReturn(await readReleaseCountdownIsActiveAction())
 
     return (
         <html lang="en">
@@ -90,25 +94,29 @@ export default async function RootLayout({ children }: PropTypes) {
                         <EditModeProvider>
                             <PopUpProvider>
                                 <PageTitleProvider>
-                                    <div className={styles.wrapper}>
-                                        <div className={styles.navBar}>
-                                            <NavBar
-                                                username={navUser?.username ?? null}
-                                                profileImage={navUser?.image ?? null}
-                                            />
+                                    {releaseCountdownIsActive ? (
+                                        <ReleaseCountdown releaseDate={RELEASE_DATE.getTime()} />
+                                    ) : (
+                                        <div className={styles.wrapper}>
+                                            <div className={styles.navBar}>
+                                                <NavBar
+                                                    username={navUser?.username ?? null}
+                                                    profileImage={navUser?.image ?? null}
+                                                />
+                                            </div>
+                                            <aside className={styles.sideBar}>
+                                                <DesktopSideBar username={navUser?.username ?? null} />
+                                            </aside>
+                                            <main className={styles.content}>
+                                                {children}
+                                            </main>
+                                            <div className={styles.mobileNavBar}>
+                                                <MobileNavBar
+                                                    isLoggedIn={navUser !== null}
+                                                />
+                                            </div>
                                         </div>
-                                        <aside className={styles.sideBar}>
-                                            <DesktopSideBar username={navUser?.username ?? null} />
-                                        </aside>
-                                        <main className={styles.content}>
-                                            {children}
-                                        </main>
-                                        <div className={styles.mobileNavBar}>
-                                            <MobileNavBar
-                                                isLoggedIn={navUser !== null}
-                                            />
-                                        </div>
-                                    </div>
+                                    )}
                                 </PageTitleProvider>
                             </PopUpProvider>
                         </EditModeProvider>
