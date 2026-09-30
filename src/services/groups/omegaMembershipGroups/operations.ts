@@ -8,7 +8,7 @@ import { admissionOperations } from '@/services/admission/operations'
 import { allAdmissions } from '@/services/admission/constants'
 import { defineOperation } from '@/services/serviceOperation'
 import { invalidateOneUserSessionData } from '@/services/auth/invalidateSession'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import logger from '@/lib/logger'
 import { GroupType } from '@/prisma-generated-pn-types'
 import type { OmegaMembershipLevel, Prisma } from '@/prisma-generated-pn-types'
@@ -281,7 +281,7 @@ const updateUserOrder = defineOperation({
         ])
 
         if (!order) {
-            throw new ServerError('BAD DATA', `Den ${data.order}'dis orden finnes ikke.`)
+            throw new ServiceError('BAD DATA', `Den ${data.order}'dis orden finnes ikke.`)
         }
 
         await prisma.$transaction([

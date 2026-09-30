@@ -4,7 +4,7 @@ import { specialEventTags } from './constants'
 import { eventTagSchemas } from './schemas'
 import logger from '@/lib/logger'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { SpecialEventTags } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
 
@@ -93,7 +93,7 @@ export const eventTagOperations = {
                 where: { id: params.id }
             })
             if (tag.special) {
-                throw new ServerError('BAD PARAMETERS', 'Kan ikke slette spesialtagger')
+                throw new ServiceError('BAD PARAMETERS', 'Kan ikke slette spesialtagger')
             }
             await prisma.eventTag.delete({
                 where: { id: params.id }

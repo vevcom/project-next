@@ -1,5 +1,4 @@
-import { redirectToErrorPage } from '@/app/redirectToErrorPage'
-import { redirect } from 'next/navigation'
+import { Smorekopp } from '@/services/error'
 import type { SessionType, UserGuaranteeOption } from '@/auth/session/Session'
 
 export type AuthStatus = 'AUTHORIZED' | 'UNAUTHORIZED' | 'AUTHORIZED_NO_USER' | 'UNAUTHENTICATED'
@@ -103,27 +102,18 @@ export class AuthResult<
         )
     }
 
-    public redirectOnUnauthorized(
-        { returnUrl }: { returnUrl?: string }
-    ) : Authorized extends true ? AuthResult<UserGuatantee, true, PrismaWhereFilter> : never {
-        if (this.authorized) {
-            return new AuthResult<UserGuatantee, true, PrismaWhereFilter>(
-                this.session, true, this.authResult.prismaWhereFilter
-            ) as Authorized extends true ? AuthResult<UserGuatantee, true, PrismaWhereFilter> : never
+    /**
+     * Throws the failure as a service error when the result is unauthorized, and otherwise
+     * narrows the result to an authorized one. Inside a serverPage operation the thrown error
+     * gets the conventional treatment: an anonymous user is sent to login (with a callbackUrl
+     * back to the page) and a logged-in one gets the error view.
+     */
+    public requireAuthorized(): Authorized extends true ? AuthResult<UserGuatantee, true, PrismaWhereFilter> : never {
+        if (!this.authorized) {
+            throw new Smorekopp(this.status, this.getErrorMessage)
         }
-        if (this.session.user) {
-            if (!this.session.user.acceptedTerms) {
-                if (returnUrl) {
-                    redirect(`/register?callbackUrl=${encodeURI(returnUrl)}`)
-                }
-                redirect('/register')
-            }
-            redirectToErrorPage('UNAUTHORIZED', this.getErrorMessage)
-        }
-        if (returnUrl) {
-            redirect(`/login?callbackUrl=${encodeURI(returnUrl)}`)
-        }
-        redirect('/login')
-        throw new Error('Unreachable code reached in redirectOnUnauthorized, this means that the redirect did not work')
+        return new AuthResult<UserGuatantee, true, PrismaWhereFilter>(
+            this.session, true, this.authResult.prismaWhereFilter
+        ) as Authorized extends true ? AuthResult<UserGuatantee, true, PrismaWhereFilter> : never
     }
 }

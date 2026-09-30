@@ -1,16 +1,13 @@
 import styles from './page.module.scss'
 import getCommittee from './getCommittee'
-import {
-    readCommitteeMembersAction,
-    readCommitteeParagraphAction,
-    updateCommitteeParagraphAction
-} from '@/services/groups/committees/actions'
-import { unwrapActionReturn } from '@/app/redirectToErrorPage'
+import { updateCommitteeParagraphAction } from '@/services/groups/committees/actions'
+import { committeeOperations } from '@/services/groups/committees/operations'
 import CmsParagraph from '@/components/Cms/CmsParagraph/CmsParagraph'
 import UserCard from '@/components/User/UserCard'
 import { configureAction } from '@/services/configureAction'
 import { committeeAuth } from '@/services/groups/committees/auth'
-import { ServerSession } from '@/auth/session/ServerSession'
+import { serverPage } from '@/app/serverPage'
+import type { PageOperationArgs } from '@/app/serverPage'
 
 export type PropTypes = {
     params: Promise<{
@@ -18,42 +15,50 @@ export type PropTypes = {
     }>
 }
 
-export default async function Committee({ params }: PropTypes) {
-    const committee = await getCommittee(params)
-    const paragraphRes = await readCommitteeParagraphAction({ params: await params })
-    if (!paragraphRes.success) throw new Error('Kunne ikke hente komitéparagrafen')
-    const members = unwrapActionReturn(await readCommitteeMembersAction({
-        params: {
-            groupId: committee.groupId,
-            active: true,
-        },
-    }))
+const { page, generateMetadata } = serverPage({
+    operation: async ({ params }: PageOperationArgs<{ shortName: string }>) => {
+        const committee = await getCommittee(params.shortName)
 
-    const paragraph = paragraphRes.data
+        const [paragraph, members] = await Promise.all([
+            committeeOperations.readParagraph({ params: { shortName: params.shortName } }),
+            committeeOperations.readMembers({
+                params: {
+                    groupId: committee.groupId,
+                    active: true,
+                },
+            }),
+        ])
 
-    const canEditCommitteeParagraph = committeeAuth.updateParagraphContent.dynamicFields({
-        groupId: committee.groupId
-    }).auth(await ServerSession.fromNextAuth()).toJsObject()
-
-    return (
+        return { committee, paragraph, members, shortName: params.shortName }
+    },
+    authCheckers: {
+        canEditCommitteeParagraph: (data) => committeeAuth.updateParagraphContent.dynamicFields({
+            groupId: data.committee.groupId,
+        }),
+    },
+    metadata: (data) => ({ title: data.committee.name }),
+    render: ({ data, authChecks }) => (
         <div className={styles.wrapper}>
             <CmsParagraph
-                canEdit={canEditCommitteeParagraph}
-                cmsParagraph={paragraph}
+                canEdit={authChecks.canEditCommitteeParagraph.toJsObject()}
+                cmsParagraph={data.paragraph}
                 updateCmsParagraphAction={configureAction(
                     updateCommitteeParagraphAction,
-                    { implementationParams: { shortName: (await params).shortName } }
+                    { implementationParams: { shortName: data.shortName } }
                 )}
             />
 
             <h2>Komitémedlemmer</h2>
             <div className={styles.memberList}>
-                {members.map((member, i) => <UserCard
+                {data.members.map((member, i) => <UserCard
                     key={i}
                     user={member.user}
                     subText={member.title}
                 />)}
             </div>
         </div>
-    )
-}
+    ),
+})
+
+export default page
+export { generateMetadata }

@@ -3,7 +3,7 @@ import { flairAuth } from './auth'
 import { flairSchema } from './schemas'
 import { flairImageOperations } from './flairImageCollection'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { expandedImageIncluder } from '@/services/images/subservice/constants'
 import { z } from 'zod'
 
@@ -243,7 +243,7 @@ export const flairOperations = {
                 }
             })
             if (!lowerFlair) {
-                throw new ServerError('BAD PARAMETERS', 'Flair is already at lowest rank')
+                throw new ServiceError('BAD PARAMETERS', 'Flair is already at lowest rank')
             }
             const tempRank = -99999999
             await prisma.flair.update({
@@ -280,7 +280,7 @@ export const flairOperations = {
                 }
             })
             if (!higherFlair) {
-                throw new ServerError('BAD PARAMETERS', 'Flair is already at highest rank')
+                throw new ServiceError('BAD PARAMETERS', 'Flair is already at highest rank')
             }
             // Use a temporary rank to avoid unique constraint violation
             const tempRank = -99999999

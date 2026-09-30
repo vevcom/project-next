@@ -1,5 +1,5 @@
 import { stripeCustomerAuth } from './auth'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { defineOperation } from '@/services/serviceOperation'
 import { stripe } from '@/lib/stripe'
 import { z } from 'zod'
@@ -78,7 +78,7 @@ export const stripeCustomerOperations = {
 
             if (customer.deleted) {
                 // This should never happen as we never delete customers in Stripe.
-                throw new ServerError(
+                throw new ServiceError(
                     'SERVER ERROR',
                     'Stripe kunden tilknyttet brukeren er slettet. Vennligst kontakt Vevcom.',
                 )
@@ -165,7 +165,7 @@ export const stripeCustomerOperations = {
             const setupIntent = await stripe.setupIntents.create({ customer: customerId })
 
             if (!setupIntent.client_secret) {
-                throw new ServerError(
+                throw new ServiceError(
                     'UNKNOWN ERROR',
                     'Noe gikk galt ved opprettelse av betalingsmetode.',
                 )

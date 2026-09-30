@@ -6,7 +6,7 @@ import { mailingListOperations } from './list/operations'
 import { mailAddressExternalOperations } from './mailAddressExternal/operations'
 import { userFilterSelection } from '@/services/users/constants'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import type { Prisma } from '@/prisma-generated-pn-client'
 import type { MailFlowObject, ViaArrayType, ViaType } from './types'
 import type { UserFiltered } from '@/services/users/types'
@@ -620,7 +620,7 @@ export const mailOperations = {
             if (params.filter === 'mailaddressExternal') return readMailaddressExternalTraversal(prisma, params.id)
             if (params.filter === 'group') return readGroupTraversal(prisma, params.id)
             if (params.filter === 'user') return readUserTraversal(prisma, params.id)
-            throw new ServerError('BAD PARAMETERS', `The filter ${params.filter} is not a valid MailListTypes`)
+            throw new ServiceError('BAD PARAMETERS', `The filter ${params.filter} is not a valid MailListTypes`)
         },
     }),
 

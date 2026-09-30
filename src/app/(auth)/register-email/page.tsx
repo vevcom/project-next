@@ -1,29 +1,29 @@
 import EmailRegistrationForm from './EmailregistrationForm'
-import { ServerSession } from '@/auth/session/ServerSession'
 import { RequireUser } from '@/auth/authorizer/RequireUser'
-import { readUserAction } from '@/services/users/actions'
+import { userOperations } from '@/services/users/operations'
+import { serverPage } from '@/app/serverPage'
 import { notFound, redirect } from 'next/navigation'
+import type { PageOperationArgs } from '@/app/serverPage'
 
-export default async function Registeremail() {
-    const { authorized, session } = RequireUser.staticFields({}).dynamicFields({}).auth(
-        await ServerSession.fromNextAuth()
-    )
+const { page, generateMetadata } = serverPage({
+    operation: async ({ session }: PageOperationArgs) => {
+        const authResult = RequireUser.staticFields({}).dynamicFields({}).auth(session)
+        if (!authResult.authorized) return notFound()
 
-    if (!authorized) notFound()
+        const updatedUser = await userOperations.read({ params: { id: authResult.session.user.id } })
 
-    const updatedUser = await readUserAction({ params: { id: session.user.id } })
+        if (updatedUser.acceptedTerms) {
+            redirect('/users/me')
+        }
 
-    if (!updatedUser.success) {
-        return notFound()
-    }
+        if (updatedUser.emailVerified) {
+            redirect('/register')
+        }
 
-    if (updatedUser.data.acceptedTerms) {
-        redirect('/users/me')
-    }
+        return updatedUser
+    },
+    render: ({ data: updatedUser }) => <EmailRegistrationForm user={updatedUser} />,
+})
 
-    if (updatedUser.data.emailVerified) {
-        redirect('/register')
-    }
-
-    return <EmailRegistrationForm user={updatedUser.data} />
-}
+export default page
+export { generateMetadata }

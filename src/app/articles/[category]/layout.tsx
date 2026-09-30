@@ -1,8 +1,8 @@
 import styles from './layout.module.scss'
 import SideBar from './SideBar'
 import PageTitleSetter from '@/contexts/PageTitleSetter'
-import { readArticleCategoryAction } from '@/services/articleCategories/actions'
-import { notFound } from 'next/navigation'
+import { articleCategoryOperations } from '@/services/articleCategories/operations'
+import { withPageSession } from '@/app/serverPage'
 import type { ReactNode } from 'react'
 
 type PropTypes = {
@@ -13,10 +13,10 @@ type PropTypes = {
 }
 
 export default async function ArticleCategoryLayout({ params, children }: PropTypes) {
-    const categoryName = decodeURIComponent((await params).category)
-    const res = await readArticleCategoryAction({ params: { name: categoryName } })
-    if (!res.success) return notFound()
-    const category = res.data
+    const category = await withPageSession(async () => {
+        const categoryName = decodeURIComponent((await params).category)
+        return articleCategoryOperations.read({ params: { name: categoryName } })
+    })
 
     return (
         <div className={styles.wrapper}>

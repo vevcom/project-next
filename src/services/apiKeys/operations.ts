@@ -4,7 +4,7 @@ import { apiKeySchemas } from './schemas'
 import { apiKeyHashAndEncrypt } from './hashEncryptKey'
 import { encodeApiKey } from './apiKeyEncoder'
 import { apiFilterSelection, apiKeyLength } from './constants'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { defineOperation } from '@/services/serviceOperation'
 import logger from '@/lib/logger'
 import { z } from 'zod'
@@ -26,7 +26,7 @@ const updateIfExpired = defineOperation({
     }),
     operation: async ({ prisma, params: apiKey }) => {
         if (!apiKey) {
-            throw new ServerError('NOT FOUND', 'Nøkkelen finnes ikke')
+            throw new ServiceError('NOT FOUND', 'Nøkkelen finnes ikke')
         }
 
         if (!apiKey.expiresAt || apiKey.expiresAt > new Date()) return { active: apiKey.active }
@@ -77,7 +77,7 @@ export const apiKeyOperations = {
                 select: apiFilterSelection,
             })
 
-            if (!apiKey) throw new ServerError('BAD PARAMETERS', 'Api key does not exist')
+            if (!apiKey) throw new ServiceError('BAD PARAMETERS', 'Api key does not exist')
             return {
                 ...apiKey,
                 ...await updateIfExpired({
@@ -141,7 +141,7 @@ export const apiKeyOperations = {
         dataSchema: apiKeySchemas.update,
         operation: async ({ prisma, params, data }) => {
             if (data.active && data.expiresAt && data.expiresAt < new Date()) {
-                throw new ServerError('BAD PARAMETERS', 'Hvis du vil aktivere en nøkkel, kan den ikke ha utløpt')
+                throw new ServiceError('BAD PARAMETERS', 'Hvis du vil aktivere en nøkkel, kan den ikke ha utløpt')
             }
 
             const { name } = await prisma.apiKey.update({
@@ -165,7 +165,7 @@ export const apiKeyOperations = {
                 })
 
                 if (apiKey.active) {
-                    throw new ServerError('BAD PARAMETERS', 'Du kan ikke slette en aktiv nøkkel - deaktiver den først')
+                    throw new ServiceError('BAD PARAMETERS', 'Du kan ikke slette en aktiv nøkkel - deaktiver den først')
                 }
 
                 await tx.apiKey.delete({

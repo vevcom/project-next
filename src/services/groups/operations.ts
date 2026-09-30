@@ -12,7 +12,7 @@ import { MigratedStraightAwayOnIncrement } from '@/services/omegaOrder/constants
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
 import { userFilterSelection } from '@/services/users/constants'
 import { defineSubOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { getMembershipFilter } from '@/auth/getMembershipFilter'
 import { invalidateManyUserSessionData, invalidateOneUserSessionData } from '@/services/auth/invalidateSession'
 import { inferGroupName } from '@/lib/groups/inferGroupName'
@@ -81,7 +81,7 @@ export async function assertGroupNotPensioned(
     groupId: number,
 ): Promise<void> {
     if (await isGroupPensioned(prisma, groupId)) {
-        throw new ServerError(
+        throw new ServiceError(
             'BAD PARAMETERS',
             'Gruppen er pensjonert og kan ikke endres. Gjenopprett den først.'
         )
@@ -131,7 +131,7 @@ function resolveMembershipOrder(group: GroupOrderAndType, order?: number): numbe
     if (order === undefined) return group.order
 
     if (order > group.order) {
-        throw new ServerError(
+        throw new ServiceError(
             'BAD PARAMETERS',
             `Gruppen står i orden ${group.order} og kan ikke ha medlemskap i orden ${order}`
         )
@@ -336,7 +336,7 @@ export const groupOperations = {
             const { order: currentOmegaOrder } = await omegaOrderOperations.readCurrent({ bypassAuth: true })
 
             if (!data.pensioned && !await isGroupPensioned(prisma, params.groupId)) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     'Gruppen er ikke pensjonert og kan ikke gjenopprettes.'
                 )
@@ -388,7 +388,7 @@ export const groupOperations = {
             const { order: groupOrder } = await readGroupOrderAndType(prisma, params.groupId)
 
             if (groupOrder >= currentOmegaOrder) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     'Gruppen er allerede migrert til nåværende orden'
                 )
@@ -414,14 +414,14 @@ export const groupOperations = {
                 .map(kept => kept.userId)
                 .filter(userId => !activeUserIds.includes(userId))
             if (notActiveMembers.length) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     `Kan ikke beholde brukere som ikke er aktive medlemmer av gruppen: ${notActiveMembers.join(', ')}`
                 )
             }
 
             if (activeUserIds.length && !data.keep.some(kept => kept.admin)) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     `Minst ett medlem må være admin i orden ${currentOmegaOrder}`
                 )

@@ -12,7 +12,7 @@ import {
 import { GroupType } from '@/prisma-generated-pn-types'
 import { cmsParagraphOperations } from '@/cms/paragraphs/operations'
 import { implementUpdateArticleSectionOperations } from '@/cms/articleSections/implement'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { z } from 'zod'
 import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
 
@@ -57,7 +57,7 @@ async function assertNotPensioned(prisma: PrismaPossibleTransaction<false>, id: 
     })
 
     if (interestGroup.pensioned) {
-        throw new ServerError(
+        throw new ServiceError(
             'BAD PARAMETERS',
             `${interestGroup.name} er pensjonert og kan ikke endres. Gjenopprett gruppen først.`
         )

@@ -2,7 +2,7 @@ import '@pn-server-only'
 import { readJWTPart } from './jwtReadUnsecure'
 import { readPemEnvBase64 } from './readPemEnvBase64'
 import { JWT_ISSUER } from '@/lib/jwt/constants'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { JsonWebTokenError, TokenExpiredError, sign, verify } from 'jsonwebtoken'
 import type jwt from 'jsonwebtoken'
 import type { JwtPayloadType } from './validation'
@@ -29,7 +29,7 @@ export function generateJWT<T extends object>(
     asymetric = false
 ): string {
     if (!process.env.JWT_SECRET || !process.env.JWT_PRIVATE_KEY) {
-        throw new ServerError('INVALID CONFIGURATION', 'Missing secret for JWT generation')
+        throw new ServiceError('INVALID CONFIGURATION', 'Missing secret for JWT generation')
     }
 
     return sign(payload, asymetric ? readPemEnvBase64(process.env.JWT_PRIVATE_KEY) : process.env.JWT_SECRET, {
@@ -44,11 +44,11 @@ export function generateJWT<T extends object>(
  * Verifies the authenticity of a JSON Web Token (JWT).
  * @param token - The JWT to be verified.
  * @returns The decoded payload of the JWT if it is valid.
- * @throws {ServerError} If the JWT is expired or invalid.
+ * @throws {ServiceError} If the JWT is expired or invalid.
  */
 export function verifyJWT(token: string, aud?: OmegaJWTAudience): (jwt.JwtPayload & Record<string, string | number | null>) {
     if (!process.env.JWT_SECRET || !process.env.JWT_PUBLIC_KEY) {
-        throw new ServerError(
+        throw new ServiceError(
             'INVALID CONFIGURATION',
             'JWT environ variables is not set. Missing JWT_SECRET or JWT_PUBLIC_KEY'
         )
@@ -68,15 +68,15 @@ export function verifyJWT(token: string, aud?: OmegaJWTAudience): (jwt.JwtPayloa
         })
 
         if (typeof payload === 'string') {
-            throw new ServerError('JWT INVALID', 'The payload cannot be a string')
+            throw new ServiceError('JWT INVALID', 'The payload cannot be a string')
         }
 
         return payload
     } catch (err) {
         if (err instanceof TokenExpiredError) {
-            throw new ServerError('JWT EXPIRED', err.message)
+            throw new ServiceError('JWT EXPIRED', err.message)
         } else if (err instanceof JsonWebTokenError) {
-            throw new ServerError('JWT INVALID', err.message)
+            throw new ServiceError('JWT INVALID', err.message)
         } else {
             throw err
         }

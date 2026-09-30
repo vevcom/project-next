@@ -3,38 +3,33 @@ import CreateInterestGroupForm from './CreateInterestGroupForm'
 import InterestGroup from './InterestGroup'
 import SpecialCmsParagraph from '@/cms/CmsParagraph/SpecialCmsParagraph'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
-import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { AddHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopUp'
 import { interestGroupAuth } from '@/services/groups/interestGroups/auth'
 import {
-    readInterestGroupsAction,
     readSpecialCmsParagraphGeneralInfoAction,
     updateSpecialCmsParagraphContentGeneralInfoAction
 } from '@/services/groups/interestGroups/actions'
-import { ServerSession } from '@/auth/session/ServerSession'
+import { interestGroupOperations } from '@/services/groups/interestGroups/operations'
+import { serverPage } from '@/app/serverPage'
 
-export default async function InterestGroups() {
-    const interestGroups = unwrapActionReturn(await readInterestGroupsAction())
-
-    const session = await ServerSession.fromNextAuth()
-    const canCreate = interestGroupAuth.create.dynamicFields({}).auth(session)
-    const canEditGeneralInfo = interestGroupAuth.updateSpecialCmsParagraphContentGeneralInfo.dynamicFields(
-        {}
-    ).auth(
-        session
-    ).toJsObject()
-
-    return (
-        <PageWrapper transparent title="Interessegrupper">
+const { page, generateMetadata } = serverPage({
+    operation: async () => interestGroupOperations.readMany({}),
+    authCheckers: {
+        canCreate: () => interestGroupAuth.create.dynamicFields({}),
+        canEditGeneralInfo: () => interestGroupAuth.updateSpecialCmsParagraphContentGeneralInfo.dynamicFields({}),
+    },
+    metadata: () => ({ title: 'Interessegrupper' }),
+    render: ({ data: interestGroups, authChecks, session }) => (
+        <PageWrapper transparent>
             <div className={styles.content}>
                 <div className={styles.generalInfo}>
-                    {canCreate.authorized && (
+                    {authChecks.canCreate.authorized && (
                         <AddHeaderItemPopUp popUpKey="Create interest group">
                             <CreateInterestGroupForm/>
                         </AddHeaderItemPopUp>
                     )}
                     <SpecialCmsParagraph
-                        canEdit={canEditGeneralInfo}
+                        canEdit={authChecks.canEditGeneralInfo.toJsObject()}
                         special="INTEREST_GROUP_GENERAL_INFO"
                         readSpecialCmsParagraphAction={readSpecialCmsParagraphGeneralInfoAction}
                         updateCmsParagraphAction={updateSpecialCmsParagraphContentGeneralInfoAction}
@@ -57,5 +52,8 @@ export default async function InterestGroups() {
                 </main>
             </div>
         </PageWrapper>
-    )
-}
+    ),
+})
+
+export default page
+export { generateMetadata }

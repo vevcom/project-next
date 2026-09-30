@@ -1,7 +1,7 @@
 import '@pn-server-only'
 import { cmsParagraphSchemas } from './schemas'
 import { defineSubOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { SpecialCmsParagraph } from '@/prisma-generated-pn-types'
 import logger from '@/lib/logger'
 import rehypeFormat from 'rehype-format'
@@ -37,7 +37,7 @@ export const cmsParagraphOperations = {
         operation: () => async ({ params, prisma }) => {
             const paragraph = await prisma.cmsParagraph.findUniqueOrThrow({ where: { id: params.paragraphId } })
             if (paragraph.special) {
-                throw new ServerError('BAD PARAMETERS', 'Special paragraphs cannot be deleted')
+                throw new ServiceError('BAD PARAMETERS', 'Special paragraphs cannot be deleted')
             }
             await prisma.cmsParagraph.delete({ where: { id: params.paragraphId } })
         }
@@ -63,7 +63,7 @@ export const cmsParagraphOperations = {
         operation: () => async ({ params, prisma, data }) => {
             const paragraph = await prisma.cmsParagraph.findUniqueOrThrow({ where: { id: params.paragraphId } })
             if (paragraph.special) {
-                throw new ServerError('BAD PARAMETERS', 'Special paragraphs cannot have their meta data updated')
+                throw new ServiceError('BAD PARAMETERS', 'Special paragraphs cannot have their meta data updated')
             }
             await prisma.cmsParagraph.update({ where: { id: params.paragraphId }, data })
         }
@@ -94,7 +94,7 @@ export const cmsParagraphOperations = {
                     }
                 })
             } catch {
-                throw new ServerError('BAD PARAMETERS', 'Invalid markdown')
+                throw new ServiceError('BAD PARAMETERS', 'Invalid markdown')
             }
         }
     }),
@@ -118,7 +118,7 @@ export const cmsParagraphOperations = {
                     special: true
                 }
             })
-            if (!paragraph) throw new ServerError('NOT FOUND', 'Paragraph not found')
+            if (!paragraph) throw new ServiceError('NOT FOUND', 'Paragraph not found')
             if (!paragraph.special) return false
             return params.special.includes(paragraph.special)
         }

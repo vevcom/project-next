@@ -1,7 +1,7 @@
 import '@pn-server-only'
 import { purchaseAuth } from './auth'
 import { purchaseSchemas } from './schemas'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { defineOperation } from '@/services/serviceOperation'
 import { userOperations } from '@/services/users/operations'
 import { permissionOperations } from '@/services/permissions/operations'
@@ -23,8 +23,8 @@ export const purchaseOperations = {
                     bypassAuth: true,
                 })
             } catch (e) {
-                if (e instanceof ServerError && e.errorCode === 'NOT FOUND') {
-                    throw new ServerError('NOT FOUND', 'Ingen brukere er koblet til studentkortet.')
+                if (e instanceof ServiceError && e.errorCode === 'NOT FOUND') {
+                    throw new ServiceError('NOT FOUND', 'Ingen brukere er koblet til studentkortet.')
                 }
                 throw e
             }
@@ -43,7 +43,7 @@ export const purchaseOperations = {
         opensTransaction: true,
         operation: async ({ prisma, data }) => {
             if (data.products.length === 0) {
-                throw new ServerError('BAD PARAMETERS', 'The list of products to buy cannot be empty')
+                throw new ServiceError('BAD PARAMETERS', 'The list of products to buy cannot be empty')
             }
 
             const user = await prisma.user.findUniqueOrThrow({
@@ -58,7 +58,7 @@ export const purchaseOperations = {
                 select: { ledgerAccountId: true },
             })
             if (!shop.ledgerAccountId) {
-                throw new ServerError('SERVER ERROR', 'Denne butikken har ingen tilknyttet konto.')
+                throw new ServiceError('SERVER ERROR', 'Denne butikken har ingen tilknyttet konto.')
             }
 
             // Find the price of the different products
@@ -73,7 +73,7 @@ export const purchaseOperations = {
             })
 
             if (productPrices.length !== data.products.length) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     'The product list contains invalid product ids for the specified shop'
                 )
@@ -135,7 +135,7 @@ export const purchaseOperations = {
                 })
 
                 if (transaction.state === 'FAILED') {
-                    throw new ServerError(
+                    throw new ServiceError(
                         'BAD PARAMETERS',
                         transaction.reason ?? 'Kjøpet kunne ikke fullføres.'
                     )

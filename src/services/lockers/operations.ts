@@ -3,7 +3,7 @@ import { lockerReservationIncluder } from './reservations/constants'
 import { lockersSchemas } from './schemas'
 import { lockerAuth } from './auth'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
 import { z } from 'zod'
 import type { Prisma } from '@/prisma-generated-pn-types'
@@ -26,7 +26,7 @@ export async function updateLockerReservationIfExpired(prisma: Prisma.Transactio
             }
         })
         if (!updateResult) {
-            throw new ServerError('NOT FOUND', 'lockerReservation not found while updating')
+            throw new ServiceError('NOT FOUND', 'lockerReservation not found while updating')
         }
         locker.LockerReservation = []
     }

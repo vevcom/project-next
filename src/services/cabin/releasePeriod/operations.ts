@@ -2,7 +2,7 @@ import 'server-only'
 import { cabinReleasePeriodAuth } from './auth'
 import { cabinReleasePeriodSchemas } from './schemas'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { z } from 'zod'
 
 export const cabinReleasePeriodOperations = {
@@ -18,11 +18,11 @@ export const cabinReleasePeriodOperations = {
             })
 
             if (latestReleasePeriod && latestReleasePeriod.releaseTime > data.releaseTime) {
-                throw new ServerError('BAD DATA', 'En ny slippdato må slippes senere den den gjeldene siste slippdatoen.')
+                throw new ServiceError('BAD DATA', 'En ny slippdato må slippes senere den den gjeldene siste slippdatoen.')
             }
 
             if (latestReleasePeriod && latestReleasePeriod.releaseUntil >= data.releaseUntil) {
-                throw new ServerError('BAD DATA', 'Et nytt slipp, må slippe flere datoer enn det forrige slippet.')
+                throw new ServiceError('BAD DATA', 'Et nytt slipp, må slippe flere datoer enn det forrige slippet.')
             }
 
             await prisma.releasePeriod.create({
@@ -42,7 +42,7 @@ export const cabinReleasePeriodOperations = {
             })
 
             if (releasePeriod.releaseTime < new Date()) {
-                throw new ServerError('BAD PARAMETERS', 'Kan ikke slette en slippgruppe som har blitt publisert.')
+                throw new ServiceError('BAD PARAMETERS', 'Kan ikke slette en slippgruppe som har blitt publisert.')
             }
 
             return await prisma.releasePeriod.delete({

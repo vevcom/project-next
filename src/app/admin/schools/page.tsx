@@ -1,5 +1,6 @@
 import styles from './page.module.scss'
 import { SchoolAdminList } from './SchoolAdminList'
+import PageTitleSetter from '@/contexts/PageTitleSetter'
 import Form from '@/components/Form/Form'
 import { AddHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopUp'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
@@ -18,7 +19,7 @@ export default async function SchoolsAdmin() {
     const schools = schoolsRes.data
 
     return (
-        <PageWrapper title="Skoler" headerItem={
+        <PageWrapper headerItem={
             <AddHeaderItemPopUp popUpKey="CreateSchool">
                 <Form
                     action={createSchoolAction}
@@ -29,6 +30,7 @@ export default async function SchoolsAdmin() {
                 </Form>
             </AddHeaderItemPopUp>
         }>
+            <PageTitleSetter title="Skoler" />
             <div className={styles.wrapper}>
                 <p>Skoler er brukt på fagveven</p>
                 <h2>Standard Skoler</h2>

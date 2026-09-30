@@ -7,7 +7,7 @@ import { cmsImageOperations } from '@/cms/images/operations'
 import { cmsLinkOperations } from '@/cms/links/operations'
 import { defineOperation } from '@/services/serviceOperation'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import logger from '@/lib/logger'
 import { StandardSchool } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
@@ -136,7 +136,7 @@ export const schoolOperations = {
                 where: { id: params.id },
                 select: { standardSchool: true },
             })
-            if (school.standardSchool) throw new ServerError('BAD PARAMETERS', 'Kan ikke slette standard skole')
+            if (school.standardSchool) throw new ServiceError('BAD PARAMETERS', 'Kan ikke slette standard skole')
             await prisma.school.delete({ where: { id: params.id } })
         }
     }),

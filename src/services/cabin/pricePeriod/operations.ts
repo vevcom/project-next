@@ -3,7 +3,7 @@ import { cabinPricePeriodAuth } from './auth'
 import { cabinPricePeriodSchemas } from './schemas'
 import { defineOperation } from '@/services/serviceOperation'
 import { cabinReleasePeriodOperations } from '@/services/cabin/releasePeriod/operations'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { z } from 'zod'
 
 export const cabinPricePeriodOperations = {
@@ -14,7 +14,7 @@ export const cabinPricePeriodOperations = {
             const currentReleaseDate = await cabinReleasePeriodOperations.getCurrentReleasePeriod({ bypassAuth: true })
 
             if (currentReleaseDate && currentReleaseDate.releaseUntil >= data.validFrom) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD DATA',
                     'Kan ikke sette en pris periode til å være gyldig når datoene allerede er sluppet.'
                 )
@@ -28,7 +28,7 @@ export const cabinPricePeriodOperations = {
             })
 
             if (latestPricePeriod && latestPricePeriod.validFrom >= data.validFrom) {
-                throw new ServerError('BAD DATA', 'Kan ikke sette en pris periode til å være gyldig før en annen periode.')
+                throw new ServiceError('BAD DATA', 'Kan ikke sette en pris periode til å være gyldig før en annen periode.')
             }
 
             const result = await prisma.pricePeriod.create({
@@ -70,7 +70,7 @@ export const cabinPricePeriodOperations = {
             })
 
             if (currentReleasePeriod && pricePeriod.validFrom <= currentReleasePeriod.releaseUntil) {
-                throw new ServerError('BAD PARAMETERS', 'Kan ikke slette en pris periode som er publisert.')
+                throw new ServiceError('BAD PARAMETERS', 'Kan ikke slette en pris periode som er publisert.')
             }
 
             return await prisma.pricePeriod.delete({

@@ -3,22 +3,16 @@ import OmegaquoteQuote from './OmegaquotesQuote'
 import CreateOmegaquoteForm from './CreateOmegaquoteForm'
 import { OmegaquotePagingProvider } from '@/contexts/paging/OmegaquotesPaging'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
-import { readQuotesPageAction } from '@/services/omegaquotes/actions'
-import { ServerSession } from '@/auth/session/ServerSession'
+import { omegaquoteOperations } from '@/services/omegaquotes/operations'
 import { omegaQuotesAuth } from '@/services/omegaquotes/auth'
-import { notFound } from 'next/navigation'
+import { serverPage } from '@/app/serverPage'
 import { v4 as uuid } from 'uuid'
 import type { PageSizeOmegaquote } from '@/contexts/paging/OmegaquotesPaging'
 
-export default async function OmegaQuotes() {
-    const session = await ServerSession.fromNextAuth()
-    const showCreateButton = session.user && omegaQuotesAuth.create.dynamicFields({
-        userId: session.user.id
-    }).auth(session).authorized || false
+const pageSize: PageSizeOmegaquote = 20
 
-    const pageSize: PageSizeOmegaquote = 20
-
-    const readQuotes = await readQuotesPageAction({
+const { page, generateMetadata } = serverPage({
+    operation: async () => omegaquoteOperations.readPage({
         params: {
             paging: {
                 page: {
@@ -29,28 +23,37 @@ export default async function OmegaQuotes() {
                 details: undefined
             }
         }
-    })
-    if (!readQuotes.success) notFound()
-    const quotes = readQuotes.data
+    }),
+    metadata: () => ({ title: 'Omegaquotes' }),
+    render: ({ data: quotes, session }) => {
+        // The create authorizer needs the session's own user id, so it is run inline here rather
+        // than declared as an authChecker.
+        const showCreateButton = session.user && omegaQuotesAuth.create.dynamicFields({
+            userId: session.user.id
+        }).auth(session).authorized || false
 
-    return (
-        <PageWrapper title="Omegaquotes" headerItem={
-            showCreateButton && <CreateOmegaquoteForm/>
-        }>
-            <OmegaquotePagingProvider
-                startPage={{
-                    pageSize,
-                    page: 1,
-                }}
-                details={undefined}
-                serverRenderedData={quotes}
-            >
-                <main>
-                    <OmegaquoteList
-                        serverRendered={quotes.map(quote => <OmegaquoteQuote key={uuid()} quote={quote}/>)}
-                    />
-                </main>
-            </OmegaquotePagingProvider>
-        </PageWrapper>
-    )
-}
+        return (
+            <PageWrapper headerItem={
+                showCreateButton && <CreateOmegaquoteForm/>
+            }>
+                <OmegaquotePagingProvider
+                    startPage={{
+                        pageSize,
+                        page: 1,
+                    }}
+                    details={undefined}
+                    serverRenderedData={quotes}
+                >
+                    <main>
+                        <OmegaquoteList
+                            serverRendered={quotes.map(quote => <OmegaquoteQuote key={uuid()} quote={quote}/>)}
+                        />
+                    </main>
+                </OmegaquotePagingProvider>
+            </PageWrapper>
+        )
+    },
+})
+
+export default page
+export { generateMetadata }

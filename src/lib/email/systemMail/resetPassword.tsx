@@ -3,7 +3,7 @@ import { sendSystemMail } from '@/lib/email/send'
 import { ResetPasswordTemplate } from '@/lib/email/templates/resetPassword'
 import { generateJWT } from '@/jwt/jwt'
 import { userOperations } from '@/services/users/operations'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { z } from 'zod'
 
 export async function sendResetPasswordMail(email: string) {
@@ -25,7 +25,7 @@ export async function sendResetPasswordMail(email: string) {
 
         return email
     } catch (e) {
-        if (e instanceof ServerError && e.errorCode === 'NOT FOUND') {
+        if (e instanceof ServiceError && e.errorCode === 'NOT FOUND') {
             return email
         }
         throw e

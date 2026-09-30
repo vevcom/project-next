@@ -8,10 +8,10 @@ import {
 } from '@/services/groups/implementGroupType'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
-import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
+import { ServiceError } from '@/services/error'
 import { GroupType } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
+import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
 
 const commonGroupOperations = implementGroupType({
     type: GroupType.MANUAL_GROUP,
@@ -88,7 +88,7 @@ async function assertNotPensioned(prisma: PrismaPossibleTransaction<false>, id: 
     })
 
     if (manualGroup.pensioned) {
-        throw new ServerError(
+        throw new ServiceError(
             'BAD PARAMETERS',
             `${manualGroup.name} er pensjonert og kan ikke endres. Gjenopprett gruppen først.`
         )

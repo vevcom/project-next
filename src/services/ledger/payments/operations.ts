@@ -1,6 +1,6 @@
 import { paymentAuth } from './auth'
 import { stripe } from '@/lib/stripe'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { defineOperation } from '@/services/serviceOperation'
 import { PaymentProvider } from '@/prisma-generated-pn-types'
 import { stripeCustomerOperations } from '@/services/stripeCustomers/operations'
@@ -82,11 +82,11 @@ export const paymentOperations = {
             })
 
             if (payment.state !== 'PENDING') {
-                throw new ServerError('BAD PARAMETERS', 'Betalingen har allerede blitt forespurt.')
+                throw new ServiceError('BAD PARAMETERS', 'Betalingen har allerede blitt forespurt.')
             }
 
             if (payment.provider === 'MANUAL') {
-                throw new ServerError('BAD PARAMETERS', 'Manuelle betalinger trenger ikke å startes.')
+                throw new ServiceError('BAD PARAMETERS', 'Manuelle betalinger trenger ikke å startes.')
             }
 
             if (payment.provider === 'STRIPE') {
@@ -127,7 +127,7 @@ export const paymentOperations = {
                 })
 
                 if (paymentIntent.client_secret === null) {
-                    throw new ServerError('UNKNOWN ERROR', 'Noe gikk galt med forespørselen til Stripe.')
+                    throw new ServiceError('UNKNOWN ERROR', 'Noe gikk galt med forespørselen til Stripe.')
                 }
 
                 return await prisma.payment.update({
@@ -151,7 +151,7 @@ export const paymentOperations = {
             }
 
             // If we reach here, the payment provider is unknown.
-            throw new ServerError('SERVER ERROR', 'Prøvde å forespørre betalingsleverandør som ikke er støttet.')
+            throw new ServiceError('SERVER ERROR', 'Prøvde å forespørre betalingsleverandør som ikke er støttet.')
         },
     }),
 

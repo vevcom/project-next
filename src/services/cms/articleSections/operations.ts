@@ -1,7 +1,7 @@
 import '@pn-server-only'
 import { articleSectionSchemas } from './schemas'
 import { articleSectionsRealtionsIncluder } from './constants'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { cmsImageOperations } from '@/cms/images/operations'
 import { cmsParagraphOperations } from '@/cms/paragraphs/operations'
 import { cmsLinkOperations } from '@/cms/links/operations'
@@ -70,10 +70,10 @@ export const articleSectionOperations = {
                 include: { [data.part]: true }
             })
             if (!articleSection) {
-                throw new ServerError('NOT FOUND', 'ArticleSection not found')
+                throw new ServiceError('NOT FOUND', 'ArticleSection not found')
             }
             if (articleSection[data.part]) {
-                throw new ServerError('BAD PARAMETERS', `ArticleSection already has ${data.part}`)
+                throw new ServiceError('BAD PARAMETERS', `ArticleSection already has ${data.part}`)
             }
 
             switch (data.part) {
@@ -116,7 +116,7 @@ export const articleSectionOperations = {
                 default:
                     break
             }
-            throw new ServerError('BAD PARAMETERS', 'Invalid part')
+            throw new ServiceError('BAD PARAMETERS', 'Invalid part')
         }
     }),
 
@@ -141,10 +141,10 @@ export const articleSectionOperations = {
                 include: { cmsLink: true, cmsParagraph: true, cmsImage: true }
             })
             if (!articleSection) {
-                throw new ServerError('NOT FOUND', 'ArticleSection not found')
+                throw new ServiceError('NOT FOUND', 'ArticleSection not found')
             }
             if (!articleSection[data.part]) {
-                throw new ServerError('BAD PARAMETERS', `ArticleSection does not have ${data.part}`)
+                throw new ServiceError('BAD PARAMETERS', `ArticleSection does not have ${data.part}`)
             }
 
             switch (data.part) {
@@ -180,7 +180,7 @@ export const articleSectionOperations = {
                 include: { cmsParagraph: true, cmsImage: true, cmsLink: true }
             })
             if (!afterDelete) {
-                throw new ServerError('UNKNOWN ERROR', 'Noe uventet skjedde etter sletting av del av artclesection')
+                throw new ServiceError('UNKNOWN ERROR', 'Noe uventet skjedde etter sletting av del av artclesection')
             }
             if (
                 destroyOnEmpty &&

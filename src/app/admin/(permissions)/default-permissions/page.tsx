@@ -1,18 +1,14 @@
-import { updateDefaultPermissionsAction, readDefaultPermissionsAction } from '@/services/permissions/actions'
+import { updateDefaultPermissionsAction } from '@/services/permissions/actions'
+import { permissionOperations } from '@/services/permissions/operations'
 import Form from '@/components/Form/Form'
 import DisplayAllPermissions from '@/components/Permission/DisplayAllPermissions'
+import { serverPage } from '@/app/serverPage'
 import React from 'react'
 
-export default async function Defaults() {
-    const defaultPermissionsRes = await readDefaultPermissionsAction()
-
-    if (!defaultPermissionsRes.success) {
-        throw new Error(`Kunne ikke hente standard tillganger. ${defaultPermissionsRes.errorCode}`)
-    }
-
-    const defaultPermissions = defaultPermissionsRes.data
-
-    return (
+const { page, generateMetadata } = serverPage({
+    operation: async () => permissionOperations.readDefaultPermissions({}),
+    metadata: () => ({ title: 'Standard Tilganger' }),
+    render: ({ data: defaultPermissions }) => (
         <>
             <h1>Standard Tilganger</h1>
             <i>Dette er tilganger alle har på nettsiden uavhengig av innlogging og gruppeafiliasjoner</i>
@@ -33,5 +29,8 @@ export default async function Defaults() {
             </Form>
         </>
 
-    )
-}
+    ),
+})
+
+export default page
+export { generateMetadata }

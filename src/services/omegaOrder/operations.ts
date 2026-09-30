@@ -3,7 +3,7 @@ import { omegaOrderAuth } from './auth'
 import { groupTypesMigratedStraightAway } from './constants'
 import { groupTypesConfig } from '@/services/groups/constants'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { GroupType } from '@/prisma-generated-pn/client'
 import type { OmegaOrderRequirement } from './types'
 
@@ -93,7 +93,7 @@ export const omegaOrderOperations = {
             const unfulfilled = requirements.filter(requirement => !requirement.fulfilled)
 
             if (unfulfilled.length) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     `Omega kan ikke inkrementeres enda: ${
                         unfulfilled.map(requirement => requirement.description).join(', ')
@@ -130,7 +130,7 @@ export const omegaOrderOperations = {
                     order: 'desc'
                 }
             })
-            if (!omegaOrder) throw new ServerError('NOT FOUND', 'Current Omega Order not found')
+            if (!omegaOrder) throw new ServiceError('NOT FOUND', 'Current Omega Order not found')
             return omegaOrder
         }
     }),

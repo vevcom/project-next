@@ -1,21 +1,21 @@
 import styles from './page.module.scss'
-import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { SettingsHeaderItemPopUp } from '@/app/_components/HeaderItems/HeaderItemPopUp'
 import Form from '@/app/_components/Form/Form'
 import {
     destroyLicenseAction,
     createLicenseAction,
     updateLicenseAction,
-    readAllLicensesAction
 } from '@/services/licenses/actions'
+import { licenseOperations } from '@/services/licenses/operations'
+import { serverPage } from '@/app/serverPage'
 import TextInput from '@/UI/TextInput'
 import { configureAction } from '@/services/configureAction'
 import Link from 'next/link'
 
-export default async function Licenses() {
-    const licenses = unwrapActionReturn(await readAllLicensesAction())
-
-    return (
+const { page, generateMetadata } = serverPage({
+    operation: async () => licenseOperations.readAll({}),
+    metadata: () => ({ title: 'Lisenser' }),
+    render: ({ data: licenses }) => (
         <div className={styles.wrapper}>
             <h1>Lisenser</h1>
             <p>Lisenser brukes for bilder</p>
@@ -72,5 +72,8 @@ export default async function Licenses() {
                 <TextInput name="link" label="Link" />
             </Form>
         </div>
-    )
-}
+    ),
+})
+
+export default page
+export { generateMetadata }

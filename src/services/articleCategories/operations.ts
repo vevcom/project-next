@@ -2,7 +2,7 @@ import '@pn-server-only'
 import { articleCategoryAuth } from './auth'
 import { articleCategorySchemas } from './schemas'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { implementUpdateArticleOperations } from '@/cms/articles/implement'
 import { articleOperations } from '@/cms/articles/operations'
 import { expandedImageIncluder } from '@/services/images/subservice/constants'
@@ -114,9 +114,9 @@ export const articleCategoryOperations = {
                     id: params.articleId
                 }
             })
-            if (!article) throw new ServerError('NOT FOUND', `Article ${params.articleId} not found`)
+            if (!article) throw new ServiceError('NOT FOUND', `Article ${params.articleId} not found`)
             if (article.articleCategoryId !== params.id) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     `Article ${params.articleId} does not belong to category ${params.id}`
                 )
@@ -192,7 +192,7 @@ export const articleCategoryOperations = {
                     }
                 },
             })
-            if (!category) throw new ServerError('NOT FOUND', `Category ${params.name} not found`)
+            if (!category) throw new ServiceError('NOT FOUND', `Category ${params.name} not found`)
             const categoryWithCover = {
                 ...category,
                 coverImage: await getCoverImage(prisma, category)
@@ -220,7 +220,7 @@ export const articleCategoryOperations = {
                     id: true
                 }
             }).then(res => res.id)
-            if (!article) throw new ServerError('NOT FOUND', 'Artikkel ikke funnet.')
+            if (!article) throw new ServiceError('NOT FOUND', 'Artikkel ikke funnet.')
             return article.articleCategoryId ? article.articleCategoryId === articleCategoryId : false
         }
     })

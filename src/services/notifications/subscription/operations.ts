@@ -6,7 +6,7 @@ import { allNotificationMethodsOff, allNotificationMethodsOn } from '@/services/
 import { availableNotificationMethodIncluder } from '@/services/notifications/channel/constants'
 import { notificationChannelOperations } from '@/services/notifications/channel/operations'
 import { defineOperation, defineSubOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { z } from 'zod'
 import type { Prisma } from '@/prisma-generated-pn-types'
 import type { Subscription } from './types'
@@ -65,7 +65,7 @@ async function createTransactionPart(
     })
 
     if (!validateMethods(notificaionChannel.availableMethods, methods)) {
-        throw new ServerError('BAD PARAMETERS', 'The methods must a subset of the available methods')
+        throw new ServiceError('BAD PARAMETERS', 'The methods must a subset of the available methods')
     }
 
     // Update the relation

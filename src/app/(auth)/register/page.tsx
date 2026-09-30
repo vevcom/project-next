@@ -1,31 +1,32 @@
 import RegistrationForm from './RegistrationForm'
 import { QueryParams } from '@/lib/queryParams/queryParams'
-import { unwrapActionReturn } from '@/app/redirectToErrorPage'
-import { ServerSession } from '@/auth/session/ServerSession'
-import { readUserAction } from '@/services/users/actions'
+import { userOperations } from '@/services/users/operations'
+import { serverPage } from '@/app/serverPage'
 import { notFound, redirect } from 'next/navigation'
-import type { SearchParamsServerSide } from '@/lib/queryParams/types'
+import type { PageOperationArgs } from '@/app/serverPage'
 
-type PropTypes = SearchParamsServerSide
-
-export default async function Register({ searchParams }: PropTypes) {
-    const user = (await ServerSession.fromNextAuth()).user
-    const callbackUrl = QueryParams.callbackUrl.decode(await searchParams)
-    if (!user) {
-        return notFound()
-    }
-    const updatedUser = unwrapActionReturn(await readUserAction({
-        params: {
-            id: user.id
+const { page, generateMetadata } = serverPage({
+    operation: async ({ searchParams, session }: PageOperationArgs) => {
+        const callbackUrl = QueryParams.callbackUrl.decode(searchParams)
+        if (!session.user) {
+            return notFound()
         }
-    }))
-    if (updatedUser.acceptedTerms) {
-        redirect(callbackUrl ?? '/users/me')
-    }
-    if (!updatedUser.emailVerified) {
-        const linkEnding = callbackUrl ? `?callbackUrl=${callbackUrl}` : ''
-        redirect(`/register-email${linkEnding}`)
-    }
+        const updatedUser = await userOperations.read({
+            params: {
+                id: session.user.id
+            }
+        })
+        if (updatedUser.acceptedTerms) {
+            redirect(callbackUrl ?? '/users/me')
+        }
+        if (!updatedUser.emailVerified) {
+            const linkEnding = callbackUrl ? `?callbackUrl=${callbackUrl}` : ''
+            redirect(`/register-email${linkEnding}`)
+        }
+        return updatedUser
+    },
+    render: ({ data: updatedUser }) => <RegistrationForm userData={updatedUser} />,
+})
 
-    return <RegistrationForm userData={updatedUser} />
-}
+export default page
+export { generateMetadata }

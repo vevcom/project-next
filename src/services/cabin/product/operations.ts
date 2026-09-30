@@ -5,7 +5,7 @@ import { cabinProductSchemas } from './schemas'
 import { cabinProductPriceIncluder } from './constants'
 import { cabinReleasePeriodOperations } from '@/services/cabin/releasePeriod/operations'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { cabinPricePeriodOperations } from '@/services/cabin/pricePeriod/operations'
 import { z } from 'zod'
 
@@ -39,7 +39,7 @@ export const cabinProductOperations = {
             ])
 
             if (releasePeriod && pricePeriod.validFrom <= releasePeriod.releaseUntil) {
-                throw new ServerError('BAD PARAMETERS', 'Cannot change prices for a product that is released')
+                throw new ServiceError('BAD PARAMETERS', 'Cannot change prices for a product that is released')
             }
 
             const result = await prisma.cabinProductPrice.create({

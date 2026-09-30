@@ -5,8 +5,8 @@ import { manualGroupOperations } from '@/services/groups/manualGroups/operations
 import { classOperations } from '@/services/groups/classes/operations'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { userFilterSelection } from '@/services/users/constants'
-import type { UserFiltered } from '@/services/users/types'
 import { afterEach, beforeEach, describe, expect, test } from '@jest/globals'
+import type { UserFiltered } from '@/services/users/types'
 
 const adminSession = Session.fromJsObject({
     memberships: [],

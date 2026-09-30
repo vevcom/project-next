@@ -1,7 +1,7 @@
 import styles from './layout.module.scss'
-import { readUserProfileAction } from '@/services/users/actions'
-import { unwrapActionReturn } from '@/app/redirectToErrorPage'
-import { ServerSession } from '@/auth/session/ServerSession'
+import PageTitleSetter from '@/contexts/PageTitleSetter'
+import { userOperations } from '@/services/users/operations'
+import { withPageSession } from '@/app/serverPage'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
 import UserNavBar from '@/app/users/[username]/UserNavBar'
 import { notFound } from 'next/navigation'
@@ -14,18 +14,21 @@ export const metadata: Metadata = {
 }
 
 export default async function UserAdmin({ children, params }: PropTypes & { children: ReactNode }) {
-    const session = await ServerSession.fromNextAuth()
-    let username = (await params).username
-    if (username === 'me') {
-        if (!session.user) return notFound()
-        username = session.user.username
-    }
+    const { username, user } = await withPageSession(async (session) => {
+        let usernameOfPage = (await params).username
+        if (usernameOfPage === 'me') {
+            if (!session.user) return notFound()
+            usernameOfPage = session.user.username
+        }
 
-    // Guards the whole section: a username nobody may read gets no layout and no nav.
-    const { user } = unwrapActionReturn(await readUserProfileAction({ params: { username } }))
+        // Guards the whole section: a username nobody may read gets no layout and no nav.
+        const profile = await userOperations.readProfile({ params: { username: usernameOfPage } })
+        return { username: usernameOfPage, user: profile.user }
+    })
 
     return (
-        <PageWrapper title={'Innstillinger'} fillHeight transparent hideTitle>
+        <PageWrapper fillHeight transparent hideTitle>
+            <PageTitleSetter title={'Innstillinger'} />
             <div className={styles.userAdminLayout}>
                 <main className={styles.main}>
                     <div className={styles.mainInner}>

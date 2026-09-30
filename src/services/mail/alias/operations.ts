@@ -2,7 +2,7 @@ import '@pn-server-only'
 import { mailAliasAuth } from './auth'
 import { mailAliasSchemas } from './schemas'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import type { MailAlias } from '@/prisma-generated-pn-types'
 
 export const aliasOperations = {
@@ -42,7 +42,7 @@ export const aliasOperations = {
             })
 
             if (alias.notificationChannel.length) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     'Cannot delete a mailAlias that is connected to a notification channel.'
                 )

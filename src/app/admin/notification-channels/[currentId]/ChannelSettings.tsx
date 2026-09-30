@@ -1,6 +1,7 @@
 'use client'
 
 import styles from './ChannelSettings.module.scss'
+import PageTitleSetter from '@/contexts/PageTitleSetter'
 import NotificationMethodSelector from '@/components/NotificaionMethodSelector/NotificaionMethodSelector'
 import TextInput from '@/components/UI/TextInput'
 import { SelectNumber } from '@/components/UI/Select'
@@ -28,8 +29,8 @@ export default function ChannelSettings({
     const selectOptions = findValidParents(currentChannel.id, channels)
 
     return <PageWrapper
-        title={currentChannelState.name}
     >
+        <PageTitleSetter title={currentChannelState.name} />
         <div className={styles.channelSettings}>
             {currentChannelState.special ? <p>Spesiell: {currentChannelState.special}</p> : null}
             <Form

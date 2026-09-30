@@ -1,3 +1,4 @@
+import PageTitleSetter from '@/contexts/PageTitleSetter'
 import { createCompanyAction, readCompanyPageAction } from '@/services/career/companies/actions'
 import Form from '@/components/Form/Form'
 import { AddHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopUp'
@@ -38,7 +39,7 @@ export default async function CompaniesPage({ searchParams }: PropTypes) {
     const serverRenderedData = res.success ? res.data : []
 
     return (
-        <PageWrapper title="Bedrifter" headerItem={
+        <PageWrapper headerItem={
             <AddHeaderItemPopUp popUpKey="CreateCompany">
                 <Form
                     title="Ny bedrift"
@@ -52,6 +53,7 @@ export default async function CompaniesPage({ searchParams }: PropTypes) {
                 </Form>
             </AddHeaderItemPopUp>
         }>
+            <PageTitleSetter title="Bedrifter" />
             <CompanyPagingProvider
                 serverRenderedData={serverRenderedData}
                 startPage={{

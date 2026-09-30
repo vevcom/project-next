@@ -1,6 +1,6 @@
 import { AuthorizerFactory } from './Authorizer'
 import { verifyJWT } from '@/lib/jwt/jwt'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import type { OmegaJWTAudience } from '@/lib/jwt/types'
 
 export const RequireJWT = AuthorizerFactory<
@@ -11,7 +11,7 @@ export const RequireJWT = AuthorizerFactory<
     try {
         verifyJWT(dynamicFields.token, staticFields.audience) // TODO: Verify that it is ok to throw errors
     } catch (err) {
-        if (!(err instanceof ServerError)) {
+        if (!(err instanceof ServiceError)) {
             throw err
         }
 

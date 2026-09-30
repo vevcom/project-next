@@ -1,6 +1,6 @@
 import { defineOperation } from '@/services/serviceOperation'
 import '@pn-server-only'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { z } from 'zod'
 import type { ExtendedProduct } from './types'
 import { productAuth } from './auth'
@@ -93,7 +93,7 @@ export const productOperations = {
         paramsSchema: productSchemas.readByBarCode,
         operation: async ({ prisma, params }): Promise<ExtendedProduct | null> => {
             if (!params.barcode) {
-                throw new ServerError('BAD PARAMETERS', 'Barcode is required.')
+                throw new ServiceError('BAD PARAMETERS', 'Barcode is required.')
             }
 
             const results = await prisma.product.findUnique({
@@ -111,7 +111,7 @@ export const productOperations = {
             })
 
             if (!results || results.ShopProduct.length === 0) {
-                throw new ServerError(
+                throw new ServiceError(
                     'NOT FOUND',
                     `Could not find any prduct with barcode ${params.barcode} in shop ${params.shopId}.`
                 )

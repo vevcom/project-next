@@ -3,7 +3,7 @@ import { admissionSchemas } from './schemas'
 import { admissionAuth } from './auth'
 import { userFilterSelection } from '@/services/users/constants'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { omegaMembershipGroupOperations, writeUserLevel } from '@/services/groups/omegaMembershipGroups/operations'
 import { invalidateOneUserSessionData } from '@/services/auth/invalidateSession'
 import { Admission } from '@/prisma-generated-pn-types'
@@ -63,7 +63,7 @@ export const admissionOperations = {
             })
 
             if (omegaMembership.level !== 'SOELLE') {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     'Opptaksprøver kan kun registreres for en soelle.'
                 )

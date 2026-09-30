@@ -3,7 +3,7 @@ import { defineOperation, defineSubOperation, type PrismaPossibleTransaction } f
 import { imageOperations, expandImageCollection } from '@/services/images/subservice/operations'
 import { expandedImageCollectionIncluder, type ImageExtension } from '@/services/images/subservice/constants'
 import { imageSchemas } from '@/services/images/subservice/schemas'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import logger from '@/lib/logger'
 import { visibilityOperations } from '@/services/visibility/operations'
 import type { SpecialCollection } from '@/prisma-generated-pn-types'
@@ -127,7 +127,7 @@ export function implementSpecialCollection({
                 select: { id: true }
             })
             if (!image) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     `Image ${params.imageId} is not part of the special collection ${special}`
                 )
@@ -148,7 +148,7 @@ export function implementSpecialCollection({
                 select: { id: true }
             })
             if (!image) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS',
                     `Image ${params.imageId} is not part of the special collection ${special}`
                 )

@@ -1,10 +1,11 @@
 import getCommitee from './getCommittee'
 import Nav from './Nav'
 import styles from './layout.module.scss'
+import PageTitleSetter from '@/contexts/PageTitleSetter'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
 import CommitteeImage from '@/components/Committee/CommitteeImage/CommitteeImage'
 import { committeeAuth } from '@/services/groups/committees/auth'
-import { ServerSession } from '@/auth/session/ServerSession'
+import { withPageSession } from '@/app/serverPage'
 import { AuthResult } from '@/auth/authorizer/AuthResult'
 import { committeeParticipationAuth } from '@/services/applications/committeeParticipation/auth'
 import type { ReactNode } from 'react'
@@ -17,26 +18,22 @@ export type PropTypes = {
 }
 
 export default async function Committee({ params, children }: PropTypes) {
-    const committee = await getCommitee(params)
+    const { committee, canEditCoverImage, canReadCommitteeApplication } = await withPageSession(async (session) => {
+        const committeeOfPage = await getCommitee((await params).shortName)
 
-    const committeeLogo = committee.logoImage
-
-    // A pensioned committee is history: the service refuses every change to it, so the editing
-    // controls are not offered on any of its pages either.
-    const canEditCoverImage = (committee.pensioned
-        ? new AuthResult(await ServerSession.fromNextAuth(), false, undefined, 'Komiteen er pensjonert')
-        : committeeAuth.updateArticle.dynamicFields({ groupId: committee.groupId }).auth(
-            await ServerSession.fromNextAuth()
-        )
-    ).toJsObject()
-
-    const canReadCommitteeApplication = committeeParticipationAuth.readAll.dynamicFields(
-        {
-            groupId: committee.groupId,
-        }).auth(
-        await ServerSession.fromNextAuth()
-    ).toJsObject()
-
+        return {
+            committee: committeeOfPage,
+            // A pensioned committee is history: the service refuses every change to it, so the
+            // editing controls are not offered on any of its pages either.
+            canEditCoverImage: (committeeOfPage.pensioned
+                ? new AuthResult(session, false, undefined, 'Komiteen er pensjonert')
+                : committeeAuth.updateArticle.dynamicFields({ groupId: committeeOfPage.groupId }).auth(session)
+            ).toJsObject(),
+            canReadCommitteeApplication: committeeParticipationAuth.readAll.dynamicFields({
+                groupId: committeeOfPage.groupId,
+            }).auth(session).toJsObject(),
+        }
+    })
 
     return (
         <div className={styles.pageLayout}>
@@ -44,10 +41,11 @@ export default async function Committee({ params, children }: PropTypes) {
                 <CommitteeImage
                     canEditCoverImage={canEditCoverImage}
                     shortName={committee.shortName}
-                    logoImage={committeeLogo}
+                    logoImage={committee.logoImage}
                     coverImage={committee.coverImage}
                 />
-                <PageWrapper className={styles.pageWrapper} title={committee.name}>
+                <PageWrapper className={styles.pageWrapper}>
+                    <PageTitleSetter title={committee.name} />
                     {committee.pensioned && (
                         <p className={styles.pensioned}>
                             Denne komiteen er pensjonert. Den har ingen aktive medlemmer, og

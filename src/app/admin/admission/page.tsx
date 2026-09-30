@@ -1,5 +1,6 @@
 import styles from './page.module.scss'
 import MembershipStatusUserSearch from './MembershipStatusUserSearch'
+import PageTitleSetter from '@/contexts/PageTitleSetter'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
 import { admissionDisplayNames, allAdmissions } from '@/services/admission/constants'
 import { UserPagingProvider } from '@/contexts/paging/UserPaging'
@@ -15,7 +16,8 @@ export default async function AdmissionTrials() {
     const canSearchUsers = userAuth.readPage.dynamicFields({}).auth(session).authorized
 
     return (
-        <PageWrapper title="Opptak">
+        <PageWrapper>
+            <PageTitleSetter title="Opptak" />
             <div className={styles.wrapper}>
                 <section className={styles.section}>
                     <h2>Registrer opptaksprøve</h2>
