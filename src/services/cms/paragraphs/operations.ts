@@ -4,12 +4,8 @@ import { defineSubOperation } from '@/services/serviceOperation'
 import { ServerError } from '@/services/error'
 import { SpecialCmsParagraph } from '@/prisma-generated-pn-types'
 import logger from '@/lib/logger'
-import rehypeFormat from 'rehype-format'
-import rehypeStringify from 'rehype-stringify'
-import remarkParse from 'remark-parse'
-import remarkRehype from 'remark-rehype'
+import { markdownToSafeHtml } from '@/lib/html/safeHtml'
 import { z } from 'zod'
-import { unified } from 'unified'
 
 const create = defineSubOperation({
     dataSchema: () => cmsParagraphSchemas.create,
@@ -76,14 +72,8 @@ export const cmsParagraphOperations = {
         dataSchema: () => cmsParagraphSchemas.updateContent,
         operation: () => async ({ params, prisma, data }) => {
             try {
-                const contentHtml = (await unified()
-                    .use(remarkParse)
-                    .use(remarkRehype)
-                    .use(rehypeFormat)
-                    .use(rehypeStringify)
-                    .process(data.markdown)).value.toString()
+                const contentHtml = (await markdownToSafeHtml(data.markdown))
                     .replace(/<img[^>]*>/g, 'Bilder i markdown er ikke støttet. Bruk det innebygde bildeverktøyet.')
-                //TODO: Final sanitization of html!!!
                 return await prisma.cmsParagraph.update({
                     where: {
                         id: params.paragraphId
