@@ -1,20 +1,24 @@
 @use "@/styles/ohma";
 
-.MazeMap {
+.map {
     display: flex;
-    justify-content: center;
-    filter: invert(1) hue-rotate(180deg);
+    flex-direction: column;
+    align-items: center;
+    gap: ohma.$gap;
 }
 
-.MazeMapWrapper {
+.wrapper {
     position: relative;
     width: 80%;
-    height: 100%;
     border-radius: ohma.$rounding;
     overflow: hidden;
 }
 
-.MazeMapIframe {
+.inverted {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+.iframe {
     width: 100%;
     height: 100%;
     border: none;
@@ -22,7 +26,7 @@
     background-color: white;
 }
 
-.MazeMapOverlay {
+.overlay {
     position: absolute;
     inset: 0;
     z-index: 1;

@@ -1,3 +1,4 @@
+import { locationMapSchema } from '@/lib/maps/locationMap'
 import { Zpn } from '@/lib/fields/zpn'
 import { readPageInputSchemaObject } from '@/lib/paging/schema'
 import { convertAmount } from '@/lib/currency/convert'
@@ -8,6 +9,7 @@ import { z } from 'zod'
 const baseSchema = z.object({
     name: z.string().min(5, 'Navnet må være minst 5 tegn').max(70, 'Navnet må være maks 70 tegn'),
     location: z.string().min(2, 'Stedet må være minst 2 tegn'),
+    locationMap: Zpn.json({ label: 'Kart', schema: locationMapSchema.nullable() }).optional(),
     order: z.coerce.number().int().optional(),
     eventStart: Zpn.date({ label: 'Starttid' }),
     eventEnd: Zpn.date({ label: 'Sluttid' }),
@@ -68,6 +70,7 @@ export const eventSchemas = {
     create: baseSchema.pick({
         name: true,
         location: true,
+        locationMap: true,
         order: true,
         eventStart: true,
         eventEnd: true,
@@ -86,6 +89,7 @@ export const eventSchemas = {
     update: baseSchema.partial().pick({
         name: true,
         location: true,
+        locationMap: true,
         order: true,
         eventStart: true,
         eventEnd: true,

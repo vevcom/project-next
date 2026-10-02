@@ -4,6 +4,7 @@ import { eventSchemas } from './schemas'
 import { defaultSearchResultLimit, eventFilterSelection } from './constants'
 import { notificationOperations } from '@/services/notifications/operations'
 import { getOsloTime } from '@/lib/dates/getOsloTime'
+import { getLocationMapData } from '@/lib/maps/locationMap'
 import { ServerError } from '@/services/error'
 import { defineOperation } from '@/services/serviceOperation'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
@@ -108,6 +109,7 @@ const read = defineOperation({
                 id: params.id,
             },
             include: {
+                locationMap: true,
                 coverImage: {
                     include: {
                         image: { include: expandedImageIncluder }
@@ -190,6 +192,7 @@ export const eventOperations = {
                 data: {
                     name: data.name,
                     location: data.location,
+                    locationMap: data.locationMap ? { create: getLocationMapData(data.locationMap) } : undefined,
                     eventStart: data.eventStart,
                     eventEnd: data.eventEnd,
                     takesRegistration: data.takesRegistration,
@@ -361,9 +364,10 @@ export const eventOperations = {
         authorizer: async ({ params, prisma }) => eventAuth.update.dynamicFields({
             doubleLevelMatrix: await visibility.readDoubleLevelMatrixInternal({ params, prisma })
         }),
-        operation: async ({ prisma, params, data: { tagIds, ...data } }) => {
+        operation: async ({ prisma, params, data: { tagIds, locationMap, ...data } }) => {
             const event = await prisma.event.findUniqueOrThrow({
-                where: { id: params.id }
+                where: { id: params.id },
+                include: { locationMap: true },
             })
 
             if ((data.eventStart ?? event?.eventStart) > (data.eventEnd ?? event?.eventEnd)) {
@@ -393,9 +397,20 @@ export const eventOperations = {
                 throw new ServerError('BAD PARAMETERS', 'Betalingsdatoer må settes når arrangementet har en pris')
             }
 
+            let mapUpdate: Prisma.EventLocationMapUpdateOneWithoutEventNestedInput | undefined
+            if (locationMap) {
+                const mapData = getLocationMapData(locationMap)
+                mapUpdate = { upsert: { create: mapData, update: mapData } }
+            } else if (locationMap === null && event.locationMap) {
+                mapUpdate = { delete: true }
+            }
+
             const eventUpdate = await prisma.event.update({
                 where: { id: params.id },
-                data,
+                data: {
+                    ...data,
+                    locationMap: mapUpdate,
+                },
             })
             if (!tagIds) return eventUpdate
 

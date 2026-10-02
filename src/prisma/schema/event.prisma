@@ -4,14 +4,15 @@ enum EventCanView {
 }
 
 model Event {
-  id             Int             @id @default(autoincrement())
+  id             Int               @id @default(autoincrement())
   name           String
-  paragraph      CmsParagraph    @relation(fields: [cmsParagraphId], references: [id])
-  cmsParagraphId Int             @unique
-  coverImage     CmsImage        @relation(fields: [coverImageId], references: [id])
-  coverImageId   Int             @unique
+  paragraph      CmsParagraph      @relation(fields: [cmsParagraphId], references: [id])
+  cmsParagraphId Int               @unique
+  coverImage     CmsImage          @relation(fields: [coverImageId], references: [id])
+  coverImageId   Int               @unique
   eventTagEvents EventTagEvent[]
   location       String?
+  locationMap    EventLocationMap?
 
   eventStart         DateTime
   eventEnd           DateTime
@@ -49,6 +50,20 @@ model Event {
   company     Boolean @default(false) // If a plus one is allowed
   lead        String?
   extraFields Json?   @db.Json
+}
+
+enum MapProvider {
+  MAZEMAP
+  OPENSTREETMAP
+}
+
+model EventLocationMap {
+  eventId   Int         @id
+  event     Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  provider  MapProvider
+  url       String?
+  latitude  Float?
+  longitude Float?
 }
 
 model EventTagEvent {

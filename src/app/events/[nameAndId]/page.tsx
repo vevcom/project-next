@@ -4,6 +4,7 @@ import RegistrationUI from './RegistrationUI'
 import RegistrationsList from './RegistrationsList'
 import ManualRegistrationForm from './ManualRegistrationForm'
 import EventVisibilityAdmin from './EventVisibilityAdmin'
+import EventLocationMap from '@/components/Event/EventLocationMap'
 import Date from '@/components/Date/Date'
 import CreateOrUpdateEventForm from '@/app/events/CreateOrUpdateEventForm'
 import CmsImage from '@/components/Cms/CmsImage/CmsImage'
@@ -215,6 +216,10 @@ export default async function Event({ params }: PropTypes) {
                         )
                     }
                 />
+                {event.locationMap && <section aria-label="Kart til arrangementet">
+                    <h2>Her finner du oss</h2>
+                    <EventLocationMap locationMap={event.locationMap} />
+                </section>}
             </main>
 
             {event.takesRegistration && canReadRegistrations && (
