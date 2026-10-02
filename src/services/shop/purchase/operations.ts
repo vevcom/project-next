@@ -92,7 +92,7 @@ export const purchaseOperations = {
 
             const totalPrice = productList.reduce((sum, product) => sum + product.price * product.quantity, 0)
 
-            const buyerAccount = await ledgerAccountOperations.readOrCreate({
+            const buyerAccount = await ledgerAccountOperations.read({
                 params: { userId: user.id },
                 bypassAuth: true,
             })

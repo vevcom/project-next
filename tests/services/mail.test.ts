@@ -178,7 +178,13 @@ describe('mail flow traversal', () => {
         const { order } = await omegaOrderOperations.readCurrent({ bypassAuth: true })
         const group = await prisma.group.create({ data: { groupType: 'MANUAL_GROUP', order } })
         testGroupIds.push(group.id)
-        const user = await prisma.user.create({ data: { username: 'test-group-user', email: 'test-group@test.test' } })
+        const user = await prisma.user.create({
+            data: {
+                username: 'test-group-user',
+                email: 'test-group@test.test',
+                ledgerAccount: { create: { type: 'USER' } },
+            },
+        })
         await prisma.membership.create({
             data: { userId: user.id, groupId: group.id, admin: false, active: true, order },
         })
@@ -259,7 +265,13 @@ describe('destroy mailing list user relation', () => {
         const { order } = await omegaOrderOperations.readCurrent({ bypassAuth: true })
         const group = await prisma.group.create({ data: { groupType: 'MANUAL_GROUP', order } })
         testGroupIds.push(group.id)
-        const user = await prisma.user.create({ data: { username: 'test-destroy-user', email: 'test-destroy@test.test' } })
+        const user = await prisma.user.create({
+            data: {
+                username: 'test-destroy-user',
+                email: 'test-destroy@test.test',
+                ledgerAccount: { create: { type: 'USER' } },
+            },
+        })
         await prisma.membership.create({
             data: { userId: user.id, groupId: group.id, admin: false, active: true, order },
         })
@@ -282,7 +294,13 @@ describe('destroy mailing list user relation', () => {
     })
 
     test('can destroy direct user relation when one exists', async () => {
-        const user = await prisma.user.create({ data: { username: 'test-direct-user', email: 'test-direct@test.test' } })
+        const user = await prisma.user.create({
+            data: {
+                username: 'test-direct-user',
+                email: 'test-direct@test.test',
+                ledgerAccount: { create: { type: 'USER' } },
+            },
+        })
         const list = await mailingListOperations.create({
             data: { name: 'test-direct-list', description: '' },
             bypassAuth: true,

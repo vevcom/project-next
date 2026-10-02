@@ -84,14 +84,20 @@ export const seedDevUsers = defineSeedOperation(async (prisma: PrismaClient) => 
     const existingUsernames = new Set(existingUsers.map(user => user.username))
     const newDevUserSpecs = devUserSpecs.filter(spec => !existingUsernames.has(spec.username))
 
+    const newLedgerAccounts = await prisma.ledgerAccount.createManyAndReturn({
+        data: newDevUserSpecs.map(() => ({ type: 'USER' as const })),
+        select: { id: true },
+    })
+
     const createdUsers = await prisma.user.createManyAndReturn({
-        data: newDevUserSpecs.map(spec => ({
+        data: newDevUserSpecs.map((spec, index) => ({
             firstname: spec.firstName,
             lastname: spec.lastName,
             email: spec.email,
             username: spec.username,
             studentCard: `${spec.username}s studentkort`,
             acceptedTerms: new Date(),
+            ledgerAccountId: newLedgerAccounts[index].id,
         })),
         select: { id: true, username: true },
     })

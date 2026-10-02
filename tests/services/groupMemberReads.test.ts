@@ -39,7 +39,11 @@ beforeEach(async () => {
 
     const { order } = await omegaOrderOperations.readCurrent({ bypassAuth: true })
     const created = await prisma.user.create({
-        data: { username: 'group-admin-test', email: 'group-admin-test@omega.ntnu.no' },
+        data: {
+            username: 'group-admin-test',
+            email: 'group-admin-test@omega.ntnu.no',
+            ledgerAccount: { create: { type: 'USER' } },
+        },
         select: userFilterSelection,
     })
     user = created

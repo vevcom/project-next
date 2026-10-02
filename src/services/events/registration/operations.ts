@@ -568,9 +568,9 @@ export const eventRegistrationOperations = {
 
                 // Outer authorizer (eventRegistrationAuth.createPayment) already covers
                 // whether this caller may pay for params.userId's registration, which
-                // readOrCreate's own ownership check would otherwise re-reject an admin for.
+                // read's own ownership check would otherwise re-reject an admin for.
                 const payerAccount = params.amountFromBalance > 0
-                    ? await ledgerAccountOperations.readOrCreate({
+                    ? await ledgerAccountOperations.read({
                         params: { userId: params.userId },
                         bypassAuth: true,
                         prisma: tx,

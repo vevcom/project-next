@@ -496,10 +496,10 @@ export const cabinBookingOperations = {
                 }
 
                 // Outer authorizer (cabinBookingAuth.createPayment) already covers whether this
-                // caller may pay for this booking, which readOrCreate's own ownership check
+                // caller may pay for this booking, which read's own ownership check
                 // would otherwise re-reject an admin or a guest booking's owner for.
                 const payerAccount = params.amountFromBalance > 0
-                    ? await ledgerAccountOperations.readOrCreate({
+                    ? await ledgerAccountOperations.read({
                         params: { userId: booking.userId! },
                         bypassAuth: true,
                         prisma: tx,

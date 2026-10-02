@@ -23,11 +23,11 @@ export async function resolveAccountOwnership(
 
     const account = await prisma.ledgerAccount.findUnique({
         where: { id: params.ledgerAccountId },
-        select: { userId: true, groups: { select: { groupId: true } } },
+        select: { user: { select: { id: true } }, groups: { select: { groupId: true } } },
     })
 
     return {
-        userId: account?.userId ?? null,
+        userId: account?.user?.id ?? null,
         groupIds: account?.groups.map(group => group.groupId) ?? [],
     }
 }
@@ -48,11 +48,11 @@ export async function resolveAccountsOwnership(
     if (params.ledgerAccountIds?.length) {
         const accounts = await prisma.ledgerAccount.findMany({
             where: { id: { in: params.ledgerAccountIds } },
-            select: { userId: true, groups: { select: { groupId: true } } },
+            select: { user: { select: { id: true } }, groups: { select: { groupId: true } } },
         })
 
         ownerships.push(...accounts.map(account => ({
-            userId: account.userId,
+            userId: account.user?.id ?? null,
             groupIds: account.groups.map(group => group.groupId),
         })))
     }

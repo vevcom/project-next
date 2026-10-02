@@ -98,6 +98,9 @@ export const seedAdmin = defineSeedOperation(async (prisma: PrismaClient) => {
             lastname: 'Admin',
             emailVerified: new Date(),
             acceptedTerms: new Date(),
+            ledgerAccount: {
+                create: { type: 'USER' },
+            },
         },
     })
 

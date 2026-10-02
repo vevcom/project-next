@@ -239,6 +239,10 @@ export class UserMigrator {
             return [usernameCollision, emailCollision]
         }
 
+        const ledgerAccount = await this.pnPrisma.ledgerAccount.create({
+            data: { type: 'USER' },
+        })
+
         const userData = {
             username: user.username.toLowerCase(),
             email: user.email ? user.email.toLowerCase() : `dobbel-${user.id}@omega.ntnu.no`,
@@ -254,6 +258,7 @@ export class UserMigrator {
             updatedAt: user.updatedAt,
             imageId: owIdToPnId(this.imageIdMap, user.ImageId, 'images'),
             archived: user.archived,
+            ledgerAccountId: ledgerAccount.id,
         } satisfies Prisma.UserUncheckedCreateInput
 
         let pnUser: User | undefined
