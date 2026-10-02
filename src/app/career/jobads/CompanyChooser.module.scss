@@ -1,27 +1,47 @@
 @use '@/styles/ohma';
 
+// The chooser is always embedded in something that owns its height - a popup, or the edit panel -
+// so it fills what it is given and scrolls inside rather than growing with the company list.
 .CompanyChooser {
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: calc(2 * #{ohma.$gap});
+    // Smaller cards than the management page, since a picker shows many at once.
+    --company-card-min: 150px;
+}
+
+.header {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: ohma.$gap;
+    flex-shrink: 0;
+
     a {
         @include ohma.secondaryBtn;
+        margin: 0;
+        white-space: nowrap;
     }
-    @include ohma.screenLg {
-        padding-top: 3em;
-        a {
-            position: absolute;
-            top: 0;
-            right: 0;
-        }
-        .filter {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
+}
+
+// Two classes deep to win over TextInput's own rule regardless of bundle order.
+.header .filter {
+    flex: 1 1 12em;
+    max-width: 20em;
+    margin-top: 0;
+}
+
+.list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    // Keeps the cards clear of the scrollbar.
+    padding-right: ohma.$gap;
+
+    // The list's own top margin is for the management page; here the flex gap already spaces it.
+    > div {
+        margin-top: 0;
     }
-    @include ohma.screenMobile {
-        .filter, a {
-            margin: 2em 0;
-        }
-    }
-   
 }

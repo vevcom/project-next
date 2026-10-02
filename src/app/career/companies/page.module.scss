@@ -1,0 +1,11 @@
+@use '@/styles/ohma';
+
+// Search on the left, the badge legend on the right - it explains the ordering of the list below.
+.toolbar {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(2 * #{ohma.$gap});
+    width: 100%;
+}

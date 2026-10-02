@@ -1,10 +1,17 @@
 @use '@/styles/ohma';
 
 .CompanyList {
-    margin-top: 2em;
+    margin-top: calc(3 * #{ohma.$gap});
     display: grid;
-    grid-template-columns: repeat(auto-fill, 225px);
-    gap: 2em;
-    justify-content: space-between;
+    // Cards share the leftover space and drop to one column on a phone rather than shrinking below
+    // a readable logo. Picker contexts override the floor to fit more in view.
+    grid-template-columns: repeat(auto-fill, minmax(var(--company-card-min, 200px), 1fr));
+    align-items: stretch;
+    gap: calc(3 * #{ohma.$gap});
     width: 100%;
+}
+
+// The endless-scroll footer is a grid item too, so it has to be told to take the whole row.
+.loadingControl {
+    grid-column: 1 / -1;
 }

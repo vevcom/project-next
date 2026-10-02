@@ -23,6 +23,7 @@ export const simpleArticleAndCompanyIncluder = {
     company: {
         select: {
             name: true,
+            sponsorTier: true,
         }
     },
     article: {
@@ -40,3 +41,9 @@ export const jobAdOptions = Object.values(JobType).map((opt): { value: JobType, 
     value: opt,
     label: jobAdType[opt].label
 }))
+
+// Sponsor job ads first, then newest first. See companySponsorOrdering for why ascending.
+export const activeJobAdOrdering = [
+    { company: { sponsorTier: 'asc' } },
+    { article: { createdAt: 'desc' } },
+] as const satisfies Prisma.JobAdOrderByWithRelationInput[]

@@ -17,7 +17,6 @@ import { readQuotesPageAction } from '@/services/omegaquotes/actions'
 import { readActivePromoAction } from '@/services/promo/actions'
 import { ombulAuth } from '@/services/ombul/auth'
 import { omegaQuotesAuth } from '@/services/omegaquotes/auth'
-import { frontpageAuth } from '@/services/frontpage/auth'
 import { ServerSession } from '@/auth/session/ServerSession'
 import Footer from '@/components/Footer/Footer'
 import PageTitleSetter from '@/contexts/PageTitleSetter'
@@ -59,10 +58,6 @@ export default async function LoggedInLandingPage() {
             }
         }))
         : []
-
-    const canEditSpecialCmsImage = frontpageAuth.updateSpecialCmsImage.dynamicFields({}).auth(
-        session
-    ).toJsObject()
 
     return (
         <div className={styles.wrapper}>
@@ -153,7 +148,7 @@ export default async function LoggedInLandingPage() {
                 </div>
             </div>
             <div className={styles.footer}>
-                <Footer canEditSpecialCmsImage={canEditSpecialCmsImage} />
+                <Footer />
             </div>
         </div>
     )

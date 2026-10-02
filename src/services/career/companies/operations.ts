@@ -1,11 +1,18 @@
 import '@pn-server-only'
 import { companyAuth } from './auth'
-import { logoIncluder } from './constants'
+import {
+    companySponsorOrdering,
+    companySponsorTierLockKey,
+    logoIncluder,
+    sponsorSelection,
+} from './constants'
 import { companySchemas } from './schemas'
 import { defineOperation } from '@/services/serviceOperation'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
 import { cmsImageOperations } from '@/cms/images/operations'
+import { CompanySponsorTier } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
+import type { SponsorCompany } from './types'
 
 export const companyOperations = {
     create: defineOperation({
@@ -25,6 +32,17 @@ export const companyOperations = {
             })
         }
     }),
+    // Public: backs the sponsor strip in the site footer, which anonymous visitors see.
+    readSponsors: defineOperation({
+        authorizer: () => companyAuth.readSponsors.dynamicFields({}),
+        operation: async ({ prisma }): Promise<SponsorCompany[]> => await prisma.company.findMany({
+            where: {
+                sponsorTier: { not: CompanySponsorTier.NONE },
+            },
+            orderBy: companySponsorOrdering,
+            select: sponsorSelection,
+        })
+    }),
     readPage: defineOperation({
         paramsSchema: companySchemas.readPage,
         authorizer: () => companyAuth.readPage.dynamicFields({}),
@@ -36,6 +54,7 @@ export const companyOperations = {
                     mode: 'insensitive'
                 }
             },
+            orderBy: companySponsorOrdering,
             include: logoIncluder,
         })
     }),
@@ -51,6 +70,36 @@ export const companyOperations = {
                 data,
             })
         },
+    }),
+    // The MAIN tier holds a single company, so promoting one demotes the sitting main sponsor in
+    // the same transaction - down to SPONSOR, not out of the sponsors entirely.
+    updateSponsorTier: defineOperation({
+        paramsSchema: z.object({
+            id: z.number(),
+        }),
+        dataSchema: companySchemas.updateSponsorTier,
+        authorizer: () => companyAuth.updateSponsorTier.dynamicFields({}),
+        opensTransaction: true,
+        operation: async ({ prisma, params: { id }, data: { sponsorTier } }) =>
+            await prisma.$transaction(async tx => {
+                // Held until the transaction ends; see companySponsorTierLockKey. Selected from
+                // rather than selected: the lock returns void, which $queryRaw cannot deserialize.
+                await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(${companySponsorTierLockKey}::bigint)`
+
+                if (sponsorTier === CompanySponsorTier.MAIN) {
+                    await tx.company.updateMany({
+                        where: {
+                            sponsorTier: CompanySponsorTier.MAIN,
+                            id: { not: id },
+                        },
+                        data: { sponsorTier: CompanySponsorTier.SPONSOR },
+                    })
+                }
+                await tx.company.update({
+                    where: { id },
+                    data: { sponsorTier },
+                })
+            })
     }),
     updateCmsImageLogo: cmsImageOperations.update.implement({
         implementationParamsSchema: z.object({
