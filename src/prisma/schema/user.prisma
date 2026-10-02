@@ -30,7 +30,7 @@ model User {
   // Only set for a user created on a Feide login that matched no existing (migrated) user. Such a
   // user may hand its Feide account over to a migrated user using the admin and be deleted - no other user may.
   createdByFeideLoginOnProjectNext Boolean            @default(false)
-
+  bullshit               Bullshit[]
   image       Image?  @relation(fields: [imageId], references: [id])
   imageId     Int?    @unique
   studentCard String? @unique

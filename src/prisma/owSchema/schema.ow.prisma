@@ -43,23 +43,6 @@ model Bedreviteren {
   updatedAt      DateTime @db.Timestamptz(6)
 }
 
-model Bullshit {
-  id        Int       @id @default(autoincrement())
-  text      String?
-  timestamp DateTime? @db.Timestamptz(6)
-  PosterId  Int?
-  Users     Users?    @relation(fields: [PosterId], references: [id])
-}
-
-model Bulshits {
-  id        Int      @id @default(autoincrement())
-  bulshit   String
-  createdAt DateTime @db.Timestamptz(6)
-  updatedAt DateTime @db.Timestamptz(6)
-  PosterId  Int?
-  Users     Users?   @relation(fields: [PosterId], references: [id])
-}
-
 model CommitteeApplications {
   id                  Int                 @id @default(autoincrement())
   text                String?
@@ -661,8 +644,6 @@ model Users {
   StudyProgrammeId               Int?
   ImageId                        Int?
   AliasAssociations              AliasAssociations[]
-  Bullshit                       Bullshit[]
-  Bulshits                       Bulshits[]
   CommitteeMembers               CommitteeMembers[]
   CommitteeMembersHist           CommitteeMembersHist[]
   EventRegistrations             EventRegistrations[]

@@ -471,4 +471,14 @@ export const permissionConfig = {
         description: 'kan administrere alle nyhetsartikler uavhengig av synlighet',
         category: 'public',
     },
+    BULLSHIT_WRITE: {
+        name: 'Lage bullshit',
+        description: 'Kan sende inn bullshit',
+        category: 'ombul',
+    },
+    BULLSHIT_READ: {
+        name: 'Les bullshit',
+        description: 'Kan lese bullshit',
+        category: 'ombul',
+    },
 } satisfies Record<Permission, PermissionInfo>

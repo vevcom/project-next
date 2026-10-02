@@ -35,9 +35,11 @@ import {
     faHouseChimneyWindow,
     faPeopleLine,
     faIdCard,
+    faPoo,
 } from '@fortawesome/free-solid-svg-icons'
 import type { AuthorizerDynamicFieldsBound, UserRequieredOutOpt } from '@/auth/authorizer/Authorizer'
 import type { SessionMaybeUser } from '@/auth/session/Session'
+import { bullshitAuth } from '@/services/bullshit/auth'
 import type { IconDefinition } from '@fortawesome/free-solid-svg-icons'
 
 export type NavItem = {
@@ -117,6 +119,12 @@ export const navDef: NavItem[] = [
         href: '/omegaquotes',
         icon: faComment,
         authorizers: () => [omegaQuotesAuth.readPage.dynamicFields({})],
+    },
+    {
+        name: 'Bullshit',
+        href: '/bullshit',
+        icon: faPoo,
+        authorizers: () => [bullshitAuth.create.dynamicFields({})],
     },
     {
         name: 'Artikler',
