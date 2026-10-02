@@ -13,7 +13,7 @@ ALTER TABLE "User" ADD COLUMN "ledgerAccountId" INTEGER;
 UPDATE "User"
 SET "ledgerAccountId" = "LedgerAccount"."id"
 FROM "LedgerAccount"
-WHERE "LedgerAccount"."userId" = "User"."id";
+WHERE "LedgerAccount"."userId" = "User"."id" AND "LedgerAccount"."type" = 'USER';
 
 -- 3. Backfill every remaining user with a fresh LedgerAccount. Done row-by-row (not a bulk
 -- INSERT ... SELECT ... RETURNING) because Postgres does not guarantee RETURNING output order
