@@ -1,5 +1,6 @@
 import styles from './CmsParagraph.module.scss'
 import ParagraphEditor from './CmsParagraphEditor'
+import { sanitizeHtml } from '@/lib/html/sanitizeHtml'
 import React from 'react'
 import type { CmsParagraph as CmsParagraphT } from '@/prisma-generated-pn-types'
 import type { UpdateCmsParagraphAction } from '@/cms/paragraphs/types'
@@ -19,7 +20,9 @@ export default function CmsParagraph({ cmsParagraph, className, updateCmsParagra
                 {cmsParagraph.contentHtml ? (
                     <div
                         className={styles.HTMLcontent}
-                        dangerouslySetInnerHTML={{ __html: cmsParagraph.contentHtml }}
+                        // Sanitized again on the way out, not only when written: rows written before
+                        // html imported by DobbelOmega, never passed through it.
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(cmsParagraph.contentHtml) }}
                     />
                 ) : (
                     <i>Her var det ikke noe innhold</i>
