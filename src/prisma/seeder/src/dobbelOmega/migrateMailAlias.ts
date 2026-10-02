@@ -18,13 +18,14 @@ export default async function migrateMailAliases(
         }
     })
 
-    // A notification channel's mailAlias FK restricts, so deleting one it points at kills the migration.
-    const channelAliases = await pnPrisma.notificationChannel.findMany({
-        select: { mailAliasId: true },
-    })
-    await pnPrisma.mailAlias.deleteMany({
-        where: { id: { notIn: channelAliases.map(channel => channel.mailAliasId) } },
-    })
+    // Aliases a notification channel points at must survive - that FK restricts.
+    await pnPrisma.$executeRaw`
+        DELETE FROM "MailAlias"
+        WHERE NOT EXISTS (
+            SELECT 1 FROM "NotificationChannel"
+            WHERE "NotificationChannel"."mailAliasId" = "MailAlias"."id"
+        )
+    `
     await pnPrisma.mailingList.deleteMany()
     await pnPrisma.mailAddressExternal.deleteMany()
 
