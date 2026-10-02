@@ -57,9 +57,10 @@ model User {
   omegaQuote OmegaQuote[]
 
   // Which ledger account (i.e. internal bank account) and
-  // stripe customer this user is associated with.
-  ledgerAccount  LedgerAccount?
-  stripeCustomer StripeCustomer?
+  // stripe customer this user is associated with. Every user has exactly one ledger account.
+  ledgerAccountId Int             @unique
+  ledgerAccount   LedgerAccount   @relation(fields: [ledgerAccountId], references: [id], onUpdate: Cascade)
+  stripeCustomer  StripeCustomer?
 
   // What notifications the user whiches to received and
   // which mailing lists the user is on.

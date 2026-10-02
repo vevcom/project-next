@@ -1,25 +1,18 @@
 import { RequirePermission } from '@/auth/authorizer/RequirePermission'
-import { RequireUserIdOrPermission } from '@/auth/authorizer/RequireUserIdOrPermission'
 import { RequireLedgerAccountAccess } from '@/auth/authorizer/RequireLedgerAccountAccess'
 
 // Reads are exempt from LEDGER_USE: users can always see their own accounts even if the ledger
 // is otherwise disabled. Mutations require LEDGER_USE, plus ownership whenever they act on a
 // specific account.
 export const ledgerAccountAuth = {
-    // A USER account may be self-service created by anyone with LEDGER_USE (see readOrCreate's
-    // comment). A GROUP account has no owning user to fall back on, so it's LEDGER_ADMIN only.
-    create: {
-        ledgerUse: RequirePermission.staticFields({ permission: 'LEDGER_USE' }),
-        ledgerAdmin: RequirePermission.staticFields({ permission: 'LEDGER_ADMIN' }),
-    },
+    // USER accounts are created automatically alongside their User, not through this operation
+    // (see operations.ts's create). A GROUP account has no owning user to fall back on, so this
+    // is LEDGER_ADMIN only.
+    create: RequirePermission.staticFields({ permission: 'LEDGER_ADMIN' }),
 
     read: RequireLedgerAccountAccess.staticFields({ permission: 'LEDGER_ADMIN' }),
 
     readMany: RequireLedgerAccountAccess.staticFields({ permission: 'LEDGER_ADMIN' }),
-
-    // Its only caller, paymentOperations.initiate, already requires LEDGER_USE, so the account
-    // creation this performs stays gated even though this authorizer alone doesn't check it.
-    readOrCreate: RequireUserIdOrPermission.staticFields({ permission: 'LEDGER_ADMIN' }),
 
     // Browses every account with no owner filter, so this is LEDGER_ADMIN only, not exempt.
     readPage: RequirePermission.staticFields({ permission: 'LEDGER_ADMIN' }),

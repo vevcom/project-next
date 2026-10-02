@@ -53,7 +53,10 @@ export const userOperations = {
                             admin: false,
                             active: true,
                         }]
-                    }
+                    },
+                    ledgerAccount: {
+                        create: { type: 'USER' },
+                    },
                 },
                 select: userFilterSelection
             })
@@ -611,11 +614,10 @@ export const userOperations = {
             }
 
             // bypassAuth: reading this user's own balance is already covered by userAuth.read
-            // above; ledgerAccountAuth.readOrCreate/calculateBalance's own ownership check would
+            // above; ledgerAccountAuth.read/calculateBalance's own ownership check would
             // otherwise reject an API-key caller (no session user) looking up someone else's
-            // balance. readOrCreate (rather than calculateBalance's own userId lookup) is used so
-            // a user who has never touched the ledger gets a balance of 0 instead of a NOT FOUND.
-            const account = await ledgerAccountOperations.readOrCreate({
+            // balance.
+            const account = await ledgerAccountOperations.read({
                 params: { userId: user.id },
                 bypassAuth: true,
             })
