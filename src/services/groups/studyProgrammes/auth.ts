@@ -1,6 +1,6 @@
 import { RequirePermission } from '@/auth/authorizer/RequirePermission'
 import { RequirePermissionOrGroupAdmin } from '@/auth/authorizer/RequirePermissionOrGroupAdmin'
-import { requireReadManagedGroupMembers } from '@/services/groups/auth'
+import { requireReadManagedGroupMembers, requireReadMembershipsOfUser } from '@/services/groups/auth'
 
 export const studyProgrammeAuth = {
     create: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_ADMIN' }),
@@ -11,6 +11,7 @@ export const studyProgrammeAuth = {
     readMany: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_READ' }),
     readExpanded: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_READ' }),
     readMembers: requireReadManagedGroupMembers('STUDY_PROGRAMME_READ'),
+    readMembershipsOfUser: requireReadMembershipsOfUser('STUDY_PROGRAMME_READ'),
     update: RequirePermission.staticFields({ permission: 'STUDY_PROGRAMME_ADMIN' }),
     addMembers: RequirePermissionOrGroupAdmin.staticFields({ permission: 'STUDY_PROGRAMME_ADMIN' }),
     removeMembers: RequirePermissionOrGroupAdmin.staticFields({ permission: 'STUDY_PROGRAMME_ADMIN' }),

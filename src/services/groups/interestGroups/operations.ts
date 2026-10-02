@@ -21,6 +21,7 @@ const commonGroupOperations = implementGroupType({
     auth: {
         readExpanded: interestGroupAuth.readExpanded.dynamicFields({}),
         readMembers: ({ groupId }) => interestGroupAuth.readMembers.dynamicFields({ groupId }),
+        readMembershipsOfUser: ({ userId }) => interestGroupAuth.readMembershipsOfUser.dynamicFields({ userId }),
     },
 })
 
@@ -67,6 +68,7 @@ async function assertNotPensioned(prisma: PrismaPossibleTransaction<false>, id: 
 export const interestGroupOperations = {
     readExpanded: commonGroupOperations.readExpanded,
     readMembers: commonGroupOperations.readMembers,
+    readMembershipsOfUser: commonGroupOperations.readMembershipsOfUser,
     addMembers: memberManagement.addMembers,
     removeMembers: memberManagement.removeMembers,
     setMemberAdmin: memberManagement.setMemberAdmin,

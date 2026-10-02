@@ -10,6 +10,7 @@ export const updateStudyProgrammeAction = makeAction(studyProgrammeOperations.up
 export const destroyStudyProgrammeAction = makeAction(studyProgrammeOperations.destroy)
 export const readStudyProgrammesExpandedAction = makeAction(studyProgrammeOperations.readExpanded)
 export const readStudyProgrammeMembersAction = makeAction(studyProgrammeOperations.readMembers)
+export const readStudyProgrammeMembershipsOfUserAction = makeAction(studyProgrammeOperations.readMembershipsOfUser)
 export const addStudyProgrammeMembersAction = makeAction(studyProgrammeOperations.addMembers)
 export const removeStudyProgrammeMembersAction = makeAction(studyProgrammeOperations.removeMembers)
 export const migrateStudyProgrammesAction = makeAction(studyProgrammeOperations.migrateGroups)

@@ -79,8 +79,12 @@ export async function moveFeideAccountToUser(
             data: { userId: toUserId },
         })
 
-        await transaction.user.delete({
+        const deletedUser = await transaction.user.delete({
             where: { id: fromUserId },
+            select: { bioParagraphId: true },
+        })
+        await transaction.cmsParagraph.delete({
+            where: { id: deletedUser.bioParagraphId },
         })
     })
 }

@@ -54,6 +54,7 @@ model CmsParagraph {
   Committee           Committee?           @relation(name: "committeeParagraph")
   CommitteApplication Committee?           @relation(name: "applicationParagraph")
   Ombul               Ombul?
+  User                User?
 }
 
 enum SpecialCmsLink {

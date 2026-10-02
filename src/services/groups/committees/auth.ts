@@ -1,6 +1,6 @@
 import { RequirePermission } from '@/auth/authorizer/RequirePermission'
 import { RequirePermissionOrGroupAdmin } from '@/auth/authorizer/RequirePermissionOrGroupAdmin'
-import { requireReadManagedGroupMembers } from '@/services/groups/auth'
+import { requireReadManagedGroupMembers, requireReadMembershipsOfUser } from '@/services/groups/auth'
 
 export const committeeLogosImagePanelAuth = RequirePermission.staticFields({ permission: 'COMMITTEE_ADMIN' })
 
@@ -10,6 +10,7 @@ export const committeeAuth = {
     readAll: RequirePermission.staticFields({ permission: 'COMMITTEE_READ' }),
     read: RequirePermission.staticFields({ permission: 'COMMITTEE_READ' }),
     readMembers: requireReadManagedGroupMembers('COMMITTEE_READ'),
+    readMembershipsOfUser: requireReadMembershipsOfUser('COMMITTEE_READ'),
     readExpanded: RequirePermission.staticFields({ permission: 'COMMITTEE_READ' }),
     addMembers: RequirePermissionOrGroupAdmin.staticFields({ permission: 'COMMITTEE_ADMIN' }),
     removeMembers: RequirePermissionOrGroupAdmin.staticFields({ permission: 'COMMITTEE_ADMIN' }),

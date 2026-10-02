@@ -4,6 +4,7 @@ import { groupSchemas } from './schemas'
 import {
     groupMembershipIncluder,
     groupsExpandedIncluder,
+    groupsWithRelationsIncluder,
     membershipFilterSelection,
     readGroupsOfUserIncluder,
 } from './constants'
@@ -158,6 +159,33 @@ export const groupOperations = {
             })).map(assertGroupValidity)
 
             return Promise.all(groups.map(group => expandGroup(group, prisma)))
+        }
+    }),
+
+    /**
+     * Every membership the user has held in groups of the implementing type, active or not, newest
+     * order first - each with its group's display name, since that is what someone reading them is after.
+     */
+    readMembershipsOfUserOfType: defineSubOperation({
+        paramsSchema: () => groupSchemas.readMembershipsOfUserOfType,
+        operation: ({ type }: { type: GroupType }) => async ({ prisma, params }) => {
+            const memberships = await prisma.membership.findMany({
+                where: {
+                    userId: params.userId,
+                    group: { groupType: type },
+                },
+                select: {
+                    ...membershipFilterSelection,
+                    title: true,
+                    group: { include: groupsWithRelationsIncluder },
+                },
+                orderBy: { order: 'desc' },
+            })
+
+            return memberships.map(({ group, ...membership }) => ({
+                ...membership,
+                groupName: inferGroupName(assertGroupValidity(group)),
+            }))
         }
     }),
 

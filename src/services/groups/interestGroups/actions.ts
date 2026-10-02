@@ -9,6 +9,7 @@ export const readInterestGroupsAction = makeAction(interestGroupOperations.readM
 export const readInterestGroupAction = makeAction(interestGroupOperations.read)
 export const readInterestGroupsExpandedAction = makeAction(interestGroupOperations.readExpanded)
 export const readInterestGroupMembersAction = makeAction(interestGroupOperations.readMembers)
+export const readInterestGroupMembershipsOfUserAction = makeAction(interestGroupOperations.readMembershipsOfUser)
 export const addInterestGroupMembersAction = makeAction(interestGroupOperations.addMembers)
 export const removeInterestGroupMembersAction = makeAction(interestGroupOperations.removeMembers)
 export const setInterestGroupMemberAdminAction = makeAction(interestGroupOperations.setMemberAdmin)

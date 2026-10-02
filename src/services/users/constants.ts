@@ -24,7 +24,6 @@ export const userFieldsToExpose = [
     'imageConsent',
     'relationshipStatus',
     'relationshipStatusText',
-    'bio',
 ] as const satisfies (keyof User)[]
 
 export const userFilterSelection = {

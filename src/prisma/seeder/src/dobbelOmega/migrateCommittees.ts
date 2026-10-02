@@ -1,6 +1,6 @@
 import { owIdToPnId } from './IdMapper'
 import { createProgressBar } from './progressBar'
-import { cmsParagraphOperations } from '@/services/cms/paragraphs/operations'
+import { createCmsParagraph } from './createCmsParagraph'
 import logger from '@/lib/logger'
 import { readFile } from 'fs/promises'
 import { dirname, join } from 'path'
@@ -21,21 +21,6 @@ async function readCommitteMarkdown(filename: string): Promise<string> {
     } catch {
         return ''
     }
-}
-
-/**
- * Creates a CmsParagraph with rendered contentHtml by delegating to the same
- * cmsParagraphOperations.updateContent used by the live app, instead of duplicating
- * the markdown->html pipeline here.
- */
-async function createCmsParagraph(pnPrisma: PrismaClientPn, markdown: string) {
-    const paragraph = await pnPrisma.cmsParagraph.create({ data: {} })
-    await cmsParagraphOperations.updateContent.internalCall({
-        prisma: pnPrisma,
-        params: { paragraphId: paragraph.id },
-        data: { markdown },
-    })
-    return paragraph
 }
 
 async function createCommitteArticleSection(

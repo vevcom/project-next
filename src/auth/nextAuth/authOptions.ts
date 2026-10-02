@@ -185,10 +185,11 @@ export const authOptions: AuthOptions = {
                     params: { id: userId },
                     bypassAuth: true,
                 }),
-                permissions: await permissionOperations.readPermissionsOfUser.internalCall({
+                permissions: await permissionOperations.readPermissionsOfUser({
                     params: {
                         userId,
-                    }
+                    },
+                    bypassAuth: true,
                 }),
                 memberships: await groupOperations.readMembershipsOfUser.internalCall({
                     params: {

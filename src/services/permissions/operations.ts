@@ -1,6 +1,6 @@
 import '@pn-server-only'
 import { permissionsAuth } from './auth'
-import { defineOperation, defineSubOperation } from '@/services/serviceOperation'
+import { defineOperation } from '@/services/serviceOperation'
 import { invalidateAllUserSessionData, invalidateManyUserSessionData } from '@/services/auth/invalidateSession'
 import { groupsWithRelationsIncluder } from '@/services/groups/constants'
 import { assertGroupValidity } from '@/services/groups/assertGroupValidity'
@@ -16,11 +16,12 @@ export const permissionOperations = {
             (await prisma.defaultPermission.findMany()).map(perm => perm.permission)
     }),
 
-    readPermissionsOfUser: defineSubOperation({
-        paramsSchema: () => z.object({
+    readPermissionsOfUser: defineOperation({
+        authorizer: ({ params }) => permissionsAuth.readPermissionsOfUser.dynamicFields({ userId: params.userId }),
+        paramsSchema: z.object({
             userId: z.number(),
         }),
-        operation: () => async ({ prisma, params }) => {
+        operation: async ({ prisma, params }) => {
             const [defaultPermissions, groupPermissions] = await Promise.all([
                 permissionOperations.readDefaultPermissions({}),
                 prisma.membership.findMany({

@@ -35,11 +35,17 @@ export function implementGroupType({ type, auth }: {
     auth: {
         readExpanded: AuthorizerDynamicFieldsBound,
         readMembers: GroupAuthorizerOfGroup,
+        readMembershipsOfUser: (args: { userId: number }) => AuthorizerDynamicFieldsBound,
     },
 }) {
     return {
         readExpanded: groupOperations.readExpandedOfType.implement({
             authorizer: () => auth.readExpanded,
+            ownershipCheck: () => true,
+            operationImplementationFields: { type },
+        }),
+        readMembershipsOfUser: groupOperations.readMembershipsOfUserOfType.implement({
+            authorizer: ({ params }) => auth.readMembershipsOfUser({ userId: params.userId }),
             ownershipCheck: () => true,
             operationImplementationFields: { type },
         }),

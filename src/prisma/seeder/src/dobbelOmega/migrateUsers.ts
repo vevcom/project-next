@@ -1,6 +1,7 @@
 import upsertOrderBasedOnDate, { upsertOmegaOrder } from './upsertOrderBasedOnDate'
 import { type IdMapper, owIdToPnId } from './IdMapper'
 import { createProgressBar } from './progressBar'
+import { createCmsParagraph } from './createCmsParagraph'
 import manifest from '@/prisma/seeder/src/dobbelOmega/manifest'
 import { Prisma, type PrismaClient as PrismaClientPn, type SEX } from '@/prisma-generated-pn-client'
 import logger from '@/lib/logger'
@@ -239,12 +240,17 @@ export class UserMigrator {
             return [usernameCollision, emailCollision]
         }
 
+        // A user who never wrote a bio still gets the paragraph, ready to be written in.
+        const bioParagraph = user.bio
+            ? await createCmsParagraph(this.pnPrisma, user.bio)
+            : await this.pnPrisma.cmsParagraph.create({ data: {} })
+
         const userData = {
             username: user.username.toLowerCase(),
             email: user.email ? user.email.toLowerCase() : `dobbel-${user.id}@omega.ntnu.no`,
             firstname: user.firstname,
             lastname: user.lastname,
-            bio: user.bio ?? '',
+            bioParagraphId: bioParagraph.id,
             acceptedTerms: undefined,
             sex: sexMap[user.sex],
             allergies: undefined,

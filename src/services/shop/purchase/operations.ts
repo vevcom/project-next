@@ -29,10 +29,11 @@ export const purchaseOperations = {
                 throw e
             }
 
-            const permissions = await permissionOperations.readPermissionsOfUser.internalCall({
+            const permissions = await permissionOperations.readPermissionsOfUser({
                 params: {
                     userId: user.id,
                 },
+                bypassAuth: true,
             })
 
             return purchaseAuth.createByStudentCard.dynamicFields({

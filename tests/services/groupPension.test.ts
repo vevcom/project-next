@@ -24,7 +24,11 @@ async function createGroupBehindCurrentOrder(shortName: string) {
     })
 
     const user = await prisma.user.create({
-        data: { username: `pension-${shortName}`, email: `pension-${shortName}@omega.ntnu.no` },
+        data: {
+            username: `pension-${shortName}`,
+            email: `pension-${shortName}@omega.ntnu.no`,
+            bioParagraph: { create: {} },
+        },
     })
 
     await prisma.group.update({

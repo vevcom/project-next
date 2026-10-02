@@ -20,6 +20,7 @@ export const userAuth = {
     update: RequirePermission.staticFields({ permission: 'USERS_UPDATE' }),
     updateProfile: RequireUsernameOrPermission.staticFields({ permission: 'USERS_UPDATE' }),
     updateProfileImage: RequireUsernameOrPermission.staticFields({ permission: 'USERS_UPDATE' }),
+    updateBioParagraphContent: RequireUserIdOrPermission.staticFields({ permission: 'USERS_UPDATE' }),
     register: RequireUserId.staticFields({}),
     destroy: RequirePermission.staticFields({ permission: 'USERS_DESTROY' }),
 } as const

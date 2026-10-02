@@ -1,9 +1,7 @@
 import type { userFilterSelection } from './constants'
 import type { userSchemas } from './schemas'
-import type { MembershipFiltered } from '@/services/groups/types'
 import type { InferPagingCursor, InferPagingDetails } from '@/lib/paging/schema'
-import type { ClassLevel, OmegaMembershipLevel, Permission } from '@/prisma-generated-pn-types'
-import type { ExpandedImage } from '@/services/images/subservice/types'
+import type { ClassLevel, OmegaMembershipLevel } from '@/prisma-generated-pn-types'
 import type { Prisma } from '@/prisma-generated-pn-types'
 
 export type UserFiltered = Prisma.UserGetPayload<{
@@ -37,9 +35,3 @@ export type RegisterNewEmailType = {
 }
 
 export type UserCursor = InferPagingCursor<typeof userSchemas.readPage>
-
-export type Profile = {
-    user: UserFiltered & { image: ExpandedImage, bio: string },
-    memberships: MembershipFiltered[],
-    permissions: Permission[],
-}

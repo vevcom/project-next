@@ -349,6 +349,7 @@ const commonGroupOperations = implementGroupType({
     auth: {
         readExpanded: committeeAuth.readExpanded.dynamicFields({}),
         readMembers: ({ groupId }) => committeeAuth.readMembers.dynamicFields({ groupId }),
+        readMembershipsOfUser: ({ userId }) => committeeAuth.readMembershipsOfUser.dynamicFields({ userId }),
     },
 })
 
@@ -382,6 +383,7 @@ export const committeeOperations = {
     read,
     readExpanded: commonGroupOperations.readExpanded,
     readMembers: commonGroupOperations.readMembers,
+    readMembershipsOfUser: commonGroupOperations.readMembershipsOfUser,
     addMembers: memberManagement.addMembers,
     removeMembers: memberManagement.removeMembers,
     setMemberAdmin: memberManagement.setMemberAdmin,

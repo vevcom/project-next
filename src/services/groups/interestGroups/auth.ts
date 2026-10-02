@@ -1,6 +1,6 @@
 import { RequirePermission } from '@/auth/authorizer/RequirePermission'
 import { RequirePermissionOrGroupAdmin } from '@/auth/authorizer/RequirePermissionOrGroupAdmin'
-import { requireReadManagedGroupMembers } from '@/services/groups/auth'
+import { requireReadManagedGroupMembers, requireReadMembershipsOfUser } from '@/services/groups/auth'
 
 export const interestGroupAuth = {
     create: RequirePermission.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),
@@ -8,6 +8,7 @@ export const interestGroupAuth = {
     readMany: RequirePermission.staticFields({ permission: 'INTEREST_GROUP_READ' }),
     readExpanded: RequirePermission.staticFields({ permission: 'INTEREST_GROUP_READ' }),
     readMembers: requireReadManagedGroupMembers('INTEREST_GROUP_READ'),
+    readMembershipsOfUser: requireReadMembershipsOfUser('INTEREST_GROUP_READ'),
     addMembers: RequirePermissionOrGroupAdmin.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),
     removeMembers: RequirePermissionOrGroupAdmin.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),
     setMemberAdmin: RequirePermissionOrGroupAdmin.staticFields({ permission: 'INTEREST_GROUP_ADMIN' }),

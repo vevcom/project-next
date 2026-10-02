@@ -24,6 +24,7 @@ const commonGroupOperations = implementGroupType({
     auth: {
         readExpanded: classAuth.readExpanded.dynamicFields({}),
         readMembers: () => classAuth.readMembers.dynamicFields({}),
+        readMembershipsOfUser: ({ userId }) => classAuth.readMembershipsOfUser.dynamicFields({ userId }),
     },
 })
 
@@ -314,6 +315,7 @@ export const classOperations = {
     readMany,
     readExpanded: commonGroupOperations.readExpanded,
     readMembers: commonGroupOperations.readMembers,
+    readMembershipsOfUser: commonGroupOperations.readMembershipsOfUser,
     readClassOfUser,
     changeClassOfUser,
     bumpClasses,

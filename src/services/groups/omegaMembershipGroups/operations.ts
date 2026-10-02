@@ -22,6 +22,7 @@ const commonGroupOperations = implementGroupType({
     auth: {
         readExpanded: omegaMembershipGroupAuth.readExpanded.dynamicFields({}),
         readMembers: () => omegaMembershipGroupAuth.readMembers.dynamicFields({}),
+        readMembershipsOfUser: ({ userId }) => omegaMembershipGroupAuth.readMembershipsOfUser.dynamicFields({ userId }),
     },
 })
 
@@ -324,5 +325,6 @@ export const omegaMembershipGroupOperations = {
     updateUserOrder,
     readExpanded: commonGroupOperations.readExpanded,
     readMembers: commonGroupOperations.readMembers,
+    readMembershipsOfUser: commonGroupOperations.readMembershipsOfUser,
     migrateGroups: migration.migrateGroups,
 } as const

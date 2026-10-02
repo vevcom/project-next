@@ -100,6 +100,7 @@ export default function VevenAdapter(prisma: PrismaClient): Adapter {
                     username,
                     emailVerified: null,
                     createdByFeideLoginOnProjectNext: true,
+                    bioParagraph: { create: {} },
                 },
                 select: userFilterSelection,
             })

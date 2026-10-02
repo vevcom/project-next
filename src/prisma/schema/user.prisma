@@ -17,7 +17,6 @@ model User {
   email                            String             @unique
   firstname                        String             @default("[Fjernet]")
   lastname                         String             @default("[Fjernet]")
-  bio                              String             @default("")
   relationshipStatus               RelationshipStatus @default(NOT_SPECIFIED)
   relationshipStatusText           String             @default("")
   archived                         Boolean            @default(false)
@@ -34,6 +33,10 @@ model User {
   image       Image?  @relation(fields: [imageId], references: [id])
   imageId     Int?    @unique
   studentCard String? @unique
+
+  // The bio shown on the user's profile, edited in place there by the user or a user admin.
+  bioParagraph   CmsParagraph @relation(fields: [bioParagraphId], references: [id])
+  bioParagraphId Int          @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt // is also updated manually

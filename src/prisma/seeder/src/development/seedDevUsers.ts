@@ -84,6 +84,14 @@ export const seedDevUsers = defineSeedOperation(async (prisma: PrismaClient) => 
     const existingUsernames = new Set(existingUsers.map(user => user.username))
     const newDevUserSpecs = devUserSpecs.filter(spec => !existingUsernames.has(spec.username))
 
+    // createMany can't create relations, so the bio paragraphs are made up front - named after the user
+    // they are for, since the order createManyAndReturn returns rows in is not guaranteed.
+    const bioParagraphs = await prisma.cmsParagraph.createManyAndReturn({
+        data: newDevUserSpecs.map(spec => ({ name: `userBio-${spec.username}` })),
+        select: { id: true, name: true },
+    })
+    const bioParagraphIdByName = new Map(bioParagraphs.map(paragraph => [paragraph.name, paragraph.id]))
+
     const createdUsers = await prisma.user.createManyAndReturn({
         data: newDevUserSpecs.map(spec => ({
             firstname: spec.firstName,
@@ -92,6 +100,7 @@ export const seedDevUsers = defineSeedOperation(async (prisma: PrismaClient) => 
             username: spec.username,
             studentCard: `${spec.username}s studentkort`,
             acceptedTerms: new Date(),
+            bioParagraphId: bioParagraphIdByName.get(`userBio-${spec.username}`)!,
         })),
         select: { id: true, username: true },
     })
@@ -234,7 +243,12 @@ export const seedDevUsers = defineSeedOperation(async (prisma: PrismaClient) => 
             email: 'harambe@harambesen.io',
             mobile: '12345678',
             username: 'harambe',
-            bio: 'Harambe did nothing wrong',
+            bioParagraph: {
+                create: {
+                    contentMd: 'Harambe did nothing wrong',
+                    contentHtml: '<p>Harambe did nothing wrong</p>',
+                },
+            },
             studentCard: 'harambeCard',
             credentials: {
                 create: {
@@ -282,6 +296,7 @@ export const seedDevUsers = defineSeedOperation(async (prisma: PrismaClient) => 
             email: 'vever@vevcom.com',
             mobile: '98765432',
             username: 'vever',
+            bioParagraph: { create: {} },
             studentCard: 'vever',
             credentials: {
                 create: {

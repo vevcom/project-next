@@ -3,7 +3,10 @@ import { ClassLevelConfig } from '@/services/groups/constants'
 import Button from '@/components/UI/Button'
 import ProfilePicture from '@/components/User/ProfilePicture'
 import UserDisplayName from '@/components/User/UserDisplayName'
-import { readUserProfileAction } from '@/services/users/actions'
+import CmsParagraph from '@/components/Cms/CmsParagraph/CmsParagraph'
+import { readUserProfileAction, updateUserBioParagraphContentAction } from '@/services/users/actions'
+import { userAuth } from '@/services/users/auth'
+import { configureAction } from '@/services/configureAction'
 import { ServerSession } from '@/auth/session/ServerSession'
 import { sexConfig } from '@/services/users/constants'
 import { readUserFlairsAction } from '@/services/flairs/actions'
@@ -44,25 +47,11 @@ export default async function User({ params }: PropTypes) {
     if (!profileRes.success) return notFound()
     const profile = profileRes.data
 
-    const committeeMemberships = profile.user.memberships.filter(membership => membership.group.groupType === 'COMMITTEE')
-        .filter(membership => membership.group.committee !== null)
-
-    // Which study programmes someone is on is a statement about now, so only the active ones.
-    const studyProgrammes = profile.user.memberships
-        .filter(membership => membership.group.groupType === 'STUDY_PROGRAMME' && membership.active)
-        .map(membership => membership.group.studyProgramme).filter(membership => membership !== null)
-
-    const interestGroupMemberships = profile.user.memberships
-        .filter(membership => membership.group.groupType === 'INTEREST_GROUP')
-        .filter(membership => membership.group.interestGroup !== null)
+    const { committeeMemberships, activeStudyProgrammes, activeInterestGroups } = profile.groups
 
     // Newest order first: the history reads from the most recent membership downwards.
-    const byOrderDescending = <T extends { order: number }>(memberships: T[]) => [...memberships]
+    const committeeMembershipsByOrder = [...committeeMemberships.active, ...committeeMemberships.historical]
         .sort((membershipOne, membershipTwo) => membershipTwo.order - membershipOne.order)
-
-    const committeeMembershipsByOrder = byOrderDescending(committeeMemberships)
-    const interestGroupMembershipsByOrder = byOrderDescending(interestGroupMemberships)
-    const activeCommitteeMemberships = committeeMemberships.filter(membership => membership.active)
 
     const omegaMembership = profile.omegaMembership
     const flairs = unwrapActionReturn(await readUserFlairsAction({ params: { userId: profile.user.id } })).sort(
@@ -119,10 +108,10 @@ export default async function User({ params }: PropTypes) {
                             </p>
 
                             <div className={styles.committeesWrapper}>
-                                {activeCommitteeMemberships.map(membership =>
+                                {committeeMemberships.active.map(membership =>
                                     <div className={styles.committee} key={uuid()}>
-                                        <Link href={`/committees/${membership.group.committee?.shortName}`}>
-                                            <p>{membership.title} i {membership.group.committee?.name}</p>
+                                        <Link href={`/committees/${membership.committee.shortName}`}>
+                                            <p>{membership.title} i {membership.committee.name}</p>
                                         </Link>
                                     </div>
                                 )}
@@ -132,42 +121,42 @@ export default async function User({ params }: PropTypes) {
 
                             {committeeMembershipsByOrder.length > 0 && (
                                 <section className={styles.groupSection}>
-                                    <h2>Komitéer:</h2>
+                                    <h2>Komitémedlemskap:</h2>
                                     {committeeMembershipsByOrder.map(membership =>
                                         <Link
                                             key={uuid()}
-                                            href={`/committees/${membership.group.committee?.shortName}`}
+                                            href={`/committees/${membership.committee.shortName}`}
                                         >
                                             <p className={styles.studyProgramme}>
                                                 {membership.title} udaf {membership.order}´dis orden i{' '}
-                                                {membership.group.committee?.name}
+                                                {membership.committee.name}
                                             </p>
                                         </Link>
                                     )}
                                 </section>
                             )}
 
-                            {interestGroupMembershipsByOrder.length > 0 && (
+                            {activeInterestGroups.length > 0 && (
                                 <section className={styles.groupSection}>
-                                    <h2>Interessegrupper:</h2>
-                                    {interestGroupMembershipsByOrder.map(membership =>
+                                    <h2>Aktive Interessegruppemedlemskap:</h2>
+                                    {activeInterestGroups.map(membership =>
                                         <Link
                                             key={uuid()}
-                                            href={`/interest-groups/${membership.group.interestGroup?.id}`}
+                                            href={`/interest-groups/${membership.interestGroup.id}`}
                                         >
                                             <p className={styles.studyProgramme}>
                                                 {membership.title} udaf {membership.order}´dis orden i{' '}
-                                                {membership.group.interestGroup?.name}
+                                                {membership.interestGroup.name}
                                             </p>
                                         </Link>
                                     )}
                                 </section>
                             )}
 
-                            {studyProgrammes.length > 0 && (
+                            {activeStudyProgrammes.length > 0 && (
                                 <section className={styles.groupSection}>
                                     <h2>Studier:</h2>
-                                    {studyProgrammes.map(studyProgramme =>
+                                    {activeStudyProgrammes.map(({ studyProgramme }) =>
                                         <p key={studyProgramme.id} className={styles.studyProgramme}>
                                             {studyProgramme.name} {`(${studyProgramme.code})`}
                                         </p>
@@ -205,10 +194,20 @@ export default async function User({ params }: PropTypes) {
                         <div className={styles.profileMain}>
 
 
-                            {(profile.user.bio !== '') &&
+                            {/* An empty bio is only worth showing to someone who can write it, in edit mode. */}
+                            {(profile.user.bioParagraph.contentHtml !== '' || userAuth.updateBioParagraphContent
+                                .dynamicFields({ userId: profile.user.id }).auth(session).authorized) &&
                                 <div className={styles.bio}>
                                     <h2>Bio:</h2>
-                                    <p>{profile.user.bio}</p>
+                                    <CmsParagraph
+                                        cmsParagraph={profile.user.bioParagraph}
+                                        updateCmsParagraphAction={configureAction(
+                                            updateUserBioParagraphContentAction,
+                                            { implementationParams: { userId: profile.user.id } }
+                                        )}
+                                        canEdit={userAuth.updateBioParagraphContent
+                                            .dynamicFields({ userId: profile.user.id }).auth(session).toJsObject()}
+                                    />
                                 </div>
                             }
 
