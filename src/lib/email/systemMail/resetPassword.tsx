@@ -1,5 +1,5 @@
 import '@pn-server-only'
-import { sendSystemMail } from '@/lib/email/send'
+import { sendMailOperations } from '@/services/notifications/send-mail/operations'
 import { ResetPasswordTemplate } from '@/lib/email/templates/resetPassword'
 import { generateJWT } from '@/jwt/jwt'
 import { userOperations } from '@/services/users/operations'
@@ -21,7 +21,13 @@ export async function sendResetPasswordMail(email: string) {
 
         const link = `${process.env.WEBSITE_URL}/reset-password-form?token=${jwt}`
 
-        await sendSystemMail(user.email, 'Glemt passord', <ResetPasswordTemplate user={user} link={link} />)
+        await sendMailOperations.internal.sendSystemMail.internalCall({
+            data: {
+                to: user.email,
+                subject: 'Glemt passord',
+                body: <ResetPasswordTemplate user={user} link={link} />,
+            },
+        })
 
         return email
     } catch (e) {

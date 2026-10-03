@@ -1,7 +1,7 @@
 import '@pn-server-only'
 import { emailValidationExpiration } from './constants'
 import { VerifyEmailTemplate } from '@/lib/email/templates/verifyEmail'
-import { sendSystemMail } from '@/lib/email/send'
+import { sendMailOperations } from '@/services/notifications/send-mail/operations'
 import { generateJWT } from '@/jwt/jwt'
 import { userSchemas } from '@/services/users/schemas'
 import type { UserFiltered } from '@/services/users/types'
@@ -17,5 +17,11 @@ export async function sendVerifyEmail(user: UserFiltered, email: string) {
 
     const link = `${process.env.WEBSITE_URL}/verify-email?token=${jwt}`
 
-    await sendSystemMail(parse.email, 'Bekreft e-post', <VerifyEmailTemplate user={user} link={link} />)
+    await sendMailOperations.internal.sendSystemMail.internalCall({
+        data: {
+            to: parse.email,
+            subject: 'Bekreft e-post',
+            body: <VerifyEmailTemplate user={user} link={link} />,
+        },
+    })
 }

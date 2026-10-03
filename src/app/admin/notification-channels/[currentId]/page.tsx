@@ -1,6 +1,6 @@
 
 import ChannelSettings from './ChannelSettings'
-import { readNotificationChannelsAction } from '@/services/notifications/actions'
+import { readNotificationChannelsAction } from '@/services/notifications/channel/actions'
 import { readMailAliasesAction } from '@/services/mail/alias/actions'
 import { notFound } from 'next/navigation'
 

@@ -6,6 +6,7 @@ import { logoIncluder } from '@/services/career/companies/constants'
 import { defineOperation } from '@/services/serviceOperation'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
 import { articleOperations } from '@/cms/articles/operations'
+import { notificationOperations } from '@/services/notifications/operations'
 import { implementUpdateArticleOperations } from '@/cms/articles/implement'
 import { z } from 'zod'
 import type { ExpandedJobAd, SimpleJobAd } from './types'
@@ -39,7 +40,7 @@ export const jobAdOperations = {
                 operationImplementationFields: { special: null }
             })
 
-            return await prisma.jobAd.create({
+            const jobAd = await prisma.jobAd.create({
                 data: {
                     article: {
                         connect: {
@@ -53,7 +54,26 @@ export const jobAdOperations = {
                     },
                     ...data,
                 },
+                include: {
+                    company: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                },
             })
+
+            await notificationOperations.createSpecial.internalCall({
+                params: {
+                    special: 'NEW_JOBAD',
+                },
+                data: {
+                    title: `Ny jobbannonse: ${articleName}`,
+                    message: `${jobAd.company.name} har lagt ut en ny jobbannonse: ${articleName}`,
+                },
+            })
+
+            return jobAd
         }
     }),
     /**

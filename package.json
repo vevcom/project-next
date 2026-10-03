@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "worker": "IGNORE_SERVER_ONLY=true tsx src/lib/images/worker.ts",
+    "notification-worker": "IGNORE_SERVER_ONLY=true tsx src/lib/notifications/worker.ts",
     "lint": "eslint",
     "lint:fix": "eslint --fix --quiet",
     "lint:style": "stylelint \"src/**/*.{css,scss}\"",

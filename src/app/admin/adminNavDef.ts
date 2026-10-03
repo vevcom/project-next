@@ -10,6 +10,7 @@ import { manualGroupAuth } from '@/services/groups/manualGroups/auth'
 import { permissionsAuth } from '@/services/permissions/auth'
 import { apiKeyAuth } from '@/services/apiKeys/auth'
 import { notificationAuth } from '@/services/notifications/auth'
+import { sendMailAuth } from '@/services/notifications/send-mail/auth'
 import { notificationChannelAuth } from '@/services/notifications/channel/auth'
 import { mailAliasAuth } from '@/services/mail/alias/auth'
 import { mailingListAuth } from '@/services/mail/list/auth'
@@ -34,6 +35,7 @@ import {
     faUser,
     faUserGroup,
     faPaperPlane,
+    faEnvelopesBulk,
     faSchool,
     faDotCircle,
     faHouse,
@@ -176,11 +178,6 @@ export const adminNavDef: AdminNavGroup[] = [
         header: { icon: faPaperPlane, title: 'Varslinger' },
         links: [
             {
-                title: 'Send varsel',
-                path: 'send-notification',
-                authorizers: () => [notificationAuth.create.dynamicFields({})],
-            },
-            {
                 title: 'Varslingkanaler',
                 path: 'notification-channels',
                 authorizers: () => [
@@ -189,18 +186,34 @@ export const adminNavDef: AdminNavGroup[] = [
                 ],
             },
             {
-                title: 'Mailing lister',
-                path: 'mail',
-                authorizers: () => [
-                    mailAliasAuth.create.dynamicFields({}),
-                    mailingListAuth.create.dynamicFields({}),
-                    mailAddressExternalAuth.create.dynamicFields({}),
-                ],
+                title: 'Send varsel',
+                path: 'send-notification',
+                authorizers: () => [notificationAuth.create.dynamicFields({})],
             },
             {
                 title: 'Send e-post',
                 path: 'send-mail',
-                authorizers: () => [notificationAuth.sendMail.dynamicFields({})],
+                authorizers: () => [sendMailAuth.sendMail.dynamicFields({})],
+            },
+        ],
+    },
+    {
+        header: { icon: faEnvelopesBulk, title: 'Mailing tjener' },
+        links: [
+            {
+                title: 'E-postlister',
+                path: 'mail/mailingList',
+                authorizers: () => [mailingListAuth.create.dynamicFields({})],
+            },
+            {
+                title: 'E-postalias',
+                path: 'mail/alias',
+                authorizers: () => [mailAliasAuth.create.dynamicFields({})],
+            },
+            {
+                title: 'Eksterne adresser',
+                path: 'mail/mailaddressExternal',
+                authorizers: () => [mailAddressExternalAuth.create.dynamicFields({})],
             },
         ],
     },

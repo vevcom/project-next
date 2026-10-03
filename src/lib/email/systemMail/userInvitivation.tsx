@@ -2,7 +2,7 @@ import { generateJWT } from '@/jwt/jwt'
 import type { UserFiltered } from '@/services/users/types'
 import '@pn-server-only'
 import { userInvitationExpiration } from './constants'
-import { sendSystemMail } from '@/lib/email/send'
+import { sendMailOperations } from '@/services/notifications/send-mail/operations'
 import { UserInvitationTemplate } from '@/lib/email/templates/userInvitation'
 
 
@@ -14,9 +14,11 @@ export async function sendUserInvitationEmail(user: UserFiltered) {
 
     const link = `${process.env.WEBSITE_URL}/verify-email?token=${jwt}`
 
-    await sendSystemMail(
-        user.email,
-        `Invitasjon til ${process.env.WEBSITE_DOMAIN}`,
-        <UserInvitationTemplate user={user} link={link} />
-    )
+    await sendMailOperations.internal.sendSystemMail.internalCall({
+        data: {
+            to: user.email,
+            subject: `Invitasjon til ${process.env.WEBSITE_DOMAIN}`,
+            body: <UserInvitationTemplate user={user} link={link} />,
+        },
+    })
 }

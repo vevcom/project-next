@@ -246,6 +246,7 @@ export const eventOperations = {
                 data: {
                     title: `Hva der hender: ${event.name}`,
                     message: `${event.name}, 🕓 ${displayDate(event.eventStart, false)},📍 ${event.location}`,
+                    visibilityId: event.visibilityRegularId,
                 },
             })
             return event

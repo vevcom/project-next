@@ -2,10 +2,10 @@
 
 import SubscriptionItem from './subscriptionItem'
 import styles from './notificationSettings.module.scss'
-import { booleanOperationOnMethods, newAllMethodsOff } from '@/services/notifications/notificationMethodOperations'
+import { booleanOperationOnMethods, newAllMethodsOff } from '@/services/notifications/methods/helpers'
 import SubmitButton from '@/components/UI/SubmitButton'
 import { SUCCESS_FEEDBACK_TIME } from '@/components/Form/constants'
-import { updateNotificationSubscriptionsAction } from '@/services/notifications/actions'
+import { updateNotificationSubscriptionsAction } from '@/services/notifications/subscription/actions'
 import { notificationMethodsArray, notificationMethodsDisplayMap } from '@/services/notifications/constants'
 import { v4 as uuid } from 'uuid'
 import { useState } from 'react'

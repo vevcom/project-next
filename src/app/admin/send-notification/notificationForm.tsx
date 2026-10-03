@@ -24,7 +24,7 @@ export default function NotificaionForm({
             successCallback={data => {
                 if (data) {
                     setSuccessMessage(`
-                        Varsling lagt til i køen til ${data.recipients} mottakere.
+                        Varslingen er lagt til i køen.
                         Det kan ta ganske lang tid før alle får varselet
                     `)
                 }
