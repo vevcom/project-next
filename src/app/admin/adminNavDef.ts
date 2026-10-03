@@ -35,6 +35,7 @@ import {
     faUser,
     faUserGroup,
     faPaperPlane,
+    faEnvelopesBulk,
     faSchool,
     faDotCircle,
     faHouse,
@@ -177,11 +178,6 @@ export const adminNavDef: AdminNavGroup[] = [
         header: { icon: faPaperPlane, title: 'Varslinger' },
         links: [
             {
-                title: 'Send varsel',
-                path: 'send-notification',
-                authorizers: () => [notificationAuth.create.dynamicFields({})],
-            },
-            {
                 title: 'Varslingkanaler',
                 path: 'notification-channels',
                 authorizers: () => [
@@ -190,6 +186,21 @@ export const adminNavDef: AdminNavGroup[] = [
                 ],
             },
             {
+                title: 'Send varsel',
+                path: 'send-notification',
+                authorizers: () => [notificationAuth.create.dynamicFields({})],
+            },
+            {
+                title: 'Send e-post',
+                path: 'send-mail',
+                authorizers: () => [sendMailAuth.sendMail.dynamicFields({})],
+            },
+        ],
+    },
+    {
+        header: { icon: faEnvelopesBulk, title: 'Mailing tjener' },
+        links: [
+            {
                 title: 'Mailing lister',
                 path: 'mail',
                 authorizers: () => [
@@ -197,11 +208,6 @@ export const adminNavDef: AdminNavGroup[] = [
                     mailingListAuth.create.dynamicFields({}),
                     mailAddressExternalAuth.create.dynamicFields({}),
                 ],
-            },
-            {
-                title: 'Send e-post',
-                path: 'send-mail',
-                authorizers: () => [sendMailAuth.sendMail.dynamicFields({})],
             },
         ],
     },
