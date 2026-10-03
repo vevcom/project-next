@@ -8,7 +8,7 @@ import {
     notificationMethodsArray,
 } from '@/services/notifications/constants'
 import { notificationMethodSchema } from '@/services/notifications/schemas'
-import { booleanOperationOnMethods } from '@/services/notifications/notificationMethodOperations'
+import { booleanOperationOnMethods } from '@/services/notifications/methods/helpers'
 import { defineOperation } from '@/services/serviceOperation'
 import { DEFAULT_NOTIFICATION_ALIAS } from '@/lib/email/constants'
 import { ServerError } from '@/services/error'

@@ -9,8 +9,8 @@ const baseSchema = z.object({
     channelId: z.coerce.number().min(1),
     title: z.string().min(2),
     message: z.string().min(10),
-    email: z.string().email(),
-    userIdList: z.number().array().optional(),
+    targetUserIds: z.number().array().optional(),
+    visibilityId: z.number().optional(),
 })
 
 export const notificationSchemas = {
@@ -18,21 +18,14 @@ export const notificationSchemas = {
         channelId: true,
         title: true,
         message: true,
-        userIdList: true,
+        targetUserIds: true,
+        visibilityId: true,
     }),
 
     createSpecial: baseSchema.pick({
         title: true,
         message: true,
-        userIdList: true,
-    }),
-
-    sendMail: baseSchema.pick({
-        email: true,
-    }),
-
-    sendEmail: baseSchema.pick({
-        title: true,
-        message: true,
+        targetUserIds: true,
+        visibilityId: true,
     }),
 }

@@ -1,5 +1,5 @@
 import '@pn-server-only'
-import { sendSystemMail } from '@/lib/email/send'
+import { sendMailOperations } from '@/services/notifications/send-mail/operations'
 import { LinkFeideAccountTemplate } from '@/lib/email/templates/linkFeideAccount'
 import { generateJWT } from '@/jwt/jwt'
 import type { FeideIdentity } from '@/services/auth/types'
@@ -25,9 +25,11 @@ export async function sendLinkFeideAccountMail(targetUser: UserFiltered, feideId
 
     const link = `${process.env.WEBSITE_URL}/link-ow-user?token=${jwt}`
 
-    await sendSystemMail(
-        targetUser.email,
-        'Koble Feide-innlogging til gammel bruker',
-        <LinkFeideAccountTemplate user={targetUser} feideIdentity={feideIdentity} link={link} />
-    )
+    await sendMailOperations.internal.sendSystemMail.internalCall({
+        data: {
+            to: targetUser.email,
+            subject: 'Koble Feide-innlogging til gammel bruker',
+            body: <LinkFeideAccountTemplate user={targetUser} feideIdentity={feideIdentity} link={link} />,
+        },
+    })
 }

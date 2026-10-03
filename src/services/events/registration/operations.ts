@@ -12,7 +12,7 @@ import { displayDate } from '@/lib/dates/displayDate'
 import { Smorekopp } from '@/services/error'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
 import { notificationOperations } from '@/services/notifications/operations'
-import { sendSystemMail } from '@/lib/email/send'
+import { sendMailOperations } from '@/services/notifications/send-mail/operations'
 import { userFilterSelection } from '@/services/users/constants'
 import { eventOperations } from '@/services/events/operations'
 import { checkVisibility } from '@/auth/visibility/checkVisibility'
@@ -432,17 +432,19 @@ export const eventRegistrationOperations = {
                     data: {
                         title,
                         message,
-                        userIdList: [nextInLine.user.id],
+                        targetUserIds: [nextInLine.user.id],
                     },
                 })
             }
 
             if (nextInLine.contact && nextInLine.contact.email) {
-                await sendSystemMail(
-                    nextInLine.contact.email,
-                    title,
-                    message
-                )
+                await sendMailOperations.internal.sendSystemMail.internalCall({
+                    data: {
+                        to: nextInLine.contact.email,
+                        subject: title,
+                        body: message,
+                    },
+                })
             }
         }
     }),

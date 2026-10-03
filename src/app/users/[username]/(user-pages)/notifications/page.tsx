@@ -2,7 +2,8 @@
 import styles from './page.module.scss'
 import NotificationSettings from './notificationSettings'
 import { getProfileForUserPage } from '@/app/users/[username]/(user-pages)/getProfileForUserPage'
-import { readNotificationChannelsAction, readNotificationSubscriptionsAction } from '@/services/notifications/actions'
+import { readNotificationChannelsAction } from '@/services/notifications/channel/actions'
+import { readNotificationSubscriptionsAction } from '@/services/notifications/subscription/actions'
 import type { PropTypes } from '@/app/users/[username]/page'
 
 export default async function Notififcations({ params }: PropTypes) {

@@ -10,6 +10,7 @@ import { manualGroupAuth } from '@/services/groups/manualGroups/auth'
 import { permissionsAuth } from '@/services/permissions/auth'
 import { apiKeyAuth } from '@/services/apiKeys/auth'
 import { notificationAuth } from '@/services/notifications/auth'
+import { sendMailAuth } from '@/services/notifications/send-mail/auth'
 import { notificationChannelAuth } from '@/services/notifications/channel/auth'
 import { mailAliasAuth } from '@/services/mail/alias/auth'
 import { mailingListAuth } from '@/services/mail/list/auth'
@@ -200,7 +201,7 @@ export const adminNavDef: AdminNavGroup[] = [
             {
                 title: 'Send e-post',
                 path: 'send-mail',
-                authorizers: () => [notificationAuth.sendMail.dynamicFields({})],
+                authorizers: () => [sendMailAuth.sendMail.dynamicFields({})],
             },
         ],
     },

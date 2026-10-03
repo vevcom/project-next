@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import type Mail from 'nodemailer/lib/mailer'
+import type React from 'react'
 
 const baseSchema = z.object({
     from: z.string().email('Ikke en gyldig e-post'),
@@ -7,11 +9,20 @@ const baseSchema = z.object({
     text: z.string().min(2, 'Minimum 2 tegn'),
 })
 
-export const emailSchemas = {
+export const sendMailSchemas = {
     sendMail: baseSchema.pick({
         from: true,
         to: true,
         subject: true,
         text: true,
-    })
+    }),
+
+    sendBulkMail: z.custom<Mail.Options>().array(),
+
+    sendSystemMail: baseSchema.pick({
+        to: true,
+        subject: true,
+    }).extend({
+        body: z.custom<React.JSX.Element | string>(),
+    }),
 } as const

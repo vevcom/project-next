@@ -64,6 +64,8 @@ model User {
   // What notifications the user whiches to received and
   // which mailing lists the user is on.
   notificationSubscriptions NotificationSubscription[]
+  notificationsTargeted     Notification[]          @relation(name: "NotificationTargets")
+  weeklyMailOutboxEntries   WeeklyMailOutboxEntry[]
   mailingLists              MailingListUser[]
 
   // Which admissions (a.k.a. "opptak") the user has taken
