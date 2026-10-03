@@ -3,7 +3,7 @@ import { visibilityOperations } from './operations'
 import { isSubVisibility } from '@/auth/visibility/isSubVisibility'
 import { ServerError } from '@/services/error'
 import { defineOperation, type PrismaPossibleTransaction } from '@/services/serviceOperation'
-import type { AuthorizerDynamicFieldsBound } from '@/auth/authorizer/Authorizer'
+import type { Authorizer } from '@/auth/authorizer/Authorizer'
 import type { Prisma } from '@/prisma-generated-pn-types'
 import type { z } from 'zod'
 import type { DoubleLevelVisibilityMatrix, VisibilityMatrix } from './types'
@@ -35,21 +35,21 @@ type Authorizers<
             params: z.infer<ImplementationParamsSchema>,
             doubleLevelMatrix: DoubleLevelVisibilityMatrix,
         }
-    ) => AuthorizerDynamicFieldsBound | Promise<AuthorizerDynamicFieldsBound>
+    ) => Authorizer | Promise<Authorizer>
     updateRegularLevel: (
         args: {
             prisma: PrismaPossibleTransaction<false>,
             implementationParams: z.infer<ImplementationParamsSchema>,
             doubleLevelMatrix: DoubleLevelVisibilityMatrix,
         }
-    ) => AuthorizerDynamicFieldsBound | Promise<AuthorizerDynamicFieldsBound>,
+    ) => Authorizer | Promise<Authorizer>,
     updateAdminLevel: (
         args: {
             prisma: PrismaPossibleTransaction<false>,
             implementationParams: z.infer<ImplementationParamsSchema>,
             doubleLevelMatrix: DoubleLevelVisibilityMatrix,
         }
-    ) => AuthorizerDynamicFieldsBound | Promise<AuthorizerDynamicFieldsBound>
+    ) => Authorizer | Promise<Authorizer>
 }
 
 export const visibilityIncluder = {

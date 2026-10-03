@@ -19,13 +19,13 @@ let userId: number
 let user: UserFiltered
 
 /**
- * A logged-in user holding only the default permissions. `MANUAL_GROUP_READ` and `CLASS_READ` are
- * among them, which is the reason member reads take `USERS_READ` on top.
+ * A logged-in user holding only the default permissions. `MANUAL_GROUP_USE` and `CLASS_USE` are
+ * among them, which is the reason member reads take `USERS_USE` on top.
  */
 function sessionOfVisitor() {
     return Session.fromJsObject({
         memberships: [],
-        permissions: ['MANUAL_GROUP_READ', 'CLASS_READ'],
+        permissions: ['MANUAL_GROUP_USE', 'CLASS_USE'],
         user,
     })
 }
@@ -60,7 +60,7 @@ afterEach(async () => {
 function sessionOfGroupAdmin() {
     return Session.fromJsObject({
         memberships: [{ groupId, admin: true, active: true, order: 0 }],
-        permissions: ['MANUAL_GROUP_READ'],
+        permissions: ['MANUAL_GROUP_USE'],
         user,
     })
 }
@@ -74,7 +74,7 @@ describe('reading the members of a managed group', () => {
         expect(members.map(member => member.userId)).toContain(userId)
     })
 
-    test('the group permission alone is not enough - it takes USERS_READ too', async () => {
+    test('the group permission alone is not enough - it takes USERS_USE too', async () => {
         const read = manualGroupOperations.readMembers({
             params: { groupId },
             session: sessionOfVisitor(),

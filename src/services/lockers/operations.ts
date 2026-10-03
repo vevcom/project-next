@@ -40,7 +40,7 @@ export const lockerOperations = {
      * @returns The newly created locker object.
      */
     create: defineOperation({
-        authorizer: () => lockerAuth.create.dynamicFields({}),
+        authorizer: () => lockerAuth.create,
         dataSchema: lockersSchemas.create,
         operation: async ({ prisma, data }) => await prisma.locker.create({
             data,
@@ -55,7 +55,7 @@ export const lockerOperations = {
      * @returns The locker object.
      */
     read: defineOperation({
-        authorizer: () => lockerAuth.read.dynamicFields({}),
+        authorizer: () => lockerAuth.read,
         paramsSchema: z.object({
             id: z.number(),
         }),
@@ -81,7 +81,7 @@ export const lockerOperations = {
      * @returns A list of locker objects.
      */
     readPage: defineOperation({
-        authorizer: () => lockerAuth.readPage.dynamicFields({}),
+        authorizer: () => lockerAuth.readPage,
         paramsSchema: lockersSchemas.readPage,
         operation: async ({ prisma, params }) => {
             const lockers = await prisma.locker.findMany({

@@ -1,9 +1,9 @@
-import { RequirePermission } from '@/auth/authorizer/RequirePermission'
+import { Require } from '@/auth/authorizer/Require'
 
 export const mailAddressExternalAuth = {
-    create: RequirePermission.staticFields({ permission: 'MAILADDRESS_EXTERNAL_CREATE' }),
-    destroy: RequirePermission.staticFields({ permission: 'MAILADDRESS_EXTERNAL_DESTROY' }),
-    readMany: RequirePermission.staticFields({ permission: 'MAILADDRESS_EXTERNAL_READ' }),
-    read: RequirePermission.staticFields({ permission: 'MAILADDRESS_EXTERNAL_READ' }),
-    update: RequirePermission.staticFields({ permission: 'MAILADDRESS_EXTERNAL_UPDATE' }),
+    create: Require.permission('MAILADDRESS_EXTERNAL_ADMIN'),
+    destroy: Require.permission('MAILADDRESS_EXTERNAL_ADMIN'),
+    readMany: Require.permission('MAILADDRESS_EXTERNAL_USE'),
+    read: Require.permission('MAILADDRESS_EXTERNAL_USE'),
+    update: Require.permission('MAILADDRESS_EXTERNAL_ADMIN'),
 } as const

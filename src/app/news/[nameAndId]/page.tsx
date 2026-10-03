@@ -39,11 +39,9 @@ export default async function NewsArticle({ params }: PropTypes) {
     const readDoubleLevelVisibility = await readNewsDoubleLevelVisibilityAction({ params: { id: news.id } })
     const doubleLevelVisibility = readDoubleLevelVisibility.success ? readDoubleLevelVisibility.data : null
 
-    const canEdit = newsAuth.updateArticle.dynamicFields({
-        doubleLevelMatrix: doubleLevelVisibility ?? EMPTY_VISIBILITY
-    }).auth(
-        await ServerSession.fromNextAuth()
-    ).toJsObject()
+    const canEdit = newsAuth.updateArticle.data({ visibility: doubleLevelVisibility ?? EMPTY_VISIBILITY })
+        .auth(await ServerSession.fromNextAuth())
+        .toJsObject()
     return (
         <div className={styles.wrapper}>
             <Article

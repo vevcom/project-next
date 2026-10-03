@@ -15,7 +15,7 @@ type PropTypes = SearchParamsServerSide
 
 export default async function Images({ searchParams }: PropTypes) {
     const session = await ServerSession.fromNextAuth()
-    const canCreateCollection = dynamicImageAuth.createCollection.dynamicFields({ }).auth(session)
+    const canCreateCollection = dynamicImageAuth.createCollection.auth(session)
     const pageSize: PageSizeDynamicImageCollection = 12
 
     const showOnlyCollectionsSessionAdministrates =

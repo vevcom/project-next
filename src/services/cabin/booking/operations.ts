@@ -247,9 +247,7 @@ export const cabinBookingOperations = {
             userId: z.number(),
             bookingProducts: bookingProductParams,
         }),
-        authorizer: ({ params }) => cabinBookingAuth.createCabinBookingUserAttached.dynamicFields({
-            userId: params.userId,
-        }),
+        authorizer: ({ params }) => cabinBookingAuth.createCabinBookingUserAttached.data({ userId: params.userId }),
         dataSchema: cabinBookingSchemas.createBookingUserAttached,
         operation: async ({ params, data }) =>
             createBookingWithUser.internalCall({
@@ -267,9 +265,7 @@ export const cabinBookingOperations = {
             userId: z.number(),
             bookingProducts: bookingProductParams,
         }),
-        authorizer: ({ params }) => cabinBookingAuth.createBedBookingUserAttached.dynamicFields({
-            userId: params.userId,
-        }),
+        authorizer: ({ params }) => cabinBookingAuth.createBedBookingUserAttached.data({ userId: params.userId }),
         dataSchema: cabinBookingSchemas.createBookingUserAttached,
         operation: async ({ params, data }) =>
             createBookingWithUser.internalCall({
@@ -286,7 +282,7 @@ export const cabinBookingOperations = {
         paramsSchema: z.object({
             bookingProducts: bookingProductParams,
         }),
-        authorizer: () => cabinBookingAuth.createCabinBookingNoUser.dynamicFields({}),
+        authorizer: () => cabinBookingAuth.createCabinBookingNoUser,
         dataSchema: cabinBookingSchemas.createBookingNoUser,
         operation: async ({ params, data }) => createBookingNoUser.internalCall({
             params: {
@@ -301,7 +297,7 @@ export const cabinBookingOperations = {
         paramsSchema: z.object({
             bookingProducts: bookingProductParams,
         }),
-        authorizer: () => cabinBookingAuth.createBedBookingNoUser.dynamicFields({}),
+        authorizer: () => cabinBookingAuth.createBedBookingNoUser,
         dataSchema: cabinBookingSchemas.createBookingNoUser,
         operation: async ({ params, data }) => createBookingNoUser.internalCall({
             params: {
@@ -313,7 +309,7 @@ export const cabinBookingOperations = {
     }),
 
     readAvailability: defineOperation({
-        authorizer: () => cabinBookingAuth.readAvailability.dynamicFields({}),
+        authorizer: () => cabinBookingAuth.readAvailability,
         operation: async ({ prisma }) => {
             const results = await prisma.booking.findMany({
                 select: cabinBookingFilerSelection,
@@ -345,7 +341,7 @@ export const cabinBookingOperations = {
     }),
 
     readMany: defineOperation({
-        authorizer: () => cabinBookingAuth.readMany.dynamicFields({}),
+        authorizer: () => cabinBookingAuth.readMany,
         operation: ({ prisma }) => prisma.booking.findMany({
             orderBy: {
                 start: 'asc',
@@ -355,7 +351,7 @@ export const cabinBookingOperations = {
     }),
 
     read: defineOperation({
-        authorizer: () => cabinBookingAuth.read.dynamicFields({}),
+        authorizer: () => cabinBookingAuth.read,
         paramsSchema: z.object({
             id: z.number(),
         }),
@@ -366,16 +362,12 @@ export const cabinBookingOperations = {
     }),
 
     readSpecialCmsParagraphCabinContract: cmsParagraphOperations.readSpecial.implement({
-        authorizer: () => cabinBookingAuth
-            .readSpecialCmsParagraphCabinContract
-            .dynamicFields({}),
+        authorizer: () => cabinBookingAuth.readSpecialCmsParagraphCabinContract,
         ownershipCheck: ({ params }) => params.special === 'CABIN_CONTRACT'
     }),
 
     updateSpecialCmsParagraphContentCabinContract: cmsParagraphOperations.updateContent.implement({
-        authorizer: () => cabinBookingAuth
-            .updateSpecialCmsParagraphContentCabinContract
-            .dynamicFields({}),
+        authorizer: () => cabinBookingAuth.updateSpecialCmsParagraphContentCabinContract,
         ownershipCheck: async ({ params }) =>
             await cmsParagraphOperations.isSpecial.internalCall({
                 params: {

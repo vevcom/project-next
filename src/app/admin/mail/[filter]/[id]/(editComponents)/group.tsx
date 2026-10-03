@@ -20,7 +20,7 @@ export default function EditGroup({
     if (!focusedGroup) {
         throw Error('Fant ikke gruppen')
     }
-    const canAddToList = useAuthorizer({ authorizer: mailAuth.createMailingListGroupRelation.dynamicFields({}) }).authorized
+    const canAddToList = useAuthorizer({ authorizer: mailAuth.createMailingListGroupRelation }).authorized
 
     return <div>
         <h2>{focusedGroup.id}</h2>

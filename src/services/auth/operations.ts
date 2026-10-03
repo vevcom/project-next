@@ -8,7 +8,7 @@ import { sendLinkFeideAccountMail } from '@/lib/email/systemMail/linkFeideAccoun
 import { defineOperation } from '@/services/serviceOperation'
 import { ServerError } from '@/services/error'
 import { userOperations } from '@/services/users/operations'
-import { readJWTPayload } from '@/lib/jwt/jwtReadUnsecure'
+import { verifyJWT } from '@/lib/jwt/jwt'
 import logger from '@/lib/logger'
 import { z } from 'zod'
 
@@ -20,12 +20,9 @@ const linkFeideAccountClaimsSchema = z.object({
     feideEmail: z.string(),
 }).transform(({ sub, ...claims }) => ({ targetUserId: sub, ...claims }))
 
-/**
- * Reads the claims of a link Feide account token. Must only be called after the
- * token has been verified, which the authorizers of the operations using it do.
- */
+/** Verifies and reads the claims of a link Feide account token. */
 function readLinkFeideAccountClaims(token: string) {
-    const claims = linkFeideAccountClaimsSchema.safeParse(readJWTPayload(token))
+    const claims = linkFeideAccountClaimsSchema.safeParse(verifyJWT(token, 'linkfeideaccount'))
 
     if (!claims.success) {
         throw new ServerError('JWT INVALID', 'The JWT does not contain the mandatory fields')
@@ -39,10 +36,9 @@ export const authOperations = {
         paramsSchema: z.object({
             token: z.string(),
         }),
-        authorizer: ({ params }) => authAuth.verifyEmail.dynamicFields(params),
+        authorizer: () => authAuth.verifyEmail,
         operation: async ({ prisma, params }) => {
-            // INFO: Safe to parse unsafe since the authorizer has verified the token.
-            const payload = readJWTPayload(params.token)
+            const payload = verifyJWT(params.token, 'verifyemail')
 
             if (!payload.sub || !payload.email || !payload.iat) {
                 throw new ServerError('JWT INVALID', 'The JWT does not contain the mandatory fields')
@@ -81,10 +77,9 @@ export const authOperations = {
         paramsSchema: z.object({
             token: z.string()
         }),
-        authorizer: ({ params }) => authAuth.resetPassword.dynamicFields(params),
+        authorizer: () => authAuth.resetPassword,
         operation: async ({ prisma, params }) => {
-            // INFO: Safe to parse unsafe since the authorizer has verified the token.
-            const payload = readJWTPayload(params.token)
+            const payload = verifyJWT(params.token, 'resetpassword')
 
             if (!payload.sub || !payload.iat) {
                 throw new ServerError('JWT INVALID', 'The forgot password JWT is not valid')
@@ -114,11 +109,11 @@ export const authOperations = {
             token: z.string()
         }),
         dataSchema: userSchemas.updatePassword,
-        authorizer: ({ params }) => authAuth.resetPassword.dynamicFields(params),
+        authorizer: () => authAuth.resetPassword,
         operation: async ({ params, data }) => {
             const userId = await authOperations.verifyResetPasswordToken({ params })
 
-            userOperations.updatePassword({
+            await userOperations.updatePassword({
                 params: {
                     id: userId,
                 },
@@ -130,7 +125,7 @@ export const authOperations = {
 
     sendLinkFeideAccountEmail: defineOperation({
         dataSchema: authSchemas.sendLinkFeideAccountEmail,
-        authorizer: () => authAuth.sendLinkFeideAccountEmail.dynamicFields({}),
+        authorizer: () => authAuth.sendLinkFeideAccountEmail,
         operation: async ({ prisma, data, session }) => {
             if (!session.user) {
                 throw new ServerError('DISSALLOWED', 'This endpoint requires a user connected to the session.')
@@ -201,7 +196,7 @@ export const authOperations = {
      * Returns null if the session user has no Feide account.
      */
     readFeideLoginMatch: defineOperation({
-        authorizer: () => authAuth.readFeideLoginMatch.dynamicFields({}),
+        authorizer: () => authAuth.readFeideLoginMatch,
         operation: async ({ prisma, session }) => {
             if (!session.user) {
                 throw new ServerError('DISSALLOWED', 'This endpoint requires a user connected to the session.')
@@ -228,7 +223,7 @@ export const authOperations = {
         paramsSchema: z.object({
             token: z.string(),
         }),
-        authorizer: ({ params }) => authAuth.verifyLinkFeideAccountToken.dynamicFields(params),
+        authorizer: () => authAuth.verifyLinkFeideAccountToken,
         operation: async ({ prisma, params }) => {
             const claims = readLinkFeideAccountClaims(params.token)
 
@@ -251,7 +246,7 @@ export const authOperations = {
         paramsSchema: z.object({
             token: z.string(),
         }),
-        authorizer: ({ params }) => authAuth.linkFeideAccount.dynamicFields(params),
+        authorizer: () => authAuth.linkFeideAccount,
         opensTransaction: true,
         operation: async ({ prisma, params }) => {
             const claims = readLinkFeideAccountClaims(params.token)
@@ -266,7 +261,7 @@ export const authOperations = {
 
     adminLinkFeideAccount: defineOperation({
         dataSchema: authSchemas.adminLinkFeideAccount,
-        authorizer: () => authAuth.adminLinkFeideAccount.dynamicFields({}),
+        authorizer: () => authAuth.adminLinkFeideAccount,
         opensTransaction: true,
         operation: async ({ prisma, data }) => {
             const fromUser = await prisma.user.findUniqueOrThrow({
@@ -287,7 +282,7 @@ export const authOperations = {
 
     sendResetPasswordEmail: defineOperation({
         dataSchema: authSchemas.sendResetPasswordEmail,
-        authorizer: () => authAuth.sendResetPasswordEmail.dynamicFields({}),
+        authorizer: () => authAuth.sendResetPasswordEmail,
         operation: async ({ data }) => {
             try {
                 const user = await userOperations.read({

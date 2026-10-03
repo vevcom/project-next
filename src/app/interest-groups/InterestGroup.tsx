@@ -24,19 +24,18 @@ type PropTypes = {
 }
 
 export default function InterestGroup({ interestGroup, session }: PropTypes) {
-    const canUpdate = interestGroupAuth.update.dynamicFields({ groupId: interestGroup.groupId }).auth(session)
-    const canDestroy = interestGroupAuth.destroy.dynamicFields({}).auth(session)
+    const canUpdate = interestGroupAuth.update.data({ groupId: interestGroup.groupId }).auth(session)
+    const canDestroy = interestGroupAuth.destroy.auth(session)
     // A pensioned group's article is history too: the service refuses the write, so the editing
     // controls are not offered either.
     const canEditArticleSection = (interestGroup.pensioned
         ? new AuthResult(session, false, undefined, 'Gruppen er pensjonert')
-        : interestGroupAuth.updateArticleSection.dynamicFields({ groupId: interestGroup.groupId }).auth(session)
+        : interestGroupAuth.updateArticleSection.data({ groupId: interestGroup.groupId }).auth(session)
     ).toJsObject()
 
     // The interest group's own page is where its members and migration are administered. The link
     // shows for anyone who may do one of those things - which includes the group's own admins, not
     // just holders of the interest group permission.
-    const dynamicFields = { groupId: interestGroup.groupId }
     // Nothing about a pensioned group may be changed, so none of that is offered for one. Whoever
     // may pension it still needs the link though - bringing it back is reached from the same page.
     const canManage = !interestGroup.pensioned && [
@@ -45,8 +44,8 @@ export default function InterestGroup({ interestGroup, session }: PropTypes) {
         interestGroupAuth.setMemberAdmin,
         interestGroupAuth.setMemberTitle,
         interestGroupAuth.migrateGroup,
-    ].some(authorizer => authorizer.dynamicFields(dynamicFields).auth(session).authorized)
-    const canPension = interestGroupAuth.pension.dynamicFields({}).auth(session).authorized
+    ].some(authorizer => authorizer.data({ groupId: interestGroup.groupId }).auth(session).authorized)
+    const canPension = interestGroupAuth.pension.auth(session).authorized
     const canAdministrate = canManage || canPension
 
     const cmsArticleActionConfig = { implementationParams: { interestGroupId: interestGroup.id } }

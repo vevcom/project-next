@@ -32,7 +32,7 @@ type PropTypes = {
  */
 export default function EditJobAd({ jobAd, children }: PropTypes) {
     const canEdit = useEditMode({
-        authorizer: jobAdAuth.update.dynamicFields({})
+        authorizer: jobAdAuth.update
     })
     const companyPagingCtx = useContext(CompanyPagingContext)
     if (!canEdit) return children

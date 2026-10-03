@@ -1,19 +1,16 @@
-import { RequirePermission } from '@/auth/authorizer/RequirePermission'
-import { RequireEveryPermission } from '@/auth/authorizer/RequireEveryPermission'
+import { Require } from '@/auth/authorizer/Require'
 
 export const mailAuth = {
-    createAliasMailingListRelation: RequirePermission.staticFields({ permission: 'MAILINGLIST_ADMIN' }),
-    createMailingListExternalRelation: RequirePermission.staticFields({ permission: 'MAILINGLIST_ADMIN' }),
-    createMailingListUserRelation: RequirePermission.staticFields({ permission: 'MAILINGLIST_ADMIN' }),
-    createMailingListGroupRelation: RequirePermission.staticFields({ permission: 'MAILINGLIST_ADMIN' }),
-    destroyAliasMailingListRelation: RequirePermission.staticFields({ permission: 'MAILINGLIST_ADMIN' }),
-    destroyMailingListExternalRelation: RequirePermission.staticFields({ permission: 'MAILINGLIST_ADMIN' }),
-    destroyMailingListUserRelation: RequirePermission.staticFields({ permission: 'MAILINGLIST_ADMIN' }),
-    destroyMailingListGroupRelation: RequirePermission.staticFields({ permission: 'MAILINGLIST_ADMIN' }),
-    readMailFlow: RequireEveryPermission.staticFields({
-        permissions: ['MAILINGLIST_READ', 'MAILALIAS_READ', 'MAILADDRESS_EXTERNAL_READ']
-    }),
-    readMailOptions: RequireEveryPermission.staticFields({
-        permissions: ['MAILINGLIST_READ', 'MAILALIAS_READ', 'MAILADDRESS_EXTERNAL_READ']
-    }),
+    createAliasMailingListRelation: Require.permission('MAILINGLIST_ADMIN'),
+    createMailingListExternalRelation: Require.permission('MAILINGLIST_ADMIN'),
+    createMailingListUserRelation: Require.permission('MAILINGLIST_ADMIN'),
+    createMailingListGroupRelation: Require.permission('MAILINGLIST_ADMIN'),
+    destroyAliasMailingListRelation: Require.permission('MAILINGLIST_ADMIN'),
+    destroyMailingListExternalRelation: Require.permission('MAILINGLIST_ADMIN'),
+    destroyMailingListUserRelation: Require.permission('MAILINGLIST_ADMIN'),
+    destroyMailingListGroupRelation: Require.permission('MAILINGLIST_ADMIN'),
+    readMailFlow: Require.permission('MAILINGLIST_USE')
+        .permission('MAILALIAS_USE').permission('MAILADDRESS_EXTERNAL_USE'),
+    readMailOptions: Require.permission('MAILINGLIST_USE')
+        .permission('MAILALIAS_USE').permission('MAILADDRESS_EXTERNAL_USE'),
 } as const

@@ -8,7 +8,7 @@ import { z } from 'zod'
 
 export const cabinPricePeriodOperations = {
     create: defineOperation({
-        authorizer: () => cabinPricePeriodAuth.create.dynamicFields({}),
+        authorizer: () => cabinPricePeriodAuth.create,
         dataSchema: cabinPricePeriodSchemas.createPricePeriod,
         operation: async ({ prisma, data }) => {
             const currentReleaseDate = await cabinReleasePeriodOperations.getCurrentReleasePeriod({ bypassAuth: true })
@@ -58,7 +58,7 @@ export const cabinPricePeriodOperations = {
     }),
 
     destroy: defineOperation({
-        authorizer: () => cabinPricePeriodAuth.destroy.dynamicFields({}),
+        authorizer: () => cabinPricePeriodAuth.destroy,
         paramsSchema: z.object({
             id: z.number(),
         }),
@@ -80,12 +80,12 @@ export const cabinPricePeriodOperations = {
     }),
 
     readMany: defineOperation({
-        authorizer: () => cabinPricePeriodAuth.readMany.dynamicFields({}),
+        authorizer: () => cabinPricePeriodAuth.readMany,
         operation: async ({ prisma }) => prisma.pricePeriod.findMany()
     }),
 
     readPublicPeriods: defineOperation({
-        authorizer: () => cabinPricePeriodAuth.readPublicPeriods.dynamicFields({}),
+        authorizer: () => cabinPricePeriodAuth.readPublicPeriods,
         operation: async ({ prisma }) => {
             const releaseDate = await cabinReleasePeriodOperations.getCurrentReleasePeriod({ bypassAuth: true })
 
@@ -118,7 +118,7 @@ export const cabinPricePeriodOperations = {
     }),
 
     readUnreleasedPeriods: defineOperation({
-        authorizer: () => cabinPricePeriodAuth.readUnreleasedPeriods.dynamicFields({}),
+        authorizer: () => cabinPricePeriodAuth.readUnreleasedPeriods,
         operation: async ({ prisma }) => {
             const releaseDate = await cabinReleasePeriodOperations.getCurrentReleasePeriod({ bypassAuth: true })
             return prisma.pricePeriod.findMany({
@@ -132,7 +132,7 @@ export const cabinPricePeriodOperations = {
     }),
 
     update: defineOperation({
-        authorizer: () => cabinPricePeriodAuth.update.dynamicFields({}),
+        authorizer: () => cabinPricePeriodAuth.update,
         dataSchema: cabinPricePeriodSchemas.updatePricePeriod,
         paramsSchema: z.object({
             pricePeriodId: z.number(),

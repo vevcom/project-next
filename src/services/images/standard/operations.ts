@@ -17,7 +17,7 @@ const {
     generateCollectionFromConfig: generateStandardImagesCollectionFromConfig
 } = implementSpecialCollection({
     special: 'STANDARDIMAGES',
-    imagePanelAuther: standardImagesImagePanelAuth.dynamicFields({}),
+    imagePanelAuther: standardImagesImagePanelAuth,
     allowedExtensions,
     config: {
         name: 'Standardbilder',
@@ -112,7 +112,7 @@ const updateStandardImageFromConfig = defineSubOperation({
 })
 
 const readStandardImage = defineOperation({
-    authorizer: () => standardImageCollectionAuth.readStandardImage.dynamicFields({}),
+    authorizer: () => standardImageCollectionAuth.readStandardImage,
     paramsSchema: z.object({
         standardImage: z.nativeEnum(StandardImage)
     }),
@@ -166,7 +166,7 @@ const readStandardImage = defineOperation({
  * just a maintenance reminder that this list and the enum must stay in sync.
  */
 const readAllStandardImages = defineOperation({
-    authorizer: () => standardImageCollectionAuth.readStandardImage.dynamicFields({}),
+    authorizer: () => standardImageCollectionAuth.readStandardImage,
     operation: async ({ prisma }): Promise<Record<StandardImage, ExpandedImage>> => {
         const standardCollection = await standardImagesImagePanelOperations.readCollection({})
         const imagesInCollection = await prisma.image.findMany({

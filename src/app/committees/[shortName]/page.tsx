@@ -31,9 +31,8 @@ export default async function Committee({ params }: PropTypes) {
 
     const paragraph = paragraphRes.data
 
-    const canEditCommitteeParagraph = committeeAuth.updateParagraphContent.dynamicFields({
-        groupId: committee.groupId
-    }).auth(await ServerSession.fromNextAuth()).toJsObject()
+    const canEditCommitteeParagraph = committeeAuth.updateParagraphContent.data({ groupId: committee.groupId })
+        .auth(await ServerSession.fromNextAuth()).toJsObject()
 
     return (
         <div className={styles.wrapper}>

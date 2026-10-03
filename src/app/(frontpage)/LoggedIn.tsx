@@ -39,12 +39,12 @@ export default async function LoggedInLandingPage() {
 
     // Ombul and omegaquotes are membership permissions rather than default ones, so a logged in
     // user without them gets the islands left out entirely instead of an error page.
-    const canReadOmbul = ombulAuth.readAll.dynamicFields({}).auth(session).authorized
+    const canReadOmbul = ombulAuth.readAll.auth(session).authorized
     const ombuls = canReadOmbul
         ? unwrapActionReturn(await readOmbulsAction()).slice(0, MAX_NUMBER_OF_ELEMENTS)
         : []
 
-    const canReadOmegaquotes = omegaQuotesAuth.readPage.dynamicFields({}).auth(session).authorized
+    const canReadOmegaquotes = omegaQuotesAuth.readPage.auth(session).authorized
     const omegaquotes = canReadOmegaquotes
         ? unwrapActionReturn(await readQuotesPageAction({
             params: {
@@ -60,7 +60,7 @@ export default async function LoggedInLandingPage() {
         }))
         : []
 
-    const canEditSpecialCmsImage = frontpageAuth.updateSpecialCmsImage.dynamicFields({}).auth(
+    const canEditSpecialCmsImage = frontpageAuth.updateSpecialCmsImage.auth(
         session
     ).toJsObject()
 

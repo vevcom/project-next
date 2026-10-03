@@ -5,7 +5,7 @@ import LedgerTransactionRow from './LedgerTransactionRow'
 import EndlessScroll from '@/components/PagingWrappers/EndlessScroll'
 import { LedgerTransactionPagingProvider, LedgerTransactionPagingContext } from '@/contexts/paging/LedgerTransactionPaging'
 import useAuthorizer from '@/hooks/useAuthorizer'
-import { RequirePermission } from '@/auth/authorizer/RequirePermission'
+import { Require } from '@/auth/authorizer/Require'
 import { useContext } from 'react'
 
 type Props = {
@@ -23,7 +23,7 @@ function EmptyState() {
 
 export default function TransactionList({ accountId }: Props) {
     const isLedgerAdmin = useAuthorizer({
-        authorizer: RequirePermission.staticFields({ permission: 'LEDGER_ADMIN' }).dynamicFields({})
+        authorizer: Require.permission('LEDGER_ADMIN')
     }).authorized
 
     return <LedgerTransactionPagingProvider

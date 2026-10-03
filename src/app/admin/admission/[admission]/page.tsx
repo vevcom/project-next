@@ -25,7 +25,7 @@ export default async function AdmissionTrials({ params }: PropTypes) {
     const publicKey = unwrapActionReturn(await readOmegaJWTPublicKeyAction())
 
     const session = await ServerSession.fromNextAuth()
-    const canSearchUsers = userAuth.readPage.dynamicFields({}).auth(session).authorized
+    const canSearchUsers = userAuth.readPage.auth(session).authorized
 
     return <PageWrapper
         title={`Registrer opptak for ${admissionDisplayNames[admission]}`}

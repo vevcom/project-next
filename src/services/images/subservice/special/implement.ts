@@ -8,7 +8,7 @@ import logger from '@/lib/logger'
 import { visibilityOperations } from '@/services/visibility/operations'
 import type { SpecialCollection } from '@/prisma-generated-pn-types'
 import type { ExpandedImageCollection } from '@/services/images/subservice/types'
-import type { AuthorizerDynamicFieldsBound } from '@/auth/authorizer/Authorizer'
+import type { Authorizer } from '@/auth/authorizer/Authorizer'
 
 export function implementSpecialCollection({
     special,
@@ -17,7 +17,7 @@ export function implementSpecialCollection({
     config
 }: {
     special: SpecialCollection,
-    imagePanelAuther: AuthorizerDynamicFieldsBound
+    imagePanelAuther: Authorizer
     /**
      * Which of the image system's extensions this collection accepts on upload.
      * Some special collection may only for example expect svg files, while others may only expect

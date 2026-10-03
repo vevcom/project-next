@@ -8,7 +8,7 @@ import { z } from 'zod'
 
 export const omegaquoteOperations = {
     create: defineOperation({
-        authorizer: ({ params }) => omegaQuotesAuth.create.dynamicFields({ userId: params.userPosterId }),
+        authorizer: ({ params }) => omegaQuotesAuth.create.data({ userId: params.userPosterId }),
         dataSchema: omegaquoteSchemas.create,
         paramsSchema: z.object({
             userPosterId: z.number()
@@ -39,7 +39,7 @@ export const omegaquoteOperations = {
     }),
     readPage: defineOperation({
         paramsSchema: omegaquoteSchemas.readPage,
-        authorizer: () => omegaQuotesAuth.readPage.dynamicFields({}),
+        authorizer: () => omegaQuotesAuth.readPage,
         operation: async ({ prisma, params }) =>
             prisma.omegaQuote.findMany({
                 orderBy: {

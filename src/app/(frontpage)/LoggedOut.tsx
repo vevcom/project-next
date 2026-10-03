@@ -16,10 +16,10 @@ import Link from 'next/link'
 
 export default async function LoggedOutLandingPage() {
     const session = await ServerSession.fromNextAuth()
-    const canEditSpecialCmsImage = frontpageAuth.updateSpecialCmsImage.dynamicFields({}).auth(
+    const canEditSpecialCmsImage = frontpageAuth.updateSpecialCmsImage.auth(
         session
     ).toJsObject()
-    const canEditSpecialCmsParagraph = frontpageAuth.updateSpecialCmsParagraphContentSection.dynamicFields({}).auth(
+    const canEditSpecialCmsParagraph = frontpageAuth.updateSpecialCmsParagraphContentSection.auth(
         session
     ).toJsObject()
 

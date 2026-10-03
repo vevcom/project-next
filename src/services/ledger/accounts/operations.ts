@@ -4,8 +4,6 @@ import { resolveAccountOwnership, resolveAccountsOwnership } from './ownership'
 import { readPageInputSchemaObject } from '@/lib/paging/schema'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
 import { defineOperation } from '@/services/serviceOperation'
-import { andAuthorizers } from '@/auth/authorizer/andAuthorizers'
-import { RequireNothing } from '@/auth/authorizer/RequireNothing'
 import { LedgerAccountType } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
 import type { LedgerAccount, Prisma } from '@/prisma-generated-pn-types'
@@ -39,8 +37,8 @@ export const ledgerAccountOperations = {
         // so it's admin-only regardless of how `type` was supplied.
         authorizer: ({ data }) => (
             resolveCreateType(data) === 'GROUP' || (data.groupIds?.length ?? 0) > 0
-                ? ledgerAccountAuth.create.ledgerAdmin.dynamicFields({})
-                : ledgerAccountAuth.create.ledgerUse.dynamicFields({})
+                ? ledgerAccountAuth.create.ledgerAdmin
+                : ledgerAccountAuth.create.ledgerUse
         ),
         dataSchema: ledgerAccountSchemas.create,
         operation: async ({ prisma, data }): Promise<LedgerAccount> => {
@@ -77,9 +75,7 @@ export const ledgerAccountOperations = {
      * @returns The account details.
      */
     read: defineOperation({
-        authorizer: async ({ params, prisma }) => ledgerAccountAuth.read.dynamicFields({
-            accounts: [await resolveAccountOwnership(prisma, params)],
-        }),
+        authorizer: async ({ params, prisma }) => ledgerAccountAuth.read([await resolveAccountOwnership(prisma, params)]),
         paramsSchema: z.object({
             userId: z.number().optional(),
             ledgerAccountId: z.number().optional(),
@@ -121,9 +117,7 @@ export const ledgerAccountOperations = {
      * matches more than one filter (e.g. it's shared by two requested groups).
      */
     readMany: defineOperation({
-        authorizer: async ({ params, prisma }) => ledgerAccountAuth.readMany.dynamicFields({
-            accounts: await resolveAccountsOwnership(prisma, params),
-        }),
+        authorizer: async ({ params, prisma }) => ledgerAccountAuth.readMany(await resolveAccountsOwnership(prisma, params)),
         paramsSchema: z.object({
             ledgerAccountIds: z.number().array().optional(),
             userIds: z.number().array().optional(),
@@ -164,7 +158,7 @@ export const ledgerAccountOperations = {
      * @returns The account details.
      */
     readOrCreate: defineOperation({
-        authorizer: ({ params }) => ledgerAccountAuth.readOrCreate.dynamicFields({ userId: params.userId }),
+        authorizer: ({ params }) => ledgerAccountAuth.readOrCreate.data({ userId: params.userId }),
         paramsSchema: z.object({
             userId: z.number(),
         }),
@@ -190,7 +184,7 @@ export const ledgerAccountOperations = {
     }),
 
     readPage: defineOperation({
-        authorizer: () => ledgerAccountAuth.readPage.dynamicFields({}),
+        authorizer: () => ledgerAccountAuth.readPage,
         paramsSchema: readPageInputSchemaObject(
             z.number(),
             z.object({
@@ -232,20 +226,10 @@ export const ledgerAccountOperations = {
      * @returns The updated account.
      */
     update: defineOperation({
-        authorizer: async ({ params, data, prisma }) => andAuthorizers(
-            andAuthorizers(
-                ledgerAccountAuth.update.ledgerUse.dynamicFields({}),
-                ledgerAccountAuth.update.accountAccess.dynamicFields({
-                    accounts: [await resolveAccountOwnership(prisma, params)],
-                }),
-            ),
-            // Group links decide who can access the account (RequireLedgerAccountAccess treats
-            // an owning group's members as owners), so changing them needs LEDGER_ADMIN even for
-            // a caller who already owns the account being changed.
-            (data.addGroupIds?.length || data.removeGroupIds?.length)
-                ? ledgerAccountAuth.update.groupAccess.dynamicFields({})
-                : RequireNothing.staticFields({}).dynamicFields({}),
-        ),
+        authorizer: async ({ params, data, prisma }) => ledgerAccountAuth.update({
+            accounts: [await resolveAccountOwnership(prisma, params)],
+            changesGroupLinks: Boolean(data.addGroupIds?.length || data.removeGroupIds?.length),
+        }),
         paramsSchema: z.object({
             userId: z.number().optional(),
             ledgerAccountId: z.number().optional(),
@@ -300,9 +284,8 @@ export const ledgerAccountOperations = {
      * @returns The balances of the ledger accounts.
      */
     calculateBalances: defineOperation({
-        authorizer: async ({ params, prisma }) => ledgerAccountAuth.calculateBalances.dynamicFields({
-            accounts: await resolveAccountsOwnership(prisma, params),
-        }),
+        authorizer: async ({ params, prisma }) =>
+            ledgerAccountAuth.calculateBalances(await resolveAccountsOwnership(prisma, params)),
         paramsSchema: z.object({
             ledgerAccountIds: z.number().array().optional(),
             userIds: z.number().array().optional(),
@@ -392,9 +375,8 @@ export const ledgerAccountOperations = {
      * @returns The balance of the ledger account.
      */
     calculateBalance: defineOperation({
-        authorizer: async ({ params, prisma }) => ledgerAccountAuth.calculateBalance.dynamicFields({
-            accounts: [await resolveAccountOwnership(prisma, params)],
-        }),
+        authorizer: async ({ params, prisma }) =>
+            ledgerAccountAuth.calculateBalance([await resolveAccountOwnership(prisma, params)]),
         paramsSchema: z.object({
             userId: z.number().optional(),
             ledgerAccountId: z.number().optional(),

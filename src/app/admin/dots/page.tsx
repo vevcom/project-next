@@ -65,10 +65,10 @@ export default async function Dots({ searchParams }: PropTypes) {
                     userId={user.id}
                     dots={dots}
                     showCreateForm={
-                        dotAuth.create.dynamicFields({ userId: session.user?.id ?? 0 }).auth(session).authorized
+                        dotAuth.create.data({ userId: session.user?.id ?? 0 }).auth(session).authorized
                     }
-                    showUpdateForm={dotAuth.update.dynamicFields({}).auth(session).authorized}
-                    showDestroyForm={dotAuth.destroy.dynamicFields({}).auth(session).authorized}
+                    showUpdateForm={dotAuth.update.auth(session).authorized}
+                    showDestroyForm={dotAuth.destroy.auth(session).authorized}
                 />
             </div>
         </PageWrapper>

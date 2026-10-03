@@ -20,7 +20,7 @@ import { ServerSession } from '@/auth/session/ServerSession'
 export default async function NewStudent() {
     const article = unwrapActionReturn(await readNewStudentArticleAction())
 
-    const canEdit = newStudentAuth.update.dynamicFields({}).auth(
+    const canEdit = newStudentAuth.update.auth(
         await ServerSession.fromNextAuth()
     ).toJsObject()
 

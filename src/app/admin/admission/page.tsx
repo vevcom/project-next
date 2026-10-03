@@ -12,7 +12,7 @@ import Link from 'next/link'
 export default async function AdmissionTrials() {
     const session = await authorizeAdminPage('admission')
 
-    const canSearchUsers = userAuth.readPage.dynamicFields({}).auth(session).authorized
+    const canSearchUsers = userAuth.readPage.auth(session).authorized
 
     return (
         <PageWrapper title="Opptak">

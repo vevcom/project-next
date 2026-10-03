@@ -35,8 +35,8 @@ export default async function Ombul({ params }: PropTypes) {
     const path = `/store/ombul/${ombul.fsLocation}`
 
     const session = await ServerSession.fromNextAuth()
-    const canUpdate = ombulAuth.update.dynamicFields({}).auth(session)
-    const canUpdateParagraph = ombulAuth.updateParagraphContent.dynamicFields({}).auth(session).toJsObject()
+    const canUpdate = ombulAuth.update.auth(session)
+    const canUpdateParagraph = ombulAuth.updateParagraphContent.auth(session).toJsObject()
 
     return (
         <PageWrapper title={ombul.name} hideTitle className={styles.ombulPage}>

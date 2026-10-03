@@ -32,9 +32,9 @@ export default function EditMailingList({
 
     const focusedMailingList = data.mailingList[0]
 
-    const canAdmin = useAuthorizer({ authorizer: mailingListAuth.update.dynamicFields({}) }).authorized
+    const canAdmin = useAuthorizer({ authorizer: mailingListAuth.update }).authorized
     const canAddRelation = useAuthorizer({
-        authorizer: mailAuth.createAliasMailingListRelation.dynamicFields({})
+        authorizer: mailAuth.createAliasMailingListRelation
     }).authorized
 
     return <>

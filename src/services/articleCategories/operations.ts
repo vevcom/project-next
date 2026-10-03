@@ -13,7 +13,7 @@ import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
 
 export const articleCategoryOperations = {
     create: defineOperation({
-        authorizer: () => articleCategoryAuth.create.dynamicFields({}),
+        authorizer: () => articleCategoryAuth.create,
         dataSchema: articleCategorySchemas.create,
         operation: ({ prisma, data }) =>
             prisma.articleCategory.create({
@@ -25,7 +25,7 @@ export const articleCategoryOperations = {
     }),
 
     destroy: defineOperation({
-        authorizer: () => articleCategoryAuth.destroy.dynamicFields({}),
+        authorizer: () => articleCategoryAuth.destroy,
         paramsSchema: z.object({
             id: z.number()
         }),
@@ -54,7 +54,7 @@ export const articleCategoryOperations = {
     }),
 
     update: defineOperation({
-        authorizer: () => articleCategoryAuth.update.dynamicFields({}),
+        authorizer: () => articleCategoryAuth.update,
         paramsSchema: z.object({
             id: z.number(),
         }),
@@ -72,7 +72,7 @@ export const articleCategoryOperations = {
     }),
 
     addArticleToCategory: defineOperation({
-        authorizer: () => articleCategoryAuth.addArticleToCategory.dynamicFields({}),
+        authorizer: () => articleCategoryAuth.addArticleToCategory,
         paramsSchema: z.object({
             id: z.number()
         }),
@@ -102,7 +102,7 @@ export const articleCategoryOperations = {
     }),
 
     removeArticleFromCategory: defineOperation({
-        authorizer: () => articleCategoryAuth.removeArticleFromCategory.dynamicFields({}),
+        authorizer: () => articleCategoryAuth.removeArticleFromCategory,
         paramsSchema: z.object({
             id: z.number(),
             articleId: z.number()
@@ -127,7 +127,7 @@ export const articleCategoryOperations = {
     }),
 
     updateArticle: implementUpdateArticleOperations({
-        authorizer: () => articleCategoryAuth.updateArticle.dynamicFields({}),
+        authorizer: () => articleCategoryAuth.updateArticle,
         implementationParamsSchema: z.object({
             articleCategoryId: z.number(),
         }),
@@ -149,7 +149,7 @@ export const articleCategoryOperations = {
     }),
 
     readAll: defineOperation({
-        authorizer: () => articleCategoryAuth.readAll.dynamicFields({}),
+        authorizer: () => articleCategoryAuth.readAll,
         operation: async ({ prisma }) => {
             const categories = await prisma.articleCategory.findMany({
                 include: {
@@ -175,7 +175,7 @@ export const articleCategoryOperations = {
     }),
 
     read: defineOperation({
-        authorizer: () => articleCategoryAuth.read.dynamicFields({}),
+        authorizer: () => articleCategoryAuth.read,
         paramsSchema: z.object({
             name: z.string()
         }),
@@ -202,7 +202,7 @@ export const articleCategoryOperations = {
     }),
 
     readArticleInCategory: articleOperations.read.implement({
-        authorizer: () => articleCategoryAuth.readArticleInCategory.dynamicFields({}),
+        authorizer: () => articleCategoryAuth.readArticleInCategory,
         implementationParamsSchema: z.object({
             articleCategoryName: z.string()
         }),

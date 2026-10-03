@@ -1,15 +1,13 @@
 import EmailRegistrationForm from './EmailregistrationForm'
 import { ServerSession } from '@/auth/session/ServerSession'
-import { RequireUser } from '@/auth/authorizer/RequireUser'
+import { Require } from '@/auth/authorizer/Require'
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { readFeideLoginMatchAction } from '@/services/auth/actions'
 import { readUserAction } from '@/services/users/actions'
 import { notFound, redirect } from 'next/navigation'
 
 export default async function Registeremail() {
-    const { authorized, session } = RequireUser.staticFields({}).dynamicFields({}).auth(
-        await ServerSession.fromNextAuth()
-    )
+    const { authorized, session } = Require.user().auth(await ServerSession.fromNextAuth())
 
     if (!authorized) notFound()
 

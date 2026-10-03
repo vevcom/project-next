@@ -9,13 +9,13 @@ import { ServerError } from '@/services/error'
 
 export const omegaIdOperations = {
     generate: defineOperation({
-        authorizer: ({ params }) => omegaIdAuth.generate.dynamicFields({ userId: params.userId }),
+        authorizer: ({ params }) => omegaIdAuth.generate.data({ userId: params.userId }),
         paramsSchema: omegaIdSchemas.generate,
         operation: ({ params }) =>
             generateJWT('omegaid', { sub: params.userId }, OmegaIdExpiryTime, true),
     }),
     readPublicKey: defineOperation({
-        authorizer: () => omegaIdAuth.readPublicKey.dynamicFields({}),
+        authorizer: () => omegaIdAuth.readPublicKey,
         operation: () => {
             const key = process.env.JWT_PUBLIC_KEY
             if (!key) {

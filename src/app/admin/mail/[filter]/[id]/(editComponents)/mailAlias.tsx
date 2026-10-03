@@ -26,8 +26,8 @@ export default function EditMailAlias({
         throw Error('Fant ikke aliaset')
     }
 
-    const canAdmin = useAuthorizer({ authorizer: mailAliasAuth.update.dynamicFields({}) }).authorized
-    const canAddToList = useAuthorizer({ authorizer: mailAuth.createAliasMailingListRelation.dynamicFields({}) }).authorized
+    const canAdmin = useAuthorizer({ authorizer: mailAliasAuth.update }).authorized
+    const canAddToList = useAuthorizer({ authorizer: mailAuth.createAliasMailingListRelation }).authorized
 
     return <>
         <h2>{focusedAlias.address}</h2>

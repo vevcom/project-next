@@ -17,7 +17,7 @@ import type { ExpandedNotificationChannel, NotificationMethodGeneral } from '@/s
 
 export const notificationChannelOperations = {
     create: defineOperation({
-        authorizer: () => notificationChannelAuth.create.dynamicFields({}),
+        authorizer: () => notificationChannelAuth.create,
         dataSchema: notificationChannelSchemas.create,
         opensTransaction: true,
         paramsSchema: z.object({
@@ -105,14 +105,14 @@ export const notificationChannelOperations = {
     }),
 
     readMany: defineOperation({
-        authorizer: () => notificationChannelAuth.readMany.dynamicFields({}),
+        authorizer: () => notificationChannelAuth.readMany,
         operation: async ({ prisma }) => await prisma.notificationChannel.findMany({
             include: availableNotificationMethodIncluder,
         })
     }),
 
     readDefault: defineOperation({
-        authorizer: () => notificationChannelAuth.readDefault.dynamicFields({}),
+        authorizer: () => notificationChannelAuth.readDefault,
         operation: async ({ prisma }) => await prisma.notificationChannel.findMany({
             where: {
                 defaultMethods: {
@@ -126,7 +126,7 @@ export const notificationChannelOperations = {
     }),
 
     update: defineOperation({
-        authorizer: () => notificationChannelAuth.update.dynamicFields({}),
+        authorizer: () => notificationChannelAuth.update,
         dataSchema: notificationChannelSchemas.update,
         paramsSchema: z.object({
             id: z.number(),
@@ -220,7 +220,7 @@ export const notificationChannelOperations = {
     // TODO: It should probably be possible to delete a channel from the frontend (if not default) - Johan
     // It doesn't seem that this function is used yet. -Theodor
     destroy: defineOperation({
-        authorizer: () => notificationChannelAuth.destroy.dynamicFields({}),
+        authorizer: () => notificationChannelAuth.destroy,
         paramsSchema: z.object({
             id: z.number(),
         }),

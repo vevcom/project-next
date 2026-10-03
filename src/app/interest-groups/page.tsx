@@ -17,10 +17,8 @@ export default async function InterestGroups() {
     const interestGroups = unwrapActionReturn(await readInterestGroupsAction())
 
     const session = await ServerSession.fromNextAuth()
-    const canCreate = interestGroupAuth.create.dynamicFields({}).auth(session)
-    const canEditGeneralInfo = interestGroupAuth.updateSpecialCmsParagraphContentGeneralInfo.dynamicFields(
-        {}
-    ).auth(
+    const canCreate = interestGroupAuth.create.auth(session)
+    const canEditGeneralInfo = interestGroupAuth.updateSpecialCmsParagraphContentGeneralInfo.auth(
         session
     ).toJsObject()
 

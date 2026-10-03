@@ -234,7 +234,7 @@ describe('createTrial only accepts a soelle', () => {
     beforeAll(async () => {
         registrarSession = Session.fromJsObject({
             memberships: [],
-            permissions: ['ADMISSION_TRIAL_ADMIN'],
+            permissions: ['ADMISSION_USE'],
             user: await createTestUser('omegaregistrar'),
         })
     })

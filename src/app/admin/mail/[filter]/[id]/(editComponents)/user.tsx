@@ -20,7 +20,7 @@ export default function EditUser({
         throw Error('Could not find user')
     }
 
-    const canAddToList = useAuthorizer({ authorizer: mailAuth.createMailingListUserRelation.dynamicFields({}) }).authorized
+    const canAddToList = useAuthorizer({ authorizer: mailAuth.createMailingListUserRelation }).authorized
 
     return <div>
         <h2>{`${focusedUser.firstname} ${focusedUser.lastname}`}</h2>

@@ -16,10 +16,10 @@ export default async function Home({ searchParams }: PropTypes) {
     }
     const frontpageVersion = QueryParams.frontpageVersion.decode(await searchParams)
     const canEditFrontpage =
-        frontpageAuth.updateSpecialCmsParagraphContentSection.dynamicFields({}).auth(
+        frontpageAuth.updateSpecialCmsParagraphContentSection.auth(
             session
         ).authorized
-        || frontpageAuth.updateSpecialCmsImage.dynamicFields({}).auth(
+        || frontpageAuth.updateSpecialCmsImage.auth(
             session
         ).authorized
     switch (frontpageVersion) {

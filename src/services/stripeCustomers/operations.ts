@@ -10,7 +10,7 @@ export const stripeCustomerOperations = {
      * Otherwise, a new customer is created, associated in the DB, and returned.
      */
     readOrCreate: defineOperation({
-        authorizer: ({ params: { userId } }) => stripeCustomerAuth.readOrCreate.dynamicFields({ userId }),
+        authorizer: ({ params: { userId } }) => stripeCustomerAuth.readOrCreate.data({ userId }),
         paramsSchema: z.object({
             userId: z.number(),
         }),
@@ -107,7 +107,7 @@ export const stripeCustomerOperations = {
      * If the user does not have a Stripe customer associated it will be created automatically.
      */
     createSession: defineOperation({
-        authorizer: ({ params: { userId } }) => stripeCustomerAuth.createSession.dynamicFields({ userId }),
+        authorizer: ({ params: { userId } }) => stripeCustomerAuth.createSession.data({ userId }),
         paramsSchema: z.object({
             userId: z.number(),
         }),
@@ -155,7 +155,7 @@ export const stripeCustomerOperations = {
      * Creates a setup intent for adding a new payment method to the user's customer account in Stripe.
      */
     createSetupIntent: defineOperation({
-        authorizer: ({ params: { userId } }) => stripeCustomerAuth.createSetupIntent.dynamicFields({ userId }),
+        authorizer: ({ params: { userId } }) => stripeCustomerAuth.createSetupIntent.data({ userId }),
         paramsSchema: z.object({
             userId: z.number(),
         }),
@@ -181,7 +181,7 @@ export const stripeCustomerOperations = {
      * Returns a filtered list of saved payment methods for the user.
      */
     readSavedPaymentMethods: defineOperation({
-        authorizer: ({ params: { userId } }) => stripeCustomerAuth.readSavedPaymentMethods.dynamicFields({ userId }),
+        authorizer: ({ params: { userId } }) => stripeCustomerAuth.readSavedPaymentMethods.data({ userId }),
         paramsSchema: z.object({
             userId: z.number(),
         }),
@@ -219,7 +219,7 @@ export const stripeCustomerOperations = {
      * Deletes (or "detaches" in Stripe lingo) a saved payment method from the user's customer account in Stripe.
      */
     deleteSavedPaymentMethod: defineOperation({
-        authorizer: ({ params: { userId } }) => stripeCustomerAuth.deleteSavedPaymentMethod.dynamicFields({ userId }),
+        authorizer: ({ params: { userId } }) => stripeCustomerAuth.deleteSavedPaymentMethod.data({ userId }),
         paramsSchema: z.object({
             userId: z.number(),
             paymentMethodId: z.string(),

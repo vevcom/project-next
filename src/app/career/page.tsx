@@ -23,10 +23,10 @@ export default async function CareerLandingPage() {
     const contactorCmsLink = conactorCmsLinkRes.success ? conactorCmsLinkRes.data : null
     const companyPresentationEventTag = companyPresentationEventTagRes.success ? companyPresentationEventTagRes.data : null
 
-    const canEditSpecialCmsLink = careerAuth.updateSpecialCmsLink.dynamicFields({}).auth(
+    const canEditSpecialCmsLink = careerAuth.updateSpecialCmsLink.auth(
         session
     ).toJsObject()
-    const canEditSpecialCmsParagraph = careerAuth.updateSpecialCmsParagraphContentCareerInfo.dynamicFields({}).auth(
+    const canEditSpecialCmsParagraph = careerAuth.updateSpecialCmsParagraphContentCareerInfo.auth(
         session
     ).toJsObject()
 

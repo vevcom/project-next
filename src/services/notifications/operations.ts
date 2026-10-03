@@ -37,7 +37,7 @@ export const notificationOperations = {
      * @returns A promise that resolves with an object containing the dispatched notification and the number of recipients.
      */
     create: defineOperation({
-        authorizer: () => notificationAuth.create.dynamicFields({}),
+        authorizer: () => notificationAuth.create,
         dataSchema: notificationSchemas.create,
         operation: async ({ prisma, data }): Promise<NotificationResult> => {
             // This prevent notifications from beeing sent during seeding
@@ -111,7 +111,7 @@ export const notificationOperations = {
     }),
 
     sendMail: defineOperation({
-        authorizer: () => notificationAuth.sendMail.dynamicFields({}),
+        authorizer: () => notificationAuth.sendMail,
         dataSchema: emailSchemas.sendMail,
         operation: ({ data }) => sendMail(data)
     }),

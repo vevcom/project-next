@@ -16,7 +16,7 @@ export const ombulStore = implementStore({
 })
 
 const read = defineOperation({
-    authorizer: () => ombulAuth.read.dynamicFields({}),
+    authorizer: () => ombulAuth.read,
     paramsSchema: z.union([
         z.object({
             id: z.number(),
@@ -47,7 +47,7 @@ const read = defineOperation({
 })
 
 const readAll = defineOperation({
-    authorizer: () => ombulAuth.readAll.dynamicFields({}),
+    authorizer: () => ombulAuth.readAll,
     operation: ({ prisma }) =>
         prisma.ombul.findMany({
             orderBy: [
@@ -62,7 +62,7 @@ const readAll = defineOperation({
 })
 
 const readLatest = defineOperation({
-    authorizer: () => ombulAuth.readLatest.dynamicFields({}),
+    authorizer: () => ombulAuth.readLatest,
     operation: async ({ prisma }) => {
         const ombul = await prisma.ombul.findMany({
             orderBy: [
@@ -76,7 +76,7 @@ const readLatest = defineOperation({
 })
 
 const updateCoverImage = defineOperation({
-    authorizer: () => ombulAuth.updateCoverImage.dynamicFields({}),
+    authorizer: () => ombulAuth.updateCoverImage,
     paramsSchema: z.object({
         ombulId: z.number()
     }),
@@ -119,7 +119,7 @@ const updateCoverImage = defineOperation({
  * @returns
  */
 const destroy = defineOperation({
-    authorizer: () => ombulAuth.destroy.dynamicFields({}),
+    authorizer: () => ombulAuth.destroy,
     paramsSchema: z.object({
         id: z.number()
     }),
@@ -151,7 +151,7 @@ const destroy = defineOperation({
 })
 
 const create = defineOperation({
-    authorizer: () => ombulAuth.create.dynamicFields({}),
+    authorizer: () => ombulAuth.create,
     dataSchema: ombulSchemas.create,
     opensTransaction: true,
     operation: ({ data, prisma }) =>
@@ -227,7 +227,7 @@ const create = defineOperation({
 })
 
 const update = defineOperation({
-    authorizer: () => ombulAuth.update.dynamicFields({}),
+    authorizer: () => ombulAuth.update,
     dataSchema: ombulSchemas.update,
     paramsSchema: z.object({
         id: z.number()
@@ -246,7 +246,7 @@ const update = defineOperation({
 })
 
 const updateFile = defineOperation({
-    authorizer: () => ombulAuth.updateFile.dynamicFields({}),
+    authorizer: () => ombulAuth.updateFile,
     dataSchema: ombulSchemas.updateFile,
     paramsSchema: z.object({
         id: z.number()
@@ -287,7 +287,7 @@ const updateParagraphContent = cmsParagraphOperations.updateContent.implement({
     implementationParamsSchema: z.object({
         ombulId: z.number()
     }),
-    authorizer: () => ombulAuth.updateParagraphContent.dynamicFields({}),
+    authorizer: () => ombulAuth.updateParagraphContent,
     ownershipCheck: async ({ implementationParams, params }) =>
         (await read({
             params: { id: implementationParams.ombulId },

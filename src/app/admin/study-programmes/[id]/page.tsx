@@ -33,7 +33,7 @@ export default async function StudyProgrammeAdmin({ params }: PropTypes) {
     if (!Number.isInteger(id)) notFound()
 
     const session = await ServerSession.fromNextAuth()
-    studyProgrammeAuth.read.dynamicFields({}).auth(session)
+    studyProgrammeAuth.read.auth(session)
         .redirectOnUnauthorized({ returnUrl: `/admin/study-programmes/${id}` })
 
     const studyProgramme = unwrapActionReturn(await readStudyProgrammeAction({ params: { id } }))
@@ -47,12 +47,10 @@ export default async function StudyProgrammeAdmin({ params }: PropTypes) {
     const expanded = expandedGroups.find(group => group.id === studyProgramme.groupId)
     if (!expanded) notFound()
 
-    const canAddMembers = studyProgrammeAuth.addMembers.dynamicFields({
-        groupId: studyProgramme.groupId,
-    }).auth(session).authorized
-    const canRemoveMembers = studyProgrammeAuth.removeMembers.dynamicFields({
-        groupId: studyProgramme.groupId,
-    }).auth(session).authorized
+    const canAddMembers = studyProgrammeAuth.addMembers.data({ groupId: studyProgramme.groupId })
+        .auth(session).authorized
+    const canRemoveMembers = studyProgrammeAuth.removeMembers.data({ groupId: studyProgramme.groupId })
+        .auth(session).authorized
 
     return (
         <PageWrapper title={studyProgramme.name}>

@@ -50,7 +50,7 @@ async function sessionAdministratesCollectionOfImage({
     const { special, visibilityAdmin } = image.collection
 
     if (special) {
-        return specialImagePanels[special].auth.dynamicFields({}).auth(session).authorized
+        return specialImagePanels[special].auth.auth(session).authorized
     }
 
     return checkVisibility(session.memberships, toMatrix(visibilityAdmin))

@@ -60,7 +60,7 @@ export const paymentOperations = {
      * @warning Do not call this method for manual payments! It will fail.
      */
     initiate: defineOperation({
-        authorizer: () => paymentAuth.initiate.dynamicFields({}),
+        authorizer: () => paymentAuth.initiate,
         paramsSchema: z.object({
             paymentId: z.number(),
         }),
@@ -162,7 +162,7 @@ export const paymentOperations = {
      * terminal state (SUCCEEDED/FAILED/CANCELED) by the time this runs.
      */
     cancel: defineOperation({
-        authorizer: () => paymentAuth.cancel.dynamicFields({}),
+        authorizer: () => paymentAuth.cancel,
         paramsSchema: z.object({
             paymentId: z.number(),
         }),

@@ -7,7 +7,7 @@ import { readLockerAction } from '@/services/lockers/actions'
 import { groupOperations } from '@/services/groups/operations'
 import { assertGroupValidity } from '@/services/groups/assertGroupValidity'
 import { inferGroupName } from '@/lib/groups/inferGroupName'
-import { RequireUser } from '@/auth/authorizer/RequireUser'
+import { Require } from '@/auth/authorizer/Require'
 import { ServerSession } from '@/auth/session/ServerSession'
 
 type PropTypes = {
@@ -28,7 +28,7 @@ export default async function Locker({ params }: PropTypes) {
     const reservation = locker.data.LockerReservation[0]
     const groupName = (isReserved && reservation.group) ? inferGroupName(assertGroupValidity(reservation.group)) : ''
 
-    const user = RequireUser.staticFields({}).dynamicFields({}).auth(
+    const user = Require.user().auth(
         await ServerSession.fromNextAuth()
     ).redirectOnUnauthorized({
         returnUrl: `/lockers/${lockerId}`

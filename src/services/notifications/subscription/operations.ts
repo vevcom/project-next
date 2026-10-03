@@ -112,7 +112,7 @@ export const notificationSubscriptionOperations = {
         paramsSchema: z.object({
             userId: z.number(),
         }),
-        authorizer: ({ params }) => notificationSubscriptionAuth.read.dynamicFields(params),
+        authorizer: ({ params }) => notificationSubscriptionAuth.read.data({ userId: params.userId }),
         operation: async ({ prisma, params }) => await prisma.notificationSubscription.findMany({
             where: {
                 userId: params.userId,
@@ -156,7 +156,7 @@ export const notificationSubscriptionOperations = {
 
 
     update: defineOperation({
-        authorizer: ({ params }) => notificationSubscriptionAuth.update.dynamicFields(params),
+        authorizer: ({ params }) => notificationSubscriptionAuth.update.data({ userId: params.userId }),
         paramsSchema: z.object({
             userId: z.number(),
         }),

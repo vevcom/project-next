@@ -30,10 +30,10 @@ export default async function MembershipStatus({ params }: PropTypes) {
     const { profile, session } = await getProfileForUserPage(await params, 'membership-status')
     const { id: userId } = profile.user
 
-    const canReadTrials = admissionAuth.readTrial.dynamicFields({ userId }).auth(session).authorized
-    const canRegisterTrial = admissionAuth.createTrial.dynamicFields({}).auth(session).authorized
-    const canChangeLevel = omegaMembershipGroupAuth.updateUserLevel.dynamicFields({}).auth(session).authorized
-    const canChangeOrder = omegaMembershipGroupAuth.updateUserOrder.dynamicFields({}).auth(session).authorized
+    const canReadTrials = admissionAuth.readTrial.data({ userId }).auth(session).authorized
+    const canRegisterTrial = admissionAuth.createTrial.auth(session).authorized
+    const canChangeLevel = omegaMembershipGroupAuth.updateUserLevel.auth(session).authorized
+    const canChangeOrder = omegaMembershipGroupAuth.updateUserOrder.auth(session).authorized
 
     const currentLevel = profile.omegaMembership.level
     const sittedTrials = new Set(canReadTrials

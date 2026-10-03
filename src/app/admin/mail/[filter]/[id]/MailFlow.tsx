@@ -31,7 +31,7 @@ export default function MailFlow({
     let addressExternalDestroy: DestroyFunction = null
 
     const canAdminMailingList = useAuthorizer({
-        authorizer: mailAuth.destroyAliasMailingListRelation.dynamicFields({})
+        authorizer: mailAuth.destroyAliasMailingListRelation
     }).authorized
 
     if (filter === 'mailingList' && canAdminMailingList) {

@@ -78,7 +78,7 @@ async function createCollection({
             collectionDescription: 'Laget av testene',
             visibilityAdminRequirements: admin.requirements,
         },
-        session: sessionWithPermissions('IMAGE_COLLECTION_CREATE'),
+        session: sessionWithPermissions('IMAGE_CREATE'),
     })
 
     if (regularLevel) {
@@ -119,7 +119,7 @@ beforeEach(async () => {
 })
 
 describe('creating a dynamic collection', () => {
-    test('requires the IMAGE_COLLECTION_CREATE permission', async () => {
+    test('requires the IMAGE_CREATE permission', async () => {
         await expect(dynamicImageOperations.createCollection({
             data: {
                 collectionName: 'Ulovlig samling',
@@ -139,7 +139,7 @@ describe('creating a dynamic collection', () => {
                 collectionDescription: 'Skal ikke lages',
                 visibilityAdminRequirements: [],
             },
-            session: sessionWithPermissions('IMAGE_COLLECTION_CREATE'),
+            session: sessionWithPermissions('IMAGE_CREATE'),
         })).rejects.toThrow(Smorekopp)
 
         expect(await prisma.imageCollection.count({ where: { name: 'Åpen samling' } })).toBe(0)

@@ -10,7 +10,7 @@ import { z } from 'zod'
 export const companyOperations = {
     create: defineOperation({
         dataSchema: companySchemas.create,
-        authorizer: () => companyAuth.create.dynamicFields({}),
+        authorizer: () => companyAuth.create,
         operation: async ({ prisma, data }) => {
             //TODO: tranaction when createCmsImage is service operation.
             const logo = await cmsImageOperations.create.internalCall({
@@ -27,7 +27,7 @@ export const companyOperations = {
     }),
     readPage: defineOperation({
         paramsSchema: companySchemas.readPage,
-        authorizer: () => companyAuth.readPage.dynamicFields({}),
+        authorizer: () => companyAuth.readPage,
         operation: async ({ prisma, params }) => await prisma.company.findMany({
             ...cursorPageingSelection(params.paging.page),
             where: {
@@ -44,7 +44,7 @@ export const companyOperations = {
             id: z.number(),
         }),
         dataSchema: companySchemas.update,
-        authorizer: () => companyAuth.update.dynamicFields({}),
+        authorizer: () => companyAuth.update,
         operation: async ({ prisma, params: { id }, data }) => {
             await prisma.company.update({
                 where: { id },
@@ -56,7 +56,7 @@ export const companyOperations = {
         implementationParamsSchema: z.object({
             companyId: z.number(),
         }),
-        authorizer: () => companyAuth.updateCmsImageLogo.dynamicFields({}),
+        authorizer: () => companyAuth.updateCmsImageLogo,
         ownershipCheck: async ({ implementationParams, params, prisma }) =>
             (await prisma.company.findUniqueOrThrow({
                 where: { id: implementationParams.companyId },
@@ -67,7 +67,7 @@ export const companyOperations = {
         paramsSchema: z.object({
             id: z.number()
         }),
-        authorizer: () => companyAuth.destroy.dynamicFields({}),
+        authorizer: () => companyAuth.destroy,
         operation: async ({ prisma, params: { id } }) => {
             await prisma.company.delete({
                 where: {

@@ -17,7 +17,7 @@ export default async function Classes() {
         readClassesExpandedAction().then(unwrapActionReturn),
         readCurrentOmegaOrderAction().then(unwrapActionReturn),
     ])
-    const canBump = classAuth.bumpClasses.dynamicFields({}).auth(session).authorized
+    const canBump = classAuth.bumpClasses.auth(session).authorized
 
     // The expanded groups carry the name, member count and order; the class rows carry the level.
     // Joining them on the group id lets the table be listed in the order students move through.

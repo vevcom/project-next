@@ -12,7 +12,7 @@ import { z } from 'zod'
 export const cabinProductOperations = {
 
     create: defineOperation({
-        authorizer: () => cabinProductAuth.create.dynamicFields({}),
+        authorizer: () => cabinProductAuth.create,
         dataSchema: cabinProductSchemas.createProduct,
         operation: ({ prisma, data }) => prisma.cabinProduct.create({
             data,
@@ -20,7 +20,7 @@ export const cabinProductOperations = {
     }),
 
     createPrice: defineOperation({
-        authorizer: () => cabinProductAuth.createPrice.dynamicFields({}),
+        authorizer: () => cabinProductAuth.createPrice,
         paramsSchema: z.object({
             cabinProductId: z.number(),
         }),
@@ -54,14 +54,14 @@ export const cabinProductOperations = {
     }),
 
     readMany: defineOperation({
-        authorizer: () => cabinProductAuth.readMany.dynamicFields({}),
+        authorizer: () => cabinProductAuth.readMany,
         operation: ({ prisma }) => prisma.cabinProduct.findMany({
             include: cabinProductPriceIncluder,
         }),
     }),
 
     readActive: defineOperation({
-        authorizer: () => cabinProductAuth.readActive.dynamicFields({}),
+        authorizer: () => cabinProductAuth.readActive,
         operation: async ({ prisma }) => {
             const pricePeriods = await cabinPricePeriodOperations.readPublicPeriods({ bypassAuth: true })
 
@@ -81,7 +81,7 @@ export const cabinProductOperations = {
     }),
 
     read: defineOperation({
-        authorizer: () => cabinProductAuth.read.dynamicFields({}),
+        authorizer: () => cabinProductAuth.read,
         paramsSchema: z.object({
             id: z.number(),
         }),

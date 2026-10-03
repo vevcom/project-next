@@ -2,12 +2,12 @@ import '@pn-server-only'
 import { ParseError, Smorekopp } from './error'
 import { prismaErrorWrapper } from './prismaCall'
 import { prisma as globalPrisma } from '@/prisma-pn-client-instance'
-import { RequireNothing } from '@/auth/authorizer/RequireNothing'
+import { Require } from '@/auth/authorizer/Require'
 import { Session } from '@/auth/session/Session'
 import logger from '@/lib/logger'
 import { zfd } from 'zod-form-data'
 import { AsyncLocalStorage } from 'async_hooks'
-import type { AuthorizerDynamicFieldsBound } from '@/auth/authorizer/Authorizer'
+import type { Authorizer } from '@/auth/authorizer/Authorizer'
 import type { z } from 'zod'
 import type { SessionMaybeUser } from '@/auth/session/Session'
 import type { Prisma, PrismaClient } from '@/prisma-generated-pn-client'
@@ -106,10 +106,10 @@ export type AuthorizerGetter<
 > = (
     args: ArgsAuthGetterAndOwnershipCheck<OpensTransaction, ParamsSchema, DataSchema, ImplementationParamsSchema>
 ) =>
-        | AuthorizerDynamicFieldsBound<
+        | Authorizer<
             'USER_NOT_REQUIERED_FOR_AUTHORIZED' | 'USER_REQUIERED_FOR_AUTHORIZED', PrismaWhereFilter
         > | Promise<
-            AuthorizerDynamicFieldsBound<
+            Authorizer<
                 'USER_NOT_REQUIERED_FOR_AUTHORIZED' | 'USER_REQUIERED_FOR_AUTHORIZED', PrismaWhereFilter
             >
         >
@@ -547,7 +547,7 @@ export function defineSubOperation<
                 & Partial<ServiceOperationContext<OpensTransaction>>
         ) => implement({
             ...args,
-            authorizer: () => RequireNothing.staticFields({}).dynamicFields({}),
+            authorizer: () => Require.nothing(),
             ownershipCheck: () => true,
         })(args),
     }

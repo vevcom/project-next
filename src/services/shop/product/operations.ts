@@ -8,7 +8,7 @@ import { productSchemas } from './schemas'
 
 export const productOperations = {
     create: defineOperation({
-        authorizer: () => productAuth.create.dynamicFields({}),
+        authorizer: () => productAuth.create,
         dataSchema: productSchemas.create,
         operation: async ({ prisma, data }) => prisma.product.create({
             data: {
@@ -20,7 +20,7 @@ export const productOperations = {
     }),
 
     createForShop: defineOperation({
-        authorizer: () => productAuth.create.dynamicFields({}),
+        authorizer: () => productAuth.create,
         paramsSchema: z.object({
             shopId: z.number(),
         }),
@@ -45,7 +45,7 @@ export const productOperations = {
     }),
 
     createShopConnection: defineOperation({
-        authorizer: () => productAuth.createShopConnection.dynamicFields({}),
+        authorizer: () => productAuth.createShopConnection,
         dataSchema: productSchemas.createShopConnection,
         operation: async ({ prisma, data }) => prisma.shopProduct.create({
             data: {
@@ -65,12 +65,12 @@ export const productOperations = {
     }),
 
     readMany: defineOperation({
-        authorizer: () => productAuth.read.dynamicFields({}),
+        authorizer: () => productAuth.read,
         operation: async ({ prisma }) => await prisma.product.findMany()
     }),
 
     read: defineOperation({
-        authorizer: () => productAuth.read.dynamicFields({}),
+        authorizer: () => productAuth.read,
         paramsSchema: z.object({
             productId: z.number(),
         }),
@@ -89,7 +89,7 @@ export const productOperations = {
     }),
 
     readByBarCode: defineOperation({
-        authorizer: () => productAuth.read.dynamicFields({}),
+        authorizer: () => productAuth.read,
         paramsSchema: productSchemas.readByBarCode,
         operation: async ({ prisma, params }): Promise<ExtendedProduct | null> => {
             if (!params.barcode) {
@@ -131,7 +131,7 @@ export const productOperations = {
     }),
 
     update: defineOperation({
-        authorizer: () => productAuth.update.dynamicFields({}),
+        authorizer: () => productAuth.update,
         dataSchema: productSchemas.update,
         operation: async ({ prisma, data }) => prisma.product.update({
             where: {
@@ -146,7 +146,7 @@ export const productOperations = {
     }),
 
     updateForShop: defineOperation({
-        authorizer: () => productAuth.update.dynamicFields({}),
+        authorizer: () => productAuth.update,
         dataSchema: productSchemas.updateForShop,
         paramsSchema: z.object({
             shopId: z.number(),

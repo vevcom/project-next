@@ -17,7 +17,7 @@ export default async function AdminCommittee() {
         readCurrentOmegaOrderAction().then(unwrapActionReturn),
     ])
 
-    const canCreate = committeeAuth.create.dynamicFields({}).auth(session).authorized
+    const canCreate = committeeAuth.create.auth(session).authorized
 
     const rows = committees.flatMap(committee => {
         const expanded = expandedGroups.find(group => group.id === committee.groupId)

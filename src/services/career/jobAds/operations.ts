@@ -14,7 +14,7 @@ const read = defineOperation({
     paramsSchema: z.object({
         id: z.number()
     }),
-    authorizer: () => jobAdAuth.read.dynamicFields({}),
+    authorizer: () => jobAdAuth.read,
     operation: async ({ prisma, params }): Promise<ExpandedJobAd> => await prisma.jobAd.findUniqueOrThrow({
         where: {
             id: params.id,
@@ -31,7 +31,7 @@ const read = defineOperation({
 export const jobAdOperations = {
     create: defineOperation({
         dataSchema: jobAdSchemas.create,
-        authorizer: () => jobAdAuth.create.dynamicFields({}),
+        authorizer: () => jobAdAuth.create,
         operation: async ({ prisma, data: { articleName, companyId, ...data } }) => {
             const article = await articleOperations.create.internalCall({
                 data: { name: articleName },
@@ -67,7 +67,7 @@ export const jobAdOperations = {
      * @returns SimpleJobAd[] - all jobAds with coverImage
      */
     readActive: defineOperation({
-        authorizer: () => jobAdAuth.readActive.dynamicFields({}),
+        authorizer: () => jobAdAuth.readActive,
         operation: async ({ prisma }): Promise<SimpleJobAd[]> => {
             const jobAds = await prisma.jobAd.findMany({
                 orderBy: {
@@ -93,7 +93,7 @@ export const jobAdOperations = {
      */
     readInactivePage: defineOperation({
         paramsSchema: jobAdSchemas.readInactivePage,
-        authorizer: () => jobAdAuth.readInactivePage.dynamicFields({}),
+        authorizer: () => jobAdAuth.readInactivePage,
         operation: async ({ prisma, params }): Promise<SimpleJobAd[]> => {
             const jobAds = await prisma.jobAd.findMany({
                 ...cursorPageingSelection(params.paging.page),
@@ -127,14 +127,14 @@ export const jobAdOperations = {
             id: z.number(),
         }),
         dataSchema: jobAdSchemas.update,
-        authorizer: () => jobAdAuth.update.dynamicFields({}),
+        authorizer: () => jobAdAuth.update,
         operation: async ({ prisma, params: { id }, data }) => await prisma.jobAd.update({
             where: { id },
             data,
         })
     }),
     updateArticle: implementUpdateArticleOperations({
-        authorizer: () => jobAdAuth.updateArticle.dynamicFields({}),
+        authorizer: () => jobAdAuth.updateArticle,
         implementationParamsSchema: z.object({
             jobAdId: z.number(),
         }),
@@ -147,7 +147,7 @@ export const jobAdOperations = {
         paramsSchema: z.object({
             id: z.number(),
         }),
-        authorizer: () => jobAdAuth.destroy.dynamicFields({}),
+        authorizer: () => jobAdAuth.destroy,
         operation: async ({ prisma, params: { id } }) => {
             const jobAd = await prisma.jobAd.delete({
                 where: { id },

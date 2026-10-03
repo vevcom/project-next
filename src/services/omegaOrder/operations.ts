@@ -18,7 +18,7 @@ export const omegaOrderOperations = {
      * always brought along, so the requirement only ever fails if something has drifted.
      */
     readRequirements: defineOperation({
-        authorizer: () => omegaOrderAuth.readRequirements.dynamicFields({}),
+        authorizer: () => omegaOrderAuth.readRequirements,
         operation: async ({ prisma }): Promise<OmegaOrderRequirement[]> => {
             const { order } = await omegaOrderOperations.readCurrent({ bypassAuth: true })
 
@@ -87,7 +87,7 @@ export const omegaOrderOperations = {
      */
     create: defineOperation({
         opensTransaction: true,
-        authorizer: () => omegaOrderAuth.create.dynamicFields({}),
+        authorizer: () => omegaOrderAuth.create,
         operation: async ({ prisma }) => {
             const requirements = await omegaOrderOperations.readRequirements({ bypassAuth: true })
             const unfulfilled = requirements.filter(requirement => !requirement.fulfilled)
@@ -123,7 +123,7 @@ export const omegaOrderOperations = {
         }
     }),
     readCurrent: defineOperation({
-        authorizer: () => omegaOrderAuth.readCurrent.dynamicFields({}),
+        authorizer: () => omegaOrderAuth.readCurrent,
         operation: async ({ prisma }) => {
             const omegaOrder = await prisma.omegaOrder.findFirst({
                 orderBy: {
@@ -135,7 +135,7 @@ export const omegaOrderOperations = {
         }
     }),
     readAll: defineOperation({
-        authorizer: () => omegaOrderAuth.readAll.dynamicFields({}),
+        authorizer: () => omegaOrderAuth.readAll,
         operation: async ({ prisma }) =>
             await prisma.omegaOrder.findMany({
                 orderBy: {

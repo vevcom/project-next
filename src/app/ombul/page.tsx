@@ -9,7 +9,7 @@ import { ombulAuth } from '@/services/ombul/auth'
 import type { ExpandedOmbul } from '@/services/ombul/types'
 
 export default async function Ombuls() {
-    const showCreateButton = ombulAuth.create.dynamicFields({}).auth(await ServerSession.fromNextAuth()).authorized
+    const showCreateButton = ombulAuth.create.auth(await ServerSession.fromNextAuth()).authorized
 
     const latestOmbulRes = await readLatestOmbulAction()
     const latestOmbul = latestOmbulRes.success ? latestOmbulRes.data : null

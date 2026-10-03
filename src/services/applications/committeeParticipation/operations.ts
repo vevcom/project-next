@@ -10,7 +10,7 @@ export const committeeParticipationOperations = {
         paramsSchema: z.object({
             participationId: z.number(),
         }),
-        authorizer: async ({ prisma, params }) => committeeParticipationAuth.read.dynamicFields({
+        authorizer: async ({ prisma, params }) => committeeParticipationAuth.read.data({
             groupId: await prisma.committeeParticipationInApplicationPeriod.findUniqueOrThrow({
                 where: {
                     id: params.participationId
@@ -67,7 +67,7 @@ export const committeeParticipationOperations = {
         paramsSchema: z.object({
             committeeId: z.number(),
         }),
-        authorizer: async ({ prisma, params }) => committeeParticipationAuth.read.dynamicFields({
+        authorizer: async ({ prisma, params }) => committeeParticipationAuth.read.data({
             groupId: await prisma.committee.findUniqueOrThrow({
                 where: {
                     id: params.committeeId

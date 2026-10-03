@@ -16,7 +16,7 @@ export class ServerSession<UserGuarantee extends UserGuaranteeOption> extends Se
             return ServerSession.fromDefaultPermissions(defaultPermissions)
         }
 
-        return new Session({
+        return Session.fromJsObject({
             user: session.user,
             permissions: session.permissions,
             memberships: session.memberships,

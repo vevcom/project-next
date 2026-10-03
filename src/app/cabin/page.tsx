@@ -21,7 +21,7 @@ import Link from 'next/link'
 export default async function Cabin() {
     const article = unwrapActionReturn(await readCabinArticleAction())
 
-    const canEdit = cabinArticleAuth.update.dynamicFields({}).auth(
+    const canEdit = cabinArticleAuth.update.auth(
         await ServerSession.fromNextAuth()
     ).toJsObject()
 

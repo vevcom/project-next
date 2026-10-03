@@ -66,21 +66,21 @@ const readStandardLicense = defineSubOperation({
 
 export const licenseOperations = {
     create: defineOperation({
-        authorizer: () => licenseAuth.create.dynamicFields({}),
+        authorizer: () => licenseAuth.create,
         dataSchema: licenseSchemas.create,
         operation: async ({ prisma, data }) => await prisma.license.create({
             data,
         }),
     }),
     readAll: defineOperation({
-        authorizer: () => licenseAuth.destroy.dynamicFields({}),
+        authorizer: () => licenseAuth.destroy,
         operation: async ({ prisma }) => await prisma.license.findMany()
     }),
     destroy: defineOperation({
         paramsSchema: z.object({
             id: z.number(),
         }),
-        authorizer: () => licenseAuth.destroy.dynamicFields({}),
+        authorizer: () => licenseAuth.destroy,
         operation: async ({ prisma, params }) => {
             const { name: licenseName } = await prisma.license.findUniqueOrThrow({
                 where: { id: params.id },
@@ -108,7 +108,7 @@ export const licenseOperations = {
             id: z.number(),
         }),
         dataSchema: licenseSchemas.update,
-        authorizer: () => licenseAuth.update.dynamicFields({}),
+        authorizer: () => licenseAuth.update,
         operation: async ({ prisma, params, data }) => {
             await prisma.license.update({
                 where: {

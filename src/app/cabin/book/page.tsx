@@ -47,11 +47,9 @@ export default async function CabinBooking() {
     const cabinProducts = unwrapActionReturn(await readCabinProductsActiveAction())
 
     const session = await ServerSession.fromNextAuth()
-    const canBookCabin = cabinBookingAuth.createCabinBookingNoUser.dynamicFields({}).auth(session)
-    const canBookBed = cabinBookingAuth.createBedBookingNoUser.dynamicFields({}).auth(session)
-    const canEditSpecialCmsParagraphContract = cabinBookingAuth.updateSpecialCmsParagraphContentCabinContract.dynamicFields(
-        {}
-    ).auth(
+    const canBookCabin = cabinBookingAuth.createCabinBookingNoUser.auth(session)
+    const canBookBed = cabinBookingAuth.createBedBookingNoUser.auth(session)
+    const canEditSpecialCmsParagraphContract = cabinBookingAuth.updateSpecialCmsParagraphContentCabinContract.auth(
         session
     ).toJsObject()
 

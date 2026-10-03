@@ -20,26 +20,26 @@ function omegaMembershipGTEQ(lhs: OmegaMembershipLevel, rhs: OmegaMembershipLeve
 const commonGroupOperations = implementGroupType({
     type: GroupType.OMEGA_MEMBERSHIP_GROUP,
     auth: {
-        readExpanded: omegaMembershipGroupAuth.readExpanded.dynamicFields({}),
-        readMembers: () => omegaMembershipGroupAuth.readMembers.dynamicFields({}),
+        readExpanded: omegaMembershipGroupAuth.readExpanded,
+        readMembers: () => omegaMembershipGroupAuth.readMembers,
     },
 })
 
 const migration = implementStraightAwayMigration({
     type: GroupType.OMEGA_MEMBERSHIP_GROUP,
     auth: {
-        migrateGroups: omegaMembershipGroupAuth.migrateGroups.dynamicFields({}),
+        migrateGroups: omegaMembershipGroupAuth.migrateGroups,
     },
 })
 
 const readMany = defineOperation({
-    authorizer: () => omegaMembershipGroupAuth.readMany.dynamicFields({}),
+    authorizer: () => omegaMembershipGroupAuth.readMany,
     operation: async ({ prisma }) => prisma.omegaMembershipGroup.findMany()
 })
 
 const read = defineOperation({
     paramsSchema: omegaMembershipGroupSchemas.read,
-    authorizer: () => omegaMembershipGroupAuth.read.dynamicFields({}),
+    authorizer: () => omegaMembershipGroupAuth.read,
     operation: async ({ prisma, params }) => prisma.omegaMembershipGroup.findUniqueOrThrow({
         where: params,
     })
@@ -60,7 +60,7 @@ const read = defineOperation({
  */
 const inferUserLevel = defineOperation({
     paramsSchema: omegaMembershipGroupSchemas.inferUserLevel,
-    authorizer: () => omegaMembershipGroupAuth.inferUserLevel.dynamicFields({}),
+    authorizer: () => omegaMembershipGroupAuth.inferUserLevel,
     operation: async ({ prisma, params }): Promise<OmegaMembershipLevel> => {
         const partOfOmega = await prisma.membership.findFirst({
             where: {
@@ -189,7 +189,7 @@ export async function writeUserLevel(
  */
 const updateUserLevel = defineOperation({
     paramsSchema: omegaMembershipGroupSchemas.updateUserLevel,
-    authorizer: () => omegaMembershipGroupAuth.updateUserLevel.dynamicFields({}),
+    authorizer: () => omegaMembershipGroupAuth.updateUserLevel,
     opensTransaction: true,
     operation: async ({ prisma, params }) => {
         await prisma.$transaction(tx => writeUserLevel(tx, params))
@@ -215,7 +215,7 @@ const updateUserLevel = defineOperation({
  */
 const readUserLevel = defineOperation({
     paramsSchema: omegaMembershipGroupSchemas.readUserLevel,
-    authorizer: () => omegaMembershipGroupAuth.readUserLevel.dynamicFields({}),
+    authorizer: () => omegaMembershipGroupAuth.readUserLevel,
     operation: async ({ prisma, params }): Promise<{ level: OmegaMembershipLevel, order: number }> => {
         const omegaMemberships = await readActiveOmegaMemberships(prisma, params.userId)
 
@@ -261,7 +261,7 @@ const readUserLevel = defineOperation({
 const updateUserOrder = defineOperation({
     paramsSchema: omegaMembershipGroupSchemas.updateUserOrderParams,
     dataSchema: omegaMembershipGroupSchemas.updateUserOrder,
-    authorizer: () => omegaMembershipGroupAuth.updateUserOrder.dynamicFields({}),
+    authorizer: () => omegaMembershipGroupAuth.updateUserOrder,
     opensTransaction: true,
     operation: async ({ prisma, params, data }) => {
         // Read before the transaction is opened: a user whose memberships are in a broken state is

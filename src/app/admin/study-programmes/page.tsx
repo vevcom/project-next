@@ -15,14 +15,14 @@ export default async function StudyProgrammes() {
     const studyprogrammes = unwrapActionReturn(await readStudyProgrammesAction())
 
     const session = await authorizeAdminPage('study-programmes')
-    const showCreateButton = studyProgrammeAuth.create.dynamicFields({}).auth(session)
-    const canEdit = studyProgrammeAuth.update.dynamicFields({}).auth(session)
+    const showCreateButton = studyProgrammeAuth.create.auth(session).authorized
+    const canEdit = studyProgrammeAuth.update.auth(session).authorized
 
 
     return <PageWrapper
         title="Studieprogrammer"
         headerItem={
-            showCreateButton.authorized && (
+            showCreateButton && (
                 <AddHeaderItemPopUp popUpKey="create ombul">
                     <UpdateStudyProgrammeForm />
                 </AddHeaderItemPopUp>
@@ -41,7 +41,7 @@ export default async function StudyProgrammes() {
                     <th>Del av Omega</th>
                 </tr>
             </thead>
-            <StudyProgrammeTableBody studyprogrammes={studyprogrammes} canEdit={canEdit.authorized} />
+            <StudyProgrammeTableBody studyprogrammes={studyprogrammes} canEdit={canEdit} />
         </table>
     </PageWrapper>
 }

@@ -37,9 +37,9 @@ export default async function Events({
 
     const session = await ServerSession.fromNextAuth()
 
-    const canUpdate = eventTagAuth.update.dynamicFields({}).auth(session)
-    const canCreate = eventTagAuth.create.dynamicFields({}).auth(session)
-    const canDestroy = eventTagAuth.destroy.dynamicFields({}).auth(session)
+    const canUpdate = eventTagAuth.update.auth(session)
+    const canCreate = eventTagAuth.create.auth(session)
+    const canDestroy = eventTagAuth.destroy.auth(session)
 
     return (
         <PageWrapper title="Hvad der hender" headerItem={

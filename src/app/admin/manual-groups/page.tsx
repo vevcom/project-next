@@ -22,7 +22,7 @@ export default async function ManualGroups() {
         readCurrentOmegaOrderAction().then(unwrapActionReturn),
     ])
 
-    const canAdmin = manualGroupAuth.update.dynamicFields({}).auth(session).authorized
+    const canAdmin = manualGroupAuth.update.auth(session).authorized
 
     const membersOfGroup = (groupId: number) =>
         expandedGroups.find(group => group.id === groupId)?.members ?? 0

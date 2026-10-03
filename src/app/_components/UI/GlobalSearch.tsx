@@ -58,7 +58,7 @@ const categoryOptions: { value: Category, label: string }[] = [
  * cycle through with Tab/Shift+Tab and browse with the arrow keys.
  */
 export default function GlobalSearch({ navItems }: PropTypes) {
-    const canSearchUsers = useAuthorizer({ authorizer: userAuth.search.dynamicFields({}) }).authorized
+    const canSearchUsers = useAuthorizer({ authorizer: userAuth.search }).authorized
     const availableCategories = canSearchUsers
         ? categoryOptions
         : categoryOptions.filter(option => option.value !== 'users')

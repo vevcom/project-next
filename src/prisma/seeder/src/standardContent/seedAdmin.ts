@@ -50,7 +50,7 @@ export const seedAdmin = defineSeedOperation(async (prisma: PrismaClient) => {
     // Reusing a group that DobbelOmega (or an earlier seed) already created keeps
     // whatever permissions it came with, which is not necessarily all of them.
     // readPermissionsOfUser resolves permissions through the membership's groups, so a
-    // reused group missing e.g. EVENT_CREATE - not a default permission - produces an
+    // reused group missing e.g. EVENT_ADMIN - not a default permission - produces an
     // "admin" that half the site still refuses. Fill in the gaps.
     if (existingGroup) {
         await prisma.groupPermission.createMany({

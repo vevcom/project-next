@@ -35,9 +35,7 @@ export const purchaseOperations = {
                 },
             })
 
-            return purchaseAuth.createByStudentCard.dynamicFields({
-                permissions,
-            })
+            return purchaseAuth.createByStudentCard(permissions)
         },
         dataSchema: purchaseSchemas.createFromStudentCard,
         opensTransaction: true,
@@ -117,7 +115,7 @@ export const purchaseOperations = {
                 if (totalPrice === 0) return
 
                 // bypassAuth: the outer authorizer (an API-key session with
-                // PURCHASE_CREATE_ONBEHALF, paying on behalf of a user with PURCHASE_CREATE)
+                // PURCHASE_ADMIN, paying on behalf of a user with PURCHASE_USE)
                 // already replaces the generic ledger-ownership check, which would otherwise
                 // reject this API-key session outright since it owns no ledger account itself -
                 // the same precedent as ledgerTransactionOperations.advance's own bypass.

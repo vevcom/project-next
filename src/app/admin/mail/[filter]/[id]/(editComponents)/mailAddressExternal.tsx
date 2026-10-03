@@ -31,10 +31,10 @@ export default function EditMailAddressExternal({
         throw Error('Fant ikke ekstern e-postadresse')
     }
 
-    const canUpdate = useAuthorizer({ authorizer: mailAddressExternalAuth.update.dynamicFields({}) }).authorized
-    const canDestroy = useAuthorizer({ authorizer: mailAddressExternalAuth.destroy.dynamicFields({}) }).authorized
+    const canUpdate = useAuthorizer({ authorizer: mailAddressExternalAuth.update }).authorized
+    const canDestroy = useAuthorizer({ authorizer: mailAddressExternalAuth.destroy }).authorized
     const canAddToList = useAuthorizer({
-        authorizer: mailAuth.createMailingListExternalRelation.dynamicFields({})
+        authorizer: mailAuth.createMailingListExternalRelation
     }).authorized
 
     return <>

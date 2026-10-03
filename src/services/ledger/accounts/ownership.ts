@@ -1,8 +1,41 @@
+import { Require } from '@/auth/authorizer/Require'
+import type { SessionMaybeUser } from '@/auth/session/Session'
 import type { Prisma } from '@/prisma-generated-pn-client'
+import type { Permission } from '@/prisma-generated-pn-types'
 
 export type LedgerAccountOwnership = {
     userId: number | null,
     groupIds: number[],
+}
+
+const ownsOrIsMemberOf = (session: SessionMaybeUser, account: LedgerAccountOwnership) =>
+    (session.user !== null && session.user.id === account.userId) ||
+    session.memberships.some(membership => membership.active && account.groupIds.includes(membership.groupId))
+
+/**
+ * Authorized if the session holds `permission`, or passes the ownership check below.
+ *
+ * `mode: 'ALL'` (default) requires every account in `accounts` to individually pass ownership.
+ * Use for a transaction with several debited accounts: all of them must be safe to debit.
+ *
+ * `mode: 'ANY'` requires only one account in `accounts` to pass. Use when being a party to a
+ * single account is enough, e.g. reading a transaction you took part in.
+ */
+export function ledgerAccountAccess(
+    permission: Permission,
+    accounts: LedgerAccountOwnership[],
+    opts?: { mode?: 'ALL' | 'ANY' },
+) {
+    if (accounts.length === 0) return Require.permission(permission)
+    const [firstCheck, ...restChecks] = accounts.map(account => (
+        Require.ownership<{ account: LedgerAccountOwnership }>(
+            ({ session, account: theAccount }) => ownsOrIsMemberOf(session, theAccount)
+        ).data({ account })
+    ))
+    const ownership = opts?.mode === 'ANY'
+        ? Require.anyOf(firstCheck, ...restChecks)
+        : Require.allOf(firstCheck, ...restChecks)
+    return Require.permission(permission).or().allOf(ownership)
 }
 
 /**
