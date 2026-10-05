@@ -9,7 +9,7 @@ import { afterAll, beforeAll, describe, expect, test } from '@jest/globals'
 import type { Permission } from '@/prisma-generated-pn-types'
 import type { UserFiltered } from '@/services/users/types'
 
-const privateFields = ['allergies', 'studentCard', 'imageConsent', 'acceptedTerms', 'emailVerified'] as const
+const privateFields = ['mobile', 'allergies', 'studentCard', 'imageConsent', 'acceptedTerms', 'emailVerified'] as const
 
 let target: UserFiltered
 let viewer: UserFiltered
@@ -33,6 +33,7 @@ beforeAll(async () => {
             email: 'exposure-target@omega.ntnu.no',
             firstname: 'Target',
             lastname: 'Exposed',
+            mobile: '12345678',
             allergies: 'peanuts',
             studentCard: 'exposure-card',
             bioParagraph: { create: {} },
@@ -163,12 +164,13 @@ describe('event registrations', () => {
         expect(registrations[0].user).not.toHaveProperty('email')
     })
 
-    test('the detailed list gives event admins email and allergies', async () => {
+    test('the detailed list gives event admins email, mobile and allergies', async () => {
         const registrations = await eventRegistrationOperations.readPageDetailed({
             params: { paging: { page: firstPage, details: details() } },
             session: sessionOf(viewer, ['EVENT_ADMIN']),
         })
         expect(registrations[0].user?.email).toBe(target.email)
+        expect(registrations[0].user?.mobile).toBe('12345678')
         expect(registrations[0].user?.allergies).toBe('peanuts')
         expect(registrations[0].user).not.toHaveProperty('studentCard')
     })

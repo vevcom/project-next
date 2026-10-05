@@ -32,7 +32,6 @@ export const userCardSelection = {
 export const userProfileSelection = {
     ...userCardSelection,
     email: true,
-    mobile: true,
     sex: true,
     relationshipStatus: true,
     relationshipStatusText: true,
@@ -43,6 +42,7 @@ export const userProfileSelection = {
  */
 export const userPrivateSelection = {
     ...userProfileSelection,
+    mobile: true,
     emailVerified: true,
     acceptedTerms: true,
     allergies: true,

@@ -33,6 +33,7 @@ export const eventRegistrationSelectionDetailed = {
         select: {
             ...userCardSelection,
             email: true,
+            mobile: true,
             allergies: true,
         },
     },
