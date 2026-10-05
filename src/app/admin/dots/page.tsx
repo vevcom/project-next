@@ -24,7 +24,7 @@ const { page, generateMetadata } = serverPage({
         }
 
         const [user, dots] = await Promise.all([
-            userOperations.read({ params: { id: userId } }),
+            userOperations.readBasic({ params: { id: userId } }),
             dotOperations.readForUser({ params: { userId, onlyActive } }),
         ])
 

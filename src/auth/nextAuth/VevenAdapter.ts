@@ -3,9 +3,9 @@ import { readJWTPayload } from '@/jwt/jwtReadUnsecure'
 import { createFeideAccount } from '@/services/auth/feideAccounts/create'
 import { readUserOrNullOfFeideAccount } from '@/services/auth/feideAccounts/read'
 import { userOperations } from '@/services/users/operations'
-import { userFilterSelection } from '@/services/users/constants'
+import { userBasicSelection } from '@/services/users/constants'
 import logger from '@/lib/logger'
-import type { UserFiltered } from '@/services/users/types'
+import type { UserBasic, UserFiltered } from '@/services/users/types'
 import type { PrismaClient } from '@/prisma-generated-pn-client'
 import type { Adapter, AdapterUser, AdapterAccount } from 'next-auth/adapters'
 
@@ -16,12 +16,18 @@ import type { Adapter, AdapterUser, AdapterAccount } from 'next-auth/adapters'
  * @param user - User of the type used in veven.
  * @returns User object of the type `AdapterUser`.
  */
-function convertToAdapterUser(user: Omit<UserFiltered, 'flairs'>): AdapterUser {
+function convertToAdapterUser(user: UserBasic & Pick<UserFiltered, 'email' | 'emailVerified'>): AdapterUser {
     return {
         ...user,
         id: String(user.id),
     }
 }
+
+const adapterUserSelection = {
+    ...userBasicSelection,
+    email: true,
+    emailVerified: true,
+} as const
 
 /**
  * Utility function for generating a unique username for a user based on apreferred username.
@@ -105,7 +111,7 @@ export default function VevenAdapter(prisma: PrismaClient): Adapter {
                         create: { type: 'USER' },
                     },
                 },
-                select: userFilterSelection,
+                select: adapterUserSelection,
             })
 
             return convertToAdapterUser(createdUser)
@@ -136,7 +142,7 @@ export default function VevenAdapter(prisma: PrismaClient): Adapter {
                 },
                 include: {
                     user: {
-                        select: userFilterSelection,
+                        select: adapterUserSelection,
                     },
                 },
             })
@@ -164,7 +170,7 @@ export default function VevenAdapter(prisma: PrismaClient): Adapter {
                     firstname: user.firstname,
                     lastname: user.lastname,
                 },
-                select: userFilterSelection,
+                select: adapterUserSelection,
             })
 
             return convertToAdapterUser(updatedUser)

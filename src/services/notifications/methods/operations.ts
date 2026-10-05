@@ -3,7 +3,7 @@ import { sendNotificationEmails } from './dispatch'
 import { sendWeeklyEmailDigest } from './dispatchWeekly'
 import { notificationDispatchIncluder, recipientsWhere } from './recipients'
 import logger from '@/lib/logger'
-import { userFilterSelection } from '@/services/users/constants'
+import { userBasicSelection } from '@/services/users/constants'
 import { defineSubOperation } from '@/services/serviceOperation'
 import { z } from 'zod'
 
@@ -26,7 +26,7 @@ export const notificationMethodOperations = {
 
             const recipients = await prisma.user.findMany({
                 where: recipientsWhere(notification, 'email'),
-                select: userFilterSelection,
+                select: { ...userBasicSelection, email: true },
             })
 
             const sent = await sendNotificationEmails(notification.channel.mailAlias.address, notification, recipients)
@@ -127,7 +127,7 @@ export const notificationMethodOperations = {
                         },
                     },
                     user: {
-                        select: userFilterSelection,
+                        select: { ...userBasicSelection, email: true },
                     },
                 },
                 orderBy: {

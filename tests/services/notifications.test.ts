@@ -2,7 +2,7 @@ import { prisma } from '@/prisma-pn-client-instance'
 import { notificationMethodOperations } from '@/services/notifications/methods/operations'
 import { notificationDispatchIncluder, recipientsWhere } from '@/services/notifications/methods/recipients'
 import { buildWeeklyDigestText } from '@/services/notifications/methods/dispatchWeekly'
-import { userFilterSelection } from '@/services/users/constants'
+import { userPrivateSelection } from '@/services/users/constants'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { afterEach, describe, expect, test } from '@jest/globals'
 import type { NotificationMethods } from '@/services/notifications/types'
@@ -39,7 +39,7 @@ async function createTestUser(username: string): Promise<UserFiltered> {
     })
     return await prisma.user.findUniqueOrThrow({
         where: { id: user.id },
-        select: userFilterSelection,
+        select: userPrivateSelection,
     })
 }
 

@@ -6,13 +6,13 @@ import { DEFAULT_NOTIFICATION_ALIAS } from '@/lib/email/constants'
 import { wrapInHTML } from '@/lib/email/wrapInHTML'
 import logger from '@/lib/logger'
 import type { WeeklyDigestNotification } from './types'
-import type { UserFiltered } from '@/services/users/types'
+import type { UserBasicWithEmail } from '@/services/users/types'
 
 /**
  * Builds the markdown body of one user's weekly digest. The default email template renders the
  * text as markdown, so each notification becomes its own section.
  */
-export function buildWeeklyDigestText(user: UserFiltered, notifications: WeeklyDigestNotification[]) {
+export function buildWeeklyDigestText(user: UserBasicWithEmail, notifications: WeeklyDigestNotification[]) {
     return notifications.map(notification => [
         `## ${repalceSpecialSymbols(notification.title, user)}`,
         `*${notification.channel.name}*`,
@@ -30,7 +30,7 @@ export function buildWeeklyDigestText(user: UserFiltered, notifications: WeeklyD
  *
  * @returns Whether the digest was sent.
  */
-export async function sendWeeklyEmailDigest(user: UserFiltered, notifications: WeeklyDigestNotification[]) {
+export async function sendWeeklyEmailDigest(user: UserBasicWithEmail, notifications: WeeklyDigestNotification[]) {
     const parsed = sendMailSchemas.sendMail.safeParse({
         from: DEFAULT_NOTIFICATION_ALIAS,
         to: user.email,
