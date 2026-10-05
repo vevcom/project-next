@@ -72,15 +72,15 @@ export default async function Event({ params }: PropTypes) {
     const canDestroy = eventAuth.destroy.data({ visibility: doubleLevelMatrix }).auth(
         session
     ).toJsObject()
+    const canUpdate = eventAuth.update.data({ visibility: doubleLevelMatrix }).auth(session).authorized
 
-    // Registering takes the regular level of the event, reading who is registered the same, and
-    // registering on behalf of others its admin level - offering any of it to someone without the
-    // level would only produce an error when they act on it.
     const canRegister = session.user ? eventRegistrationAuth.create({
         userId: session.user.id,
         doubleLevelMatrix,
     }).auth(session).authorized : false
     const canReadRegistrations = eventRegistrationAuth.readPage
+        .data({ visibility: doubleLevelMatrix }).auth(session).authorized
+    const canReadRegistrationsDetailed = eventRegistrationAuth.readPageDetailed
         .data({ visibility: doubleLevelMatrix }).auth(session).authorized
     const canRegisterOthers = eventRegistrationAuth.createGuest
         .data({ visibility: doubleLevelMatrix }).auth(session).authorized
@@ -129,7 +129,7 @@ export default async function Event({ params }: PropTypes) {
                         )}
                 />
                 <div className={styles.infoInImage}>
-                    <ShowAndEditName event={event} />
+                    <ShowAndEditName event={event} editable={canUpdate} />
                     <ul className={styles.tags}>
                         {event.tags.map(tag => (
                             <li key={tag.id}>
@@ -222,7 +222,7 @@ export default async function Event({ params }: PropTypes) {
 
             {event.takesRegistration && canReadRegistrations && (
                 <div className={styles.registrationList}>
-                    <RegistrationsList event={event} />
+                    <RegistrationsList event={event} canReadDetailed={canReadRegistrationsDetailed} />
                 </div>
             )}
         </div>
