@@ -450,6 +450,12 @@ export const userOperations = {
                 }
             })
 
+            // Ends every session of the user, Feide sessions included.
+            await prisma.user.update({
+                where: { id: params.id },
+                data: { sessionEpoch: { increment: 1 } },
+            })
+
             return null
         }
     }),

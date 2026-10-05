@@ -235,14 +235,14 @@ export const groupOperations = {
                 MigratedStraightAwayOnIncrement[group.groupType]
 
             if (active) {
-                await prisma.membership.updateMany({
+                await Promise.all([true, false].map(admin => prisma.membership.updateMany({
                     where: {
                         groupId: params.groupId,
-                        userId: { in: userIds },
+                        userId: { in: data.users.filter(user => user.admin === admin).map(user => user.userId) },
                         order,
                     },
-                    data: { active: true },
-                })
+                    data: { active: true, admin },
+                })))
             }
 
             await prisma.membership.createMany({

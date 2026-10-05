@@ -2,6 +2,7 @@ import { Session } from '@/auth/session/Session'
 import { prisma } from '@/prisma-pn-client-instance'
 import { committeeOperations } from '@/services/groups/committees/operations'
 import { manualGroupOperations } from '@/services/groups/manualGroups/operations'
+import { userOperations } from '@/services/users/operations'
 import { describe, expect, test } from '@jest/globals'
 import type { Permission } from '@/prisma-generated-pn-types'
 
@@ -67,5 +68,43 @@ describe('deleting a group', () => {
             where: { id: { in: [committee.paragraphId, committee.applicationParagraphId] } },
         })).toBe(0)
         expect(await updatedAtOf(member.id)).toBeGreaterThan(before)
+    })
+})
+
+describe('re-adding a removed member', () => {
+    test('takes the admin flag asked for now', async () => {
+        const session = sessionWith(['MANUAL_GROUP_ADMIN', 'PERMISSION_ADMIN'])
+        const manualGroup = await manualGroupOperations.create({
+            data: { name: `Gruppe med gammel leder ${++counter}`, shortName: `gammel-leder-${counter}` },
+            session,
+        })
+        const member = await createUser()
+        const params = { groupId: manualGroup.groupId }
+
+        await manualGroupOperations.addMembers({ params, data: { users: [{ userId: member.id, admin: true }] }, session })
+        await manualGroupOperations.removeMembers({ params, data: { userIds: [member.id] }, session })
+        await manualGroupOperations.addMembers({ params, data: { users: [{ userId: member.id, admin: false }] }, session })
+
+        const membership = await prisma.membership.findFirstOrThrow({
+            where: { groupId: manualGroup.groupId, userId: member.id },
+        })
+        expect(membership).toMatchObject({ active: true, admin: false })
+    })
+})
+
+describe('changing the password', () => {
+    test('bumps the session epoch', async () => {
+        const user = await createUser()
+        await prisma.credentials.create({
+            data: { userId: user.id, username: user.username, email: user.email, passwordHash: 'gammel' },
+        })
+
+        await userOperations.updatePassword({
+            params: { id: user.id },
+            data: { password: 'et-nytt-passord-123', confirmPassword: 'et-nytt-passord-123' },
+            bypassAuth: true,
+        })
+
+        expect((await prisma.user.findUniqueOrThrow({ where: { id: user.id } })).sessionEpoch).toBe(1)
     })
 })
