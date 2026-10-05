@@ -589,4 +589,23 @@ export const groupOperations = {
             return memberships.map(membership => assertGroupValidity(membership.group))
         },
     }),
+
+    /**
+     * Deletes a group whose group type row has just been deleted in the same transaction. Its
+     * memberships and permissions go with it, so the users it returns - everyone who held a
+     * membership - carry permissions in their sessions that no longer exist. The caller invalidates
+     * those sessions once the transaction has committed.
+     */
+    destroy: defineSubOperation({
+        paramsSchema: () => groupSchemas.groupParams,
+        operation: () => async ({ prisma, params }) => {
+            const memberships = await prisma.membership.findMany({
+                where: { groupId: params.groupId },
+                select: { userId: true },
+                distinct: ['userId'],
+            })
+            await prisma.group.delete({ where: { id: params.groupId } })
+            return memberships.map(membership => membership.userId)
+        },
+    }),
 } as const
