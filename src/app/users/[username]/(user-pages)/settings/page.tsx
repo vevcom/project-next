@@ -77,7 +77,9 @@ export default async function UserSettings({ params }: PropTypes) {
                     <AdminUserSettingsForm user={profile.user} />
                 </UserProfileSettingsCard>
             )}
-            {classAuth.changeClassOfUser.auth(session).authorized && (
+            {/* grantedPermissions: [] - no class is known here, so this passes even where the server
+                refuses a class whose permissions the session lacks. */}
+            {classAuth.changeClassOfUser.data({ grantedPermissions: [] }).auth(session).authorized && (
                 <UserProfileSettingsCard>
                     <ChangeClassForm
                         userId={profile.user.id}

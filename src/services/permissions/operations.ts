@@ -2,7 +2,7 @@ import '@pn-server-only'
 import { permissionsAuth } from './auth'
 import { defineOperation } from '@/services/serviceOperation'
 import { invalidateAllUserSessionData, invalidateManyUserSessionData } from '@/services/auth/invalidateSession'
-import { groupsWithRelationsIncluder } from '@/services/groups/constants'
+import { groupTypeAdminPermission, groupsWithRelationsIncluder } from '@/services/groups/constants'
 import { assertGroupValidity } from '@/services/groups/assertGroupValidity'
 import { inferGroupName } from '@/lib/groups/inferGroupName'
 import { Permission } from '@/prisma-generated-pn-types'
@@ -50,7 +50,16 @@ export const permissionOperations = {
     }),
 
     readPermissionsOfGroup: defineOperation({
-        authorizer: () => permissionsAuth.readGroupPermissions,
+        authorizer: async ({ prisma, params }) => {
+            const group = await prisma.group.findUnique({
+                where: { id: params.groupId },
+                select: { groupType: true },
+            })
+            return permissionsAuth.readGroupPermissions.data({
+                groupId: params.groupId,
+                groupTypeAdminPermission: group ? groupTypeAdminPermission[group.groupType] : null,
+            })
+        },
         paramsSchema: z.object({
             groupId: z.number()
         }),

@@ -32,7 +32,10 @@ export default async function MembershipStatus({ params }: PropTypes) {
 
     const canReadTrials = admissionAuth.readTrial.data({ userId }).auth(session).authorized
     const canRegisterTrial = admissionAuth.createTrial.auth(session).authorized
-    const canChangeLevel = omegaMembershipGroupAuth.updateUserLevel.auth(session).authorized
+    // grantedPermissions: [] - no level is known here, so this passes even where the server refuses
+    // a level whose permissions the session lacks.
+    const canChangeLevel = omegaMembershipGroupAuth.updateUserLevel.data({ grantedPermissions: [] })
+        .auth(session).authorized
     const canChangeOrder = omegaMembershipGroupAuth.updateUserOrder.auth(session).authorized
 
     const currentLevel = profile.omegaMembership.level

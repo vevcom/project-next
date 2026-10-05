@@ -19,6 +19,7 @@ import {
     updateCommitteeLogoAction,
 } from '@/services/groups/committees/actions'
 import { readCurrentOmegaOrderAction } from '@/services/omegaOrder/actions'
+import { readPermissionOfGroupAction } from '@/services/permissions/actions'
 import { committeeAuth } from '@/services/groups/committees/auth'
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { ServerSession } from '@/auth/session/ServerSession'
@@ -30,9 +31,11 @@ export default async function ComitteeAdmin({ params }: PropTypes) {
     const session = await ServerSession.fromNextAuth()
     const canEditLogo = committeeAuth.updateLogo.data({ groupId: committee.groupId }).auth(session)
     const canMigrate = committeeAuth.migrateGroup.data({ groupId: committee.groupId }).auth(session).authorized
-    const canAddMembers = committeeAuth.addMembers.data({ groupId: committee.groupId }).auth(session).authorized
-    const canSetMemberAdmin = committeeAuth.setMemberAdmin.data({ groupId: committee.groupId })
-        .auth(session).authorized
+    // Granting membership takes the group's permissions. Whoever may not read them may not grant them.
+    const groupPermissions = await readPermissionOfGroupAction({ params: { groupId: committee.groupId } })
+    const grant = groupPermissions.success && { groupId: committee.groupId, grantedPermissions: groupPermissions.data }
+    const canAddMembers = grant && committeeAuth.addMembers.data(grant).auth(session).authorized
+    const canSetMemberAdmin = grant && committeeAuth.setMemberAdmin.data(grant).auth(session).authorized
     const canSetMemberTitle = committeeAuth.setMemberTitle.data({ groupId: committee.groupId })
         .auth(session).authorized
     const canRemoveMembers = committeeAuth.removeMembers.data({ groupId: committee.groupId })

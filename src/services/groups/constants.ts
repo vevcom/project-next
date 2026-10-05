@@ -1,7 +1,14 @@
 import { createSelection } from '@/services/createSelection'
 import { userFilterSelection } from '@/services/users/constants'
 import { expandedImageIncluder } from '@/services/images/subservice/constants'
-import type { ClassLevel, GroupType, Membership, OmegaMembershipLevel, Prisma } from '@/prisma-generated-pn-types'
+import type {
+    ClassLevel,
+    GroupType,
+    Membership,
+    OmegaMembershipLevel,
+    Permission,
+    Prisma,
+} from '@/prisma-generated-pn-types'
 import type { GroupTypeInfo } from './types'
 
 /**
@@ -89,6 +96,16 @@ export const OMEGA_MEMBERSHIP_LEVEL_RANKING: OmegaMembershipLevel[] = [
     'SOELLE',
     'SYSKEN',
 ]
+
+/** The permission that administers every group of a type. */
+export const groupTypeAdminPermission = {
+    CLASS: 'CLASS_ADMIN',
+    COMMITTEE: 'COMMITTEE_ADMIN',
+    INTEREST_GROUP: 'INTEREST_GROUP_ADMIN',
+    MANUAL_GROUP: 'MANUAL_GROUP_ADMIN',
+    OMEGA_MEMBERSHIP_GROUP: 'OMEGA_MEMBERSHIP_GROUP_ADMIN',
+    STUDY_PROGRAMME: 'STUDY_PROGRAMME_ADMIN',
+} as const satisfies Record<GroupType, Permission>
 
 export const groupsWithRelationsIncluder = {
     committee: { select: { name: true } },

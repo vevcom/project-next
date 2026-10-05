@@ -25,9 +25,9 @@ const commonGroupOperations = implementGroupType({
 const memberManagement = implementSimpleAddRemoveMembersOperation({
     type: GroupType.MANUAL_GROUP,
     auth: {
-        addMembers: ({ groupId }) => manualGroupAuth.addMembers.data({ groupId }),
+        addMembers: fields => manualGroupAuth.addMembers.data(fields),
         removeMembers: ({ groupId }) => manualGroupAuth.removeMembers.data({ groupId }),
-        setMemberAdmin: ({ groupId }) => manualGroupAuth.setMemberAdmin.data({ groupId }),
+        setMemberAdmin: fields => manualGroupAuth.setMemberAdmin.data(fields),
         setMemberTitle: ({ groupId }) => manualGroupAuth.setMemberTitle.data({ groupId }),
     },
 })

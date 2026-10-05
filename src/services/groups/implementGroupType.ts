@@ -1,8 +1,9 @@
 import '@pn-server-only'
 import { assertGroupNotPensioned, groupOperations, isGroupOfType } from './operations'
+import { permissionOperations } from '@/services/permissions/operations'
 import type { Authorizer } from '@/auth/authorizer/Authorizer'
 import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
-import type { GroupType } from '@/prisma-generated-pn-types'
+import type { GroupType, Permission } from '@/prisma-generated-pn-types'
 import type { SetPensioned } from './types'
 
 /**
@@ -11,6 +12,14 @@ import type { SetPensioned } from './types'
  * the group's own admins are allowed through.
  */
 export type GroupAuthorizerOfGroup = (args: { groupId: number }) =>
+    | Authorizer
+    | Promise<Authorizer>
+
+/**
+ * An authorizer for an operation that hands out the permissions of one particular group: adding a
+ * member, or making one an admin. See `requireHoldsGrantedPermissions`.
+ */
+export type GroupAuthorizerOfGrant = (args: { groupId: number, grantedPermissions: Permission[] }) =>
     | Authorizer
     | Promise<Authorizer>
 
@@ -65,15 +74,21 @@ export function implementGroupType({ type, auth }: {
 export function implementSimpleAddRemoveMembersOperation({ type, auth }: {
     type: GroupType,
     auth: {
-        addMembers: GroupAuthorizerOfGroup,
+        addMembers: GroupAuthorizerOfGrant,
         removeMembers: GroupAuthorizerOfGroup,
-        setMemberAdmin: GroupAuthorizerOfGroup,
+        setMemberAdmin: GroupAuthorizerOfGrant,
         setMemberTitle: GroupAuthorizerOfGroup,
     },
 }) {
     return {
         addMembers: groupOperations.addMembers.implement({
-            authorizer: ({ params }) => auth.addMembers({ groupId: params.groupId }),
+            authorizer: async ({ params }) => auth.addMembers({
+                groupId: params.groupId,
+                grantedPermissions: await permissionOperations.readPermissionsOfGroup({
+                    params: { groupId: params.groupId },
+                    bypassAuth: true,
+                }),
+            }),
             ownershipCheck: ownershipCheckOfType(type),
             beforeRun: ({ prisma, params }) => assertGroupNotPensioned(prisma, params.groupId),
         }),
@@ -83,7 +98,13 @@ export function implementSimpleAddRemoveMembersOperation({ type, auth }: {
             beforeRun: ({ prisma, params }) => assertGroupNotPensioned(prisma, params.groupId),
         }),
         setMemberAdmin: groupOperations.setMemberAdmin.implement({
-            authorizer: ({ params }) => auth.setMemberAdmin({ groupId: params.groupId }),
+            authorizer: async ({ params }) => auth.setMemberAdmin({
+                groupId: params.groupId,
+                grantedPermissions: await permissionOperations.readPermissionsOfGroup({
+                    params: { groupId: params.groupId },
+                    bypassAuth: true,
+                }),
+            }),
             ownershipCheck: ownershipCheckOfType(type),
             beforeRun: ({ prisma, params }) => assertGroupNotPensioned(prisma, params.groupId),
         }),

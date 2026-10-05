@@ -11,6 +11,7 @@ import {
     pensionInterestGroupAction,
 } from '@/services/groups/interestGroups/actions'
 import { readCurrentOmegaOrderAction } from '@/services/omegaOrder/actions'
+import { readPermissionOfGroupAction } from '@/services/permissions/actions'
 import { interestGroupAuth } from '@/services/groups/interestGroups/auth'
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { ServerSession } from '@/auth/session/ServerSession'
@@ -44,10 +45,14 @@ export default async function InterestGroupMembers({ params }: PropTypes) {
     const session = await ServerSession.fromNextAuth()
     const canMigrate = interestGroupAuth.migrateGroup.data({ groupId: interestGroup.groupId })
         .auth(session).authorized
-    const canAddMembers = interestGroupAuth.addMembers.data({ groupId: interestGroup.groupId })
-        .auth(session).authorized
-    const canSetMemberAdmin = interestGroupAuth.setMemberAdmin.data({ groupId: interestGroup.groupId })
-        .auth(session).authorized
+    // Granting membership takes the group's permissions. Whoever may not read them may not grant them.
+    const groupPermissions = await readPermissionOfGroupAction({ params: { groupId: interestGroup.groupId } })
+    const grant = groupPermissions.success && {
+        groupId: interestGroup.groupId,
+        grantedPermissions: groupPermissions.data,
+    }
+    const canAddMembers = grant && interestGroupAuth.addMembers.data(grant).auth(session).authorized
+    const canSetMemberAdmin = grant && interestGroupAuth.setMemberAdmin.data(grant).auth(session).authorized
     const canSetMemberTitle = interestGroupAuth.setMemberTitle.data({ groupId: interestGroup.groupId })
         .auth(session).authorized
     const canPension = interestGroupAuth.pension.auth(session).authorized

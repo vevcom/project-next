@@ -2,6 +2,7 @@ import '@pn-server-only'
 import { classAuth } from './auth'
 import { classSchemas } from './schemas'
 import { implementGroupType, implementStraightAwayMigration } from '@/services/groups/implementGroupType'
+import { permissionOperations } from '@/services/permissions/operations'
 import { CLASS_LEVEL_ORDERING } from '@/services/groups/constants'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { defineOperation } from '@/services/serviceOperation'
@@ -115,7 +116,16 @@ const readClassOfUser = defineOperation({
 const changeClassOfUser = defineOperation({
     paramsSchema: classSchemas.changeClassOfUserParams,
     dataSchema: classSchemas.changeClassOfUser,
-    authorizer: () => classAuth.changeClassOfUser,
+    // Putting a user in a class hands them the class's permissions.
+    authorizer: async ({ prisma, data }) => classAuth.changeClassOfUser.data({
+        grantedPermissions: await permissionOperations.readPermissionsOfGroup({
+            params: await prisma.class.findUniqueOrThrow({
+                where: { level: data.level },
+                select: { groupId: true },
+            }),
+            bypassAuth: true,
+        }),
+    }),
     opensTransaction: true,
     operation: async ({ prisma, params, data }) => {
         const targetClass = await prisma.class.findUniqueOrThrow({

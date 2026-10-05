@@ -2,6 +2,7 @@ import '@pn-server-only'
 import { omegaMembershipGroupAuth } from './auth'
 import { omegaMembershipGroupSchemas } from './schemas'
 import { implementGroupType, implementStraightAwayMigration } from '@/services/groups/implementGroupType'
+import { permissionOperations } from '@/services/permissions/operations'
 import { OMEGA_MEMBERSHIP_LEVEL_RANKING } from '@/services/groups/constants'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { admissionOperations } from '@/services/admission/operations'
@@ -190,7 +191,16 @@ export async function writeUserLevel(
  */
 const updateUserLevel = defineOperation({
     paramsSchema: omegaMembershipGroupSchemas.updateUserLevel,
-    authorizer: () => omegaMembershipGroupAuth.updateUserLevel,
+    // Moving a user to a level hands them the permissions of its group.
+    authorizer: async ({ prisma, params }) => omegaMembershipGroupAuth.updateUserLevel.data({
+        grantedPermissions: await permissionOperations.readPermissionsOfGroup({
+            params: await prisma.omegaMembershipGroup.findUniqueOrThrow({
+                where: { omegaMembershipLevel: params.omegaMembershipLevel },
+                select: { groupId: true },
+            }),
+            bypassAuth: true,
+        }),
+    }),
     opensTransaction: true,
     operation: async ({ prisma, params }) => {
         await prisma.$transaction(tx => writeUserLevel(tx, params))

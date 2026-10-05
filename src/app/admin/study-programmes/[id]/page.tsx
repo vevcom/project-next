@@ -7,6 +7,7 @@ import {
     removeStudyProgrammeMembersAction,
 } from '@/services/groups/studyProgrammes/actions'
 import { studyProgrammeAuth } from '@/services/groups/studyProgrammes/auth'
+import { readPermissionOfGroupAction } from '@/services/permissions/actions'
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { ServerSession } from '@/auth/session/ServerSession'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
@@ -47,8 +48,13 @@ export default async function StudyProgrammeAdmin({ params }: PropTypes) {
     const expanded = expandedGroups.find(group => group.id === studyProgramme.groupId)
     if (!expanded) notFound()
 
-    const canAddMembers = studyProgrammeAuth.addMembers.data({ groupId: studyProgramme.groupId })
-        .auth(session).authorized
+    // Granting membership takes the group's permissions. Whoever may not read them may not grant them.
+    const groupPermissions = await readPermissionOfGroupAction({ params: { groupId: studyProgramme.groupId } })
+    const grant = groupPermissions.success && {
+        groupId: studyProgramme.groupId,
+        grantedPermissions: groupPermissions.data,
+    }
+    const canAddMembers = grant && studyProgrammeAuth.addMembers.data(grant).auth(session).authorized
     const canRemoveMembers = studyProgrammeAuth.removeMembers.data({ groupId: studyProgramme.groupId })
         .auth(session).authorized
 

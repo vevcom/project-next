@@ -91,7 +91,9 @@ export const adminNavDef: AdminNavGroup[] = [
                 path: 'admission',
                 authorizers: () => [
                     admissionAuth.createTrial,
-                    omegaMembershipGroupAuth.updateUserLevel,
+                    // grantedPermissions: [] - no level is known here, so this passes even where the server refuses
+                    // a level whose permissions the session lacks.
+                    omegaMembershipGroupAuth.updateUserLevel.data({ grantedPermissions: [] }),
                     omegaMembershipGroupAuth.updateUserOrder,
                 ],
             },
@@ -110,7 +112,9 @@ export const adminNavDef: AdminNavGroup[] = [
                 path: 'classes',
                 authorizers: () => [
                     classAuth.bumpClasses,
-                    classAuth.changeClassOfUser,
+                    // grantedPermissions: [] - no class is known here, so this passes even where the server refuses
+                    // a class whose permissions the session lacks.
+                    classAuth.changeClassOfUser.data({ grantedPermissions: [] }),
                 ],
             },
             {
@@ -130,7 +134,9 @@ export const adminNavDef: AdminNavGroup[] = [
                 title: 'Medlemsgrupper',
                 path: 'omega-membership-groups',
                 authorizers: () => [
-                    omegaMembershipGroupAuth.updateUserLevel,
+                    // grantedPermissions: [] - no level is known here, so this passes even where the server refuses
+                    // a level whose permissions the session lacks.
+                    omegaMembershipGroupAuth.updateUserLevel.data({ grantedPermissions: [] }),
                     omegaMembershipGroupAuth.updateUserOrder,
                 ],
             },

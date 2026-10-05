@@ -134,7 +134,17 @@ export const apiKeyOperations = {
         }
     }),
     update: defineOperation({
-        authorizer: () => apiKeyAuth.update,
+        authorizer: async ({ prisma, params, data }) => {
+            const apiKey = await prisma.apiKey.findUnique({
+                where: { id: params.id },
+                select: { permissions: true },
+            })
+            return apiKeyAuth.update.data({
+                grantedPermissions: (data.permissions ?? []).filter(
+                    permission => !apiKey?.permissions.includes(permission)
+                ),
+            })
+        },
         paramsSchema: z.object({
             id: z.number(),
         }),

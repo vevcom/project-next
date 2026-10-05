@@ -356,9 +356,9 @@ const commonGroupOperations = implementGroupType({
 const memberManagement = implementSimpleAddRemoveMembersOperation({
     type: GroupType.COMMITTEE,
     auth: {
-        addMembers: ({ groupId }) => committeeAuth.addMembers.data({ groupId }),
+        addMembers: fields => committeeAuth.addMembers.data(fields),
         removeMembers: ({ groupId }) => committeeAuth.removeMembers.data({ groupId }),
-        setMemberAdmin: ({ groupId }) => committeeAuth.setMemberAdmin.data({ groupId }),
+        setMemberAdmin: fields => committeeAuth.setMemberAdmin.data(fields),
         setMemberTitle: ({ groupId }) => committeeAuth.setMemberTitle.data({ groupId }),
     },
 })

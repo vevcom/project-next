@@ -29,9 +29,9 @@ const commonGroupOperations = implementGroupType({
 const memberManagement = implementSimpleAddRemoveMembersOperation({
     type: GroupType.STUDY_PROGRAMME,
     auth: {
-        addMembers: ({ groupId }) => studyProgrammeAuth.addMembers.data({ groupId }),
+        addMembers: fields => studyProgrammeAuth.addMembers.data(fields),
         removeMembers: ({ groupId }) => studyProgrammeAuth.removeMembers.data({ groupId }),
-        setMemberAdmin: ({ groupId }) => studyProgrammeAuth.setMemberAdmin.data({ groupId }),
+        setMemberAdmin: fields => studyProgrammeAuth.setMemberAdmin.data(fields),
         setMemberTitle: ({ groupId }) => studyProgrammeAuth.setMemberTitle.data({ groupId }),
     },
 })

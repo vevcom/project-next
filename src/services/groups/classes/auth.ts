@@ -1,4 +1,5 @@
 import { Require } from '@/auth/authorizer/Require'
+import { requireHoldsGrantedPermissions } from '@/auth/authorizer/RequireHoldsGrantedPermissions'
 import { requireReadGroupMembers, requireReadMembershipsOfUser } from '@/services/groups/auth'
 
 export const classAuth = {
@@ -8,7 +9,8 @@ export const classAuth = {
     readMembers: requireReadGroupMembers('CLASS_USE'),
     readMembershipsOfUser: requireReadMembershipsOfUser('CLASS_USE'),
     readClassOfUser: Require.permission('CLASS_USE'),
-    changeClassOfUser: Require.permission('CLASS_ADMIN'),
+    // Hands the user the permissions of the group they are put in. Needs `{ grantedPermissions }`.
+    changeClassOfUser: Require.permission('CLASS_ADMIN').allOf(requireHoldsGrantedPermissions),
     bumpClasses: Require.permission('CLASS_ADMIN'),
     migrateGroups: Require.permission('CLASS_ADMIN'),
 } as const

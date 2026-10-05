@@ -11,6 +11,7 @@ import {
     pensionManualGroupAction,
 } from '@/services/groups/manualGroups/actions'
 import { readCurrentOmegaOrderAction } from '@/services/omegaOrder/actions'
+import { readPermissionOfGroupAction } from '@/services/permissions/actions'
 import { manualGroupAuth } from '@/services/groups/manualGroups/auth'
 import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { ServerSession } from '@/auth/session/ServerSession'
@@ -51,9 +52,11 @@ export default async function ManualGroupAdmin({ params }: PropTypes) {
     if (!expanded) notFound()
 
     const canMigrate = manualGroupAuth.migrateGroup.data({ groupId: manualGroup.groupId }).auth(session).authorized
-    const canAddMembers = manualGroupAuth.addMembers.data({ groupId: manualGroup.groupId }).auth(session).authorized
-    const canSetMemberAdmin = manualGroupAuth.setMemberAdmin.data({ groupId: manualGroup.groupId })
-        .auth(session).authorized
+    // Granting membership takes the group's permissions. Whoever may not read them may not grant them.
+    const groupPermissions = await readPermissionOfGroupAction({ params: { groupId: manualGroup.groupId } })
+    const grant = groupPermissions.success && { groupId: manualGroup.groupId, grantedPermissions: groupPermissions.data }
+    const canAddMembers = grant && manualGroupAuth.addMembers.data(grant).auth(session).authorized
+    const canSetMemberAdmin = grant && manualGroupAuth.setMemberAdmin.data(grant).auth(session).authorized
     const canSetMemberTitle = manualGroupAuth.setMemberTitle.data({ groupId: manualGroup.groupId })
         .auth(session).authorized
     const canPension = manualGroupAuth.pension.auth(session).authorized

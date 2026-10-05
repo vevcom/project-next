@@ -10,6 +10,7 @@ import {
     updateInterestGroupCmsLinkAction
 } from '@/services/groups/interestGroups/actions'
 import { interestGroupAuth } from '@/services/groups/interestGroups/auth'
+import { readPermissionOfGroupAction } from '@/services/permissions/actions'
 import { configureAction } from '@/services/configureAction'
 import { AuthResult } from '@/auth/authorizer/AuthResult'
 import Link from 'next/link'
@@ -23,7 +24,7 @@ type PropTypes = {
     session: SessionMaybeUser
 }
 
-export default function InterestGroup({ interestGroup, session }: PropTypes) {
+export default async function InterestGroup({ interestGroup, session }: PropTypes) {
     const canUpdate = interestGroupAuth.update.data({ groupId: interestGroup.groupId }).auth(session)
     const canDestroy = interestGroupAuth.destroy.auth(session)
     // A pensioned group's article is history too: the service refuses the write, so the editing
@@ -38,13 +39,20 @@ export default function InterestGroup({ interestGroup, session }: PropTypes) {
     // just holders of the interest group permission.
     // Nothing about a pensioned group may be changed, so none of that is offered for one. Whoever
     // may pension it still needs the link though - bringing it back is reached from the same page.
+    // A session that may not read the group's permissions may not grant them either.
+    const groupPermissions = await readPermissionOfGroupAction({ params: { groupId: interestGroup.groupId } })
+    const grant = groupPermissions.success
+        ? { groupId: interestGroup.groupId, grantedPermissions: groupPermissions.data }
+        : null
     const canManage = !interestGroup.pensioned && [
-        interestGroupAuth.addMembers,
-        interestGroupAuth.removeMembers,
-        interestGroupAuth.setMemberAdmin,
-        interestGroupAuth.setMemberTitle,
-        interestGroupAuth.migrateGroup,
-    ].some(authorizer => authorizer.data({ groupId: interestGroup.groupId }).auth(session).authorized)
+        ...(grant ? [
+            interestGroupAuth.addMembers.data(grant),
+            interestGroupAuth.setMemberAdmin.data(grant),
+        ] : []),
+        interestGroupAuth.removeMembers.data({ groupId: interestGroup.groupId }),
+        interestGroupAuth.setMemberTitle.data({ groupId: interestGroup.groupId }),
+        interestGroupAuth.migrateGroup.data({ groupId: interestGroup.groupId }),
+    ].some(authorizer => authorizer.auth(session).authorized)
     const canPension = interestGroupAuth.pension.auth(session).authorized
     const canAdministrate = canManage || canPension
 

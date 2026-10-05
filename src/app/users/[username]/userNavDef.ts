@@ -65,7 +65,9 @@ export const userNavDef: UserNavItem[] = [
         authorizers: ({ userId }) => [
             admissionAuth.readTrial.data({ userId }),
             admissionAuth.createTrial,
-            omegaMembershipGroupAuth.updateUserLevel,
+            // grantedPermissions: [] - no level is known here, so this passes even where the server refuses
+            // a level whose permissions the session lacks.
+            omegaMembershipGroupAuth.updateUserLevel.data({ grantedPermissions: [] }),
             omegaMembershipGroupAuth.updateUserOrder,
         ],
     },
@@ -129,7 +131,9 @@ export const userNavDef: UserNavItem[] = [
             userAuth.registerNewEmail.data({ userId }),
             userAuth.updateProfileImage.data({ userField: { username } }),
             userAuth.update,
-            classAuth.changeClassOfUser,
+            // grantedPermissions: [] - no class is known here, so this passes even where the server refuses
+            // a class whose permissions the session lacks.
+            classAuth.changeClassOfUser.data({ grantedPermissions: [] }),
             studyProgrammeAuth.update,
         ],
     },
