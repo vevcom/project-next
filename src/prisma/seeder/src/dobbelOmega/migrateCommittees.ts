@@ -60,8 +60,8 @@ export default async function migrateCommittees(
         }
     })
 
-    // Committees land in the order omega is in now. Hardcoding one meant every migrated committee
-    // was behind from the moment it arrived, which blocks the next increment until each is migrated.
+    // A committee with no memberships at all has nothing to tell which order it is in, and lands in
+    // the order omega is in now rather than behind it.
     const { order: currentOrder } = await pnPrisma.omegaOrder.findFirstOrThrow({
         orderBy: { order: 'desc' },
     })
@@ -77,6 +77,24 @@ export default async function migrateCommittees(
         const applicationParagraph = await createCmsParagraph(pnPrisma, committee.applicationText || '')
         const committeArticle = await createCommitteArticleSection(pnPrisma, `${committee.shortname}_a.md`)
         const logoImageId = owIdToPnId(imageIdMap, committee.ImageId, 'images')
+
+        // The orders are settled before anything is written, since the committee's own order is
+        // read off its memberships: a committee is in the newest order it has a membership of.
+        // Omegaweb-basic did not move every committee along with omega, so a committee may well be
+        // behind, and arrives behind here too - to be migrated from the admin page like any other.
+        const members = committee.CommitteeMembers.map(member => ({
+            member,
+            order: migratedOrder(member.order, `${committee.shortname} member ${member.UserId}`),
+        }))
+        const formerMembers = committee.CommitteeMembersHist.map(member => ({
+            member,
+            order: migratedOrder(member.order, `${committee.shortname} former member ${member.UserId}`),
+        }))
+        const committeeOrder = Math.max(
+            ...members.map(({ order }) => order),
+            ...formerMembers.map(({ order }) => order),
+        )
+        const groupOrder = Number.isFinite(committeeOrder) ? committeeOrder : currentOrder
 
         const newCommittee = await pnPrisma.committee.create({
             data: {
@@ -109,13 +127,13 @@ export default async function migrateCommittees(
                 group: {
                     create: {
                         groupType: 'COMMITTEE',
-                        order: currentOrder,
+                        order: groupOrder,
                     },
                 }
             }
         })
 
-        await Promise.all(committee.CommitteeMembers.map(async member => {
+        await Promise.all(members.map(async ({ member, order }) => {
             if (member.UserId === null) {
                 logger.warn(`${committee.shortname} has a member that is not connected to a user!`, { committee, member })
                 return
@@ -128,13 +146,13 @@ export default async function migrateCommittees(
                     // A pensioned committee holds no active memberships, whatever basic said.
                     active: !pensioned,
                     admin: member.admin,
-                    order: migratedOrder(member.order, `${committee.shortname} member ${member.UserId}`),
+                    order,
                     title: member.position || undefined,
                 }
             })
         }))
 
-        await Promise.all(committee.CommitteeMembersHist.map(async member => {
+        await Promise.all(formerMembers.map(async ({ member, order }) => {
             const pnUserId = await userMigrator.getPnUserId(member.UserId)
             await pnPrisma.membership.create({
                 data: {
@@ -142,7 +160,7 @@ export default async function migrateCommittees(
                     userId: pnUserId,
                     active: false,
                     admin: member.admin,
-                    order: migratedOrder(member.order, `${committee.shortname} former member ${member.UserId}`),
+                    order,
                     title: member.position || undefined,
                 }
             })
