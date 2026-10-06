@@ -1,4 +1,4 @@
-import 'server-only'
+import '@pn-server-only'
 import { calculateCabinBookingPrice, calculateTotalCabinBookingPrice } from './cabinPriceCalculator'
 import { cabinBookingSchemas } from './schemas'
 import { cabinBookingAuth } from './auth'

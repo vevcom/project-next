@@ -1,3 +1,4 @@
+import '@pn-server-only'
 import { authAuth } from './auth'
 import { authSchemas } from './schemas'
 import { moveFeideAccountToUser } from './feideAccounts/move'

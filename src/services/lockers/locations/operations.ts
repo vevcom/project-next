@@ -1,3 +1,4 @@
+import '@pn-server-only'
 import { lockerLocationAuth } from './auth'
 import { lockersSchemas } from '@/services/lockers/schemas'
 import { defineOperation } from '@/services/serviceOperation'

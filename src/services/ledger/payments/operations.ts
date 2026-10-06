@@ -1,3 +1,4 @@
+import '@pn-server-only'
 import { paymentAuth } from './auth'
 import { stripe } from '@/lib/stripe'
 import { ServiceError } from '@/services/error'
