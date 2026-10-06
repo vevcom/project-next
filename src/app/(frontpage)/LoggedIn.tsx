@@ -71,6 +71,7 @@ export default async function LoggedInLandingPage() {
             canReadOmegaquotes: canReadOmegaquotesResult.authorized,
         }
     })
+
     return (
         <div className={styles.wrapper}>
             <PageTitleSetter title={'Sct. Omega'} />

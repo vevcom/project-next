@@ -22,7 +22,6 @@ async function Footer() {
                 </p>
                 <p>Org. Nr. 890 384 692</p>
                 <div>
-                    {/* TODO: PWA install badge (SpecialCmsImage FOOTER_1), once the icon exists as an SVG. */}
                     <div className={styles.icons}>
                         <SocialIcons />
                     </div>

@@ -1,6 +1,7 @@
 import styles from './FooterSponsors.module.scss'
 import Image from '@/components/Image/Image'
-import { readSponsorsAction } from '@/services/career/companies/actions'
+import { companyOperations } from '@/services/career/companies/operations'
+import { withFallback, withPageSession } from '@/app/serverPage'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import type { SponsorCompany } from '@/services/career/companies/types'
@@ -38,8 +39,7 @@ function Sponsor({ sponsor, width }: { sponsor: SponsorCompany, width: number })
 }
 
 export default async function FooterSponsors() {
-    const res = await readSponsorsAction()
-    const sponsors = res.success ? res.data : []
+    const sponsors = await withPageSession(() => withFallback(companyOperations.readSponsors({}), []))
 
     if (!sponsors.length) return <></>
 
