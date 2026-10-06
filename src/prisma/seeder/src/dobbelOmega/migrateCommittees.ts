@@ -15,6 +15,18 @@ import type { IdMapper } from './IdMapper'
 const fileName = fileURLToPath(import.meta.url)
 const directoryName = dirname(fileName)
 
+/**
+ * Omegaweb-basic records every membership of Omegarevyen one order too high, so each is brought
+ * one order down on the way over - before the committee's own order is read off them.
+ */
+const COMMITTEE_WITH_ORDERS_ONE_TOO_HIGH = 'omegarevyen'
+
+function orderShiftOf(committee: { name: string, shortname: string }): number {
+    const isShifted = [committee.name, committee.shortname]
+        .some(name => name.trim().toLowerCase() === COMMITTEE_WITH_ORDERS_ONE_TOO_HIGH)
+    return isShifted ? -1 : 0
+}
+
 async function readCommitteMarkdown(filename: string): Promise<string> {
     const filepath = join(directoryName, '..', '..', 'cms_paragraphs', 'committees', filename)
     try {
@@ -82,13 +94,16 @@ export default async function migrateCommittees(
         // read off its memberships: a committee is in the newest order it has a membership of.
         // Omegaweb-basic did not move every committee along with omega, so a committee may well be
         // behind, and arrives behind here too - to be migrated from the admin page like any other.
+        const orderShift = orderShiftOf(committee)
         const members = committee.CommitteeMembers.map(member => ({
             member,
-            order: migratedOrder(member.order, `${committee.shortname} member ${member.UserId}`),
+            order: migratedOrder(member.order + orderShift, `${committee.shortname} member ${member.UserId}`),
         }))
         const formerMembers = committee.CommitteeMembersHist.map(member => ({
             member,
-            order: migratedOrder(member.order, `${committee.shortname} former member ${member.UserId}`),
+            order: migratedOrder(
+                member.order + orderShift, `${committee.shortname} former member ${member.UserId}`
+            ),
         }))
         const committeeOrder = Math.max(
             ...members.map(({ order }) => order),
