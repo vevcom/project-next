@@ -15,11 +15,6 @@ type PropTypes = {
     className?: string,
 }
 
-/**
- * The mark a sponsor company carries through the career listings. NONE renders nothing, so callers
- * can pass any company without branching. The label stays in the document even when `iconOnly`
- * hides it, so the badge keeps an accessible name.
- */
 export default function SponsorBadge({ sponsorTier, iconOnly = false, className }: PropTypes) {
     if (sponsorTier === 'NONE') return <></>
 

@@ -43,8 +43,6 @@ export default function JobAd({ jobAd }: PropTypes) {
             <div className={styles.main}>
                 <h2>{jobAd.articleName}</h2>
                 <p>
-                    {/* The mark rides with the company name rather than sitting in the meta column,
-                        so the reason this ad is at the top of the list survives a narrow row. */}
                     <SponsorBadge
                         sponsorTier={jobAd.companySponsorTier}
                         iconOnly

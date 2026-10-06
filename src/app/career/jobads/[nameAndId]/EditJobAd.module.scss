@@ -1,10 +1,6 @@
 @use "@/styles/ohma";
 
-// The admin tools for a job ad, shown under the article in edit mode. A panel of its own so it does
-// not read as more article content.
 .EditJobAd {
-    // Without a bound, the panel grows with the chooser's company list and the article above -
-    // sized to the remaining flex space - collapses and spills over these controls.
     flex-shrink: 0;
     max-height: 80vh;
     display: grid;
@@ -31,7 +27,6 @@
     display: flex;
     flex-direction: column;
     gap: ohma.$gap;
-    // Lets the chooser shrink to the panel's height so its list, not the panel, scrolls.
     min-height: 0;
     min-width: 0;
 
@@ -49,7 +44,6 @@
     flex-shrink: 0;
 }
 
-// Separate submissions: the rule makes clear "slett annonse" is not the form above it's button.
 .update {
     flex: 1;
     min-height: 0;
@@ -72,8 +66,6 @@
     min-height: 0;
 
     @include ohma.screenMobile {
-        // The panel is unbounded on mobile, so the chooser has to stop the list pushing the page
-        // down - the same bound the create form gives it.
         max-height: 50vh;
     }
 }

@@ -2,7 +2,6 @@ import styles from './SponsorLegend.module.scss'
 import SponsorBadge from './SponsorBadge'
 import { companySponsorTierDetails } from '@/services/career/companies/constants'
 
-// Spells out what the badges on the company cards mean.
 export default function SponsorLegend() {
     return (
         <dl className={styles.SponsorLegend}>

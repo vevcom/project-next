@@ -5,7 +5,6 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import type { SponsorCompany } from '@/services/career/companies/types'
 
-// The main sponsor is drawn at a size the others are measured against.
 const MAIN_LOGO_WIDTH = 190
 const SPONSOR_LOGO_WIDTH = 110
 
@@ -32,20 +31,14 @@ function Sponsor({ sponsor, width }: { sponsor: SponsorCompany, width: number })
                     disableLinkingToLicense
                 />
             ) : (
-                // A sponsor without an uploaded logo still belongs in the strip.
                 <span className={styles.fallbackName}>{sponsor.name}</span>
             )}
         </SponsorLink>
     )
 }
 
-/**
- * The sponsor strip in the site footer, driven by the sponsor tiers set in /career/companies. The
- * main sponsor gets its own line above the rest, which share a row unranked.
- */
 export default async function FooterSponsors() {
     const res = await readSponsorsAction()
-    // The footer is chrome on every page, so a failure here must not take the page down with it.
     const sponsors = res.success ? res.data : []
 
     if (!sponsors.length) return <></>

@@ -32,7 +32,6 @@ export const companyOperations = {
             })
         }
     }),
-    // Public: backs the sponsor strip in the site footer, which anonymous visitors see.
     readSponsors: defineOperation({
         authorizer: () => companyAuth.readSponsors,
         operation: async ({ prisma }): Promise<SponsorCompany[]> => await prisma.company.findMany({
@@ -71,8 +70,6 @@ export const companyOperations = {
             })
         },
     }),
-    // The MAIN tier holds a single company, so promoting one demotes the sitting main sponsor in
-    // the same transaction - down to SPONSOR, not out of the sponsors entirely.
     updateSponsorTier: defineOperation({
         paramsSchema: z.object({
             id: z.number(),
@@ -82,8 +79,6 @@ export const companyOperations = {
         opensTransaction: true,
         operation: async ({ prisma, params: { id }, data: { sponsorTier } }) =>
             await prisma.$transaction(async tx => {
-                // Held until the transaction ends; see companySponsorTierLockKey. Selected from
-                // rather than selected: the lock returns void, which $queryRaw cannot deserialize.
                 await tx.$queryRaw`SELECT 1 FROM pg_advisory_xact_lock(${companySponsorTierLockKey}::bigint)`
 
                 if (sponsorTier === CompanySponsorTier.MAIN) {

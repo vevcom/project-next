@@ -4,7 +4,8 @@
     @include ohma.listRow;
 }
 
-// Job ads often have no deadline, so the lead slot needs a fallback rather than an empty column.
+// Job ads have no deadline often enough that the lead slot needs a fallback
+// that still reads as a value rather than an empty column.
 .noDeadline {
     font-size: ohma.$fonts-s;
     color: ohma.$colors-text-muted;
@@ -21,7 +22,6 @@
 }
 
 .sponsorMark {
-    // On the company-name line, so it sits on the baseline rather than stretching the line box.
     vertical-align: middle;
     margin-right: calc(0.75 * #{ohma.$gap});
 }

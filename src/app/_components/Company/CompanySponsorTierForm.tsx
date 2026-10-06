@@ -13,8 +13,6 @@ type PropTypes = {
     closePopUpOnSuccess?: PopUpKeyType,
 }
 
-// Its own form rather than a field on the edit form, since the promotion is its own service
-// operation - handing out the main slot has to take it from whoever held it.
 export default function CompanySponsorTierForm({ companyId, sponsorTier, closePopUpOnSuccess }: PropTypes) {
     return (
         <Form

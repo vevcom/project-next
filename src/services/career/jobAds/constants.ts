@@ -42,7 +42,6 @@ export const jobAdOptions = Object.values(JobType).map((opt): { value: JobType, 
     label: jobAdType[opt].label
 }))
 
-// Sponsor job ads first, then newest first. See companySponsorOrdering for why ascending.
 export const activeJobAdOrdering = [
     { company: { sponsorTier: 'asc' } },
     { article: { createdAt: 'desc' } },

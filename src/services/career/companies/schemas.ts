@@ -11,11 +11,8 @@ const baseSchema = z.object({
     description: z.string().max(
         200, 'Beskrivelsen kan maks være 200 tegn langt'
     ).trim(),
-    // The form always submits the field, so the empty string has to survive and land as null.
     website: z.union([
         z.literal('').transform(() => null),
-        // Rendered straight into an anchor href for anonymous visitors, and .url() accepts any
-        // scheme new URL() can parse, so http(s) has to be required on top of it.
         z.string().trim()
             .url('Nettsiden må være en full URL, f.eks. https://omega.ntnu.no')
             .refine(

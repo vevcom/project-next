@@ -15,7 +15,6 @@
     width: 100%;
 }
 
-// The ordinary sponsors share one wrapping row, so the strip stays two bands tall.
 .others {
     display: flex;
     flex-flow: row wrap;
@@ -25,15 +24,12 @@
     width: 100%;
 }
 
-// The front page sets an oversized font on the wrapper this strip sits inside, which the name
-// fallback below would otherwise inherit at ~40px.
 .sponsor {
     font-size: ohma.$fonts-m;
     display: flex;
     align-items: center;
     justify-content: center;
     max-width: 100%;
-    // Dimmed so the strip does not outshine the footer's own text; hover restores the real colours.
     opacity: 0.85;
     transition: opacity ohma.$transitionTime;
 

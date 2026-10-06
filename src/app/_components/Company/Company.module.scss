@@ -25,8 +25,6 @@
     overflow: hidden;
     display: flex;
     align-items: center;
-    // Logos arrive in every aspect ratio and with transparent backgrounds, so they get their own
-    // ground inside the card.
     background-color: ohma.$colors-surface-base;
     border-radius: calc(#{ohma.$rounding} - #{ohma.$gap});
 }
@@ -34,8 +32,6 @@
 .logoSq {
     aspect-ratio: 1/1;
 
-    // The image components size their wrappers off the image's intrinsic width, which would let a
-    // wide logo overflow the square. Pinned to the frame instead, letterboxing rather than cropping.
     div {
         width: 100%;
         height: 100%;
@@ -78,7 +74,6 @@
         position: absolute;
         top: 0;
         right: 0;
-        // The SelectCompany overlay is a later sibling, so the cog would otherwise never take a click.
         z-index: 2;
     }
 }
@@ -87,7 +82,6 @@
     padding-right: calc(5 * #{ohma.$gap});
 }
 
-// A ring in the badge colour rather than a different card shape, so the list still scans as a grid.
 .MAIN {
     border-color: color-mix(in srgb, ohma.$colors-accent-yellow, transparent 50%);
     background-color: color-mix(in srgb, ohma.$colors-accent-yellow, ohma.$colors-surface-raised 94%);

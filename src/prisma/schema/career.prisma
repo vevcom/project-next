@@ -6,11 +6,6 @@ enum JobType {
   OTHER
 }
 
-/// How far up a company - and its job ads - sit in the career listings.
-///
-/// Declared in priority order on purpose: Postgres sorts an enum by declaration order, so
-/// `orderBy: { sponsorTier: 'asc' }` yields MAIN first. Reordering these values reorders every
-/// listing that sorts on this column.
 enum CompanySponsorTier {
   MAIN
   SPONSOR
@@ -43,10 +38,7 @@ model Company {
   description String
   logo        CmsImage           @relation(fields: [logoId], references: [id])
   logoId      Int                @unique
-  /// Where the logo links to in the sponsor strip.
   website     String?
-  /// At most one company may hold MAIN, enforced by the updateSponsorTier operation rather than by
-  /// the database - the index would have to be a partial one, which Prisma cannot express.
   sponsorTier CompanySponsorTier @default(NONE)
 
   createdAt DateTime @default(now())

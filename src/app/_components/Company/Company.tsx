@@ -62,8 +62,6 @@ export default function Company({
                     width={logoWidth}
                     updateCmsImageAction={updateCmsImageAction}
                 />
-                {/* Icon-only here: a card is too narrow for the full tier name, and the legend on the
-                    management page plus the badge's own tooltip carry the wording. */}
                 <SponsorBadge sponsorTier={company.sponsorTier} iconOnly className={styles.badge} />
             </div>
             <div className={`${styles.info} ${showSettings ? styles.withSettings : ''}`}>

@@ -22,13 +22,7 @@ async function Footer() {
                 </p>
                 <p>Org. Nr. 890 384 692</p>
                 <div>
-                    {/* A PWA install badge belongs here: SpecialCmsImage FOOTER_1, width 200,
-                        wrapping <Link className={styles.pwa} href="/infopages/pwa" />, fed by
-                        readSpecialCmsImageFrontpage / updateSpecialCmsImageFrontpage and a
-                        canEdit from frontpageAuth.updateSpecialCmsImage. It was commented out
-                        waiting for the PWA icon to exist as an SVG, and the imports and the
-                        canEdit prop went with the hardcoded sponsor slots when this footer moved
-                        onto the company sponsor tiers. Restore both when the icon is ready. */}
+                    {/* TODO: PWA install badge (SpecialCmsImage FOOTER_1), once the icon exists as an SVG. */}
                     <div className={styles.icons}>
                         <SocialIcons />
                     </div>

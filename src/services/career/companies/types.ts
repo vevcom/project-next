@@ -11,7 +11,6 @@ export type CompanyExpanded = Company & {
     logo: ExpandedCmsImage
 }
 
-// Matches sponsorSelection in constants.ts.
 export type SponsorCompany = Pick<Company, 'id' | 'name' | 'website' | 'sponsorTier'> & {
     logo: ExpandedCmsImage
 }

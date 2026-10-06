@@ -1,7 +1,5 @@
 @use '@/styles/ohma';
 
-// Tinted rather than solid: the badge sits on logos of every colour, so it needs its own opaque
-// ground without shouting over the logo.
 .SponsorBadge {
     display: inline-flex;
     align-items: center;
@@ -23,7 +21,6 @@
 }
 
 .label {
-    // Long tier names would otherwise push the pill past the card.
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -40,8 +37,6 @@
     background-color: color-mix(in srgb, ohma.$colors-accent-cyan, ohma.$colors-surface-raised 88%);
 }
 
-// The icon-only slots keep the tier name for screen readers, out of flow so it takes no space and
-// draws no flex gap.
 .labelHidden {
     position: absolute;
     width: 1px;
