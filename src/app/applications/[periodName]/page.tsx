@@ -126,15 +126,11 @@ const { page, generateMetadata } = serverPage({
                                         }
                                         refreshOnSuccess
                                         action={part.priority === null ?
-                                            createApplicationAction.bind(
-                                                null, {
-                                                    params: { userId, commiteeParticipationId: part.id }
-                                                }
-                                            ) : updateApplicationAction.bind(
-                                                null, {
-                                                    params: { userId, commiteeParticipationId: part.id }
-                                                }
-                                            )
+                                            configureAction(createApplicationAction, {
+                                                params: { userId, commiteeParticipationId: part.id }
+                                            }) : configureAction(updateApplicationAction, {
+                                                params: { userId, commiteeParticipationId: part.id }
+                                            })
                                         }
                                         submitText={
                                             part.priority === null ? 'Send søknad' : 'Endre søknad'
@@ -154,7 +150,7 @@ const { page, generateMetadata } = serverPage({
                                                 closePopUpOnSuccess={
                                                     `committee-${part.committee.shortName}-apply`
                                                 }
-                                                action={destroyApplicationAction.bind(null, {
+                                                action={configureAction(destroyApplicationAction, {
                                                     params: {
                                                         userId,
                                                         commiteeParticipationId: part.id
@@ -210,7 +206,7 @@ const { page, generateMetadata } = serverPage({
                         &quot; SLETTET TEKST &quot;.
                     </p>
                     <Form
-                        action={removeAllApplicationTextsAction.bind(null, { params: { name: period.name } })}
+                        action={configureAction(removeAllApplicationTextsAction, { params: { name: period.name } })}
                         confirmation={{
                             confirm: true,
                             text: `
@@ -228,7 +224,7 @@ const { page, generateMetadata } = serverPage({
                         men det er anbefalt å heller fjerne alle søknadstekster istedenfor å slette søknadsperioden.
                     </p>
                     <Form
-                        action={destroyApplicationPeriodAction.bind(null, { params: { name: period.name } })}
+                        action={configureAction(destroyApplicationPeriodAction, { params: { name: period.name } })}
                         confirmation={{
                             confirm: true,
                             text: `
