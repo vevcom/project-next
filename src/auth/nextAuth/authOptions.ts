@@ -219,8 +219,5 @@ export const authOptions: AuthOptions = {
         warn(code) {
             logger.warn(`NextAuth warning: ${code}`, { code })
         },
-        debug(code, metadata) {
-            logger.debug(`NextAuth debug: ${code}`, { code, metadata })
-        },
     }
 }
