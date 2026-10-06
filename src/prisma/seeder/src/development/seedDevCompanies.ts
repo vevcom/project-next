@@ -7,11 +7,10 @@ const COMPANY_COUNT = 100
 
 // The first few companies get a sponsor tier and a website so the ordering of the career listings,
 // the badges that explain it, and the footer's sponsor strip are all visible in development without
-// having to promote anyone by hand.
+// having to promote anyone by hand. MAIN is left out: a standard company already holds that slot.
 const SPONSORS_BY_INDEX = {
-    0: { sponsorTier: 'MAIN', website: 'https://www.nordicsemi.com' },
-    1: { sponsorTier: 'SPONSOR', website: 'https://www.kongsberg.com' },
-    2: { sponsorTier: 'SPONSOR', website: null },
+    0: { sponsorTier: 'SPONSOR', website: 'https://www.vevcom.no' },
+    1: { sponsorTier: 'SPONSOR', website: null },
 } as const
 
 const devCompanySponsor = (index: number) =>
@@ -32,9 +31,7 @@ export const seedDevCompanies = defineSeedOperation(async (prisma: PrismaClient)
                     description: `${devCompanyName(index)} description`,
                 }
             })
-            // The create operation deliberately takes no tier - a tier only moves through
-            // updateSponsorTier, which would demote the main sponsor we just seeded - so the seeded
-            // sponsor fields are written straight to the row instead.
+            // create takes no sponsor fields. Straight to the row is enough with no MAIN in play.
             await prisma.company.update({
                 where: { id: company.id },
                 data: devCompanySponsor(index),

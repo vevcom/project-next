@@ -64,11 +64,15 @@ async function createCompany(prisma: PrismaClient, company: SeedCompanyConfig, i
     await connectLogo(prisma, createdCompany.id, imageId)
 
     if (company.sponsor) {
-        // Written straight rather than through updateSponsorTier, which opens a transaction of its
-        // own. Safe here: the register is empty on the run that creates these.
+        // Through updateSponsorTier, since another company may already hold MAIN and only that
+        // operation demotes the sitting one. The website is not part of its data.
+        await companyOperations.updateSponsorTier({
+            params: { id: createdCompany.id },
+            data: { sponsorTier: company.sponsor.sponsorTier },
+        })
         await prisma.company.update({
             where: { id: createdCompany.id },
-            data: company.sponsor,
+            data: { website: company.sponsor.website },
         })
     }
 
