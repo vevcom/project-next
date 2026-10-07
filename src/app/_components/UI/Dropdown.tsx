@@ -96,6 +96,7 @@ export function useDropdown<ValueType extends string | number>({
  * The list of options a dropdown opens, shared with SearchableDropdown. Render it only while the
  * dropdown is open.
  * @param emptyText - Shown in place of the options when there are none. Without it the panel is just empty.
+ * @param id - The listbox's id, for the control that opens it to reference with aria-controls.
  */
 export function DropdownPanel<ValueType extends string | number>({
     options,
@@ -104,6 +105,7 @@ export function DropdownPanel<ValueType extends string | number>({
     onSelect,
     onActivate,
     emptyText,
+    id,
 }: {
     options: DropdownOption<ValueType>[],
     value: ValueType | undefined,
@@ -111,6 +113,7 @@ export function DropdownPanel<ValueType extends string | number>({
     onSelect: (option: DropdownOption<ValueType>) => void,
     onActivate: (index: number) => void,
     emptyText?: string,
+    id?: string,
 }) {
     const panelRef = useRef<HTMLUListElement>(null)
 
@@ -119,7 +122,7 @@ export function DropdownPanel<ValueType extends string | number>({
     }, [activeIndex])
 
     return (
-        <ul className={styles.panel} role="listbox" ref={panelRef}>
+        <ul id={id} className={styles.panel} role="listbox" ref={panelRef}>
             {
                 options.length === 0 && emptyText ? (
                     <li className={styles.empty}>{emptyText}</li>
@@ -183,7 +186,6 @@ export default function Dropdown<ValueType extends string | number>({
     return (
         <div
             ref={ref}
-            id={name}
             className={
                 `${styles.Dropdown} ${styles[color]} ` +
                 `${background === 'raised' ? styles.onRaised : ''} ${open ? styles.open : ''} ${className ?? ''}`
@@ -196,6 +198,7 @@ export default function Dropdown<ValueType extends string | number>({
                 disabled={disabled}
                 aria-haspopup="listbox"
                 aria-expanded={open}
+                aria-controls={`${domId}-listbox`}
                 onClick={handleTriggerClick}
                 onKeyDown={handleKeyDown}
             >
@@ -216,6 +219,7 @@ export default function Dropdown<ValueType extends string | number>({
                         activeIndex={activeIndex}
                         onSelect={select}
                         onActivate={setActiveIndex}
+                        id={`${domId}-listbox`}
                     />
                 )
             }
