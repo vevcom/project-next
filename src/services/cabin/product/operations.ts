@@ -1,4 +1,4 @@
-import 'server-only'
+import '@pn-server-only'
 
 import { cabinProductAuth } from './auth'
 import { cabinProductSchemas } from './schemas'

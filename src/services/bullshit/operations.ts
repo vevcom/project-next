@@ -1,3 +1,4 @@
+import '@pn-server-only'
 import { bullshitAuth } from './auth'
 import { bullshitSchemas } from './schemas'
 import { bullshitFilterSelection } from './constants'
