@@ -66,7 +66,6 @@ export default function SearchableDropdown<ValueType extends string | number>({
     return (
         <div
             ref={ref}
-            id={name}
             className={
                 `${styles.SearchableDropdown} ${styles[color]} ` +
                 `${background === 'raised' ? styles.onRaised : ''} ${open ? styles.open : ''} ${className ?? ''}`
@@ -85,6 +84,7 @@ export default function SearchableDropdown<ValueType extends string | number>({
                 role="combobox"
                 aria-expanded={open}
                 aria-haspopup="listbox"
+                aria-controls={`${domId}-listbox`}
             />
             <label htmlFor={domId} className={`${styles.label} ${(open || selectedOption) ? styles.floated : ''}`}>
                 {label}
@@ -99,6 +99,7 @@ export default function SearchableDropdown<ValueType extends string | number>({
                         onSelect={select}
                         onActivate={setActiveIndex}
                         emptyText="Ingen treff"
+                        id={`${domId}-listbox`}
                     />
                 )
             }
