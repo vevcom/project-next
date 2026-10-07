@@ -183,7 +183,7 @@ export default function VevenAdapter(prisma: PrismaClient): Adapter {
                 expiresAt: new Date(account.expires_at * 1000),
                 issuedAt: new Date(tokenData.iat * 1000),
                 userId: Number(account.userId),
-                email: tokenData.email,
+                email: tokenData.email.trim().toLowerCase(),
             })
 
             logger.info(

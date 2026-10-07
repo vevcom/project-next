@@ -10,7 +10,8 @@ type PropTypes = {
 
 /**
  * Context designed to be used with UserPagingContext and UserList.
- * If UserList is rendered inside IserSelectionProvider, it will display a checkbox next to each user.
+ * If UserList is rendered inside UsersSelectionProvider, it will display a checkbox next to each user.
+ * Users are matched by id, since paging hands out a new object for a user every time it refetches.
  */
 export const UsersSelectionContext = createContext<{
     users: UserFiltered[]
@@ -20,24 +21,27 @@ export const UsersSelectionContext = createContext<{
     includes: (user: UserFiltered) => boolean
         } | null>(null)
 
-export default function UsesrSelectionProvider({ children }: PropTypes) {
+function containsUser(users: UserFiltered[], user: UserFiltered) {
+    return users.some(selectedUser => selectedUser.id === user.id)
+}
+
+export default function UsersSelectionProvider({ children }: PropTypes) {
     const [users, setUsers] = useState<UserFiltered[]>([])
 
     const addUser = (user: UserFiltered) => {
-        setUsers([...users, user])
+        setUsers(previousUsers => (containsUser(previousUsers, user) ? previousUsers : [...previousUsers, user]))
     }
     const removeUser = (user: UserFiltered) => {
-        setUsers(users.filter(userItem => userItem !== user))
+        setUsers(previousUsers => previousUsers.filter(selectedUser => selectedUser.id !== user.id))
     }
+    const includes = (user: UserFiltered) => containsUser(users, user)
     const toggle = (user: UserFiltered) => {
-        if (users.includes(user)) {
+        if (includes(user)) {
             removeUser(user)
         } else {
             addUser(user)
         }
     }
-
-    const includes = (user: UserFiltered) => users.includes(user)
 
     return <UsersSelectionContext.Provider value={{ users, addUser, removeUser, toggle, includes }}>
         {children}

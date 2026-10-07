@@ -1,8 +1,6 @@
 'use server'
 import { articleCategoryOperations } from './operations'
 import { makeAction } from '@/services/serverAction'
-import type { ExpandedArticleCategory } from './types'
-import type { ActionReturn } from '@/services/actionTypes'
 
 export const createArticleCategoryAction = makeAction(articleCategoryOperations.create)
 export const destroyArticleCategoryAction = makeAction(articleCategoryOperations.destroy)
@@ -40,14 +38,3 @@ export const updateArticleCategoryArticleCmsParagraphAction = makeAction(
 export const updateArticleCategoryArticleCmsLinkAction = makeAction(
     articleCategoryOperations.updateArticle.articleSections.cmsLink
 )
-
-//TODO: Implement vicibility system as part of articleCategoryOperations
-export async function updateArticleCategoryVisibilityAction(
-    // disable eslint rule temporarily until function is implemented
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    id: number,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    visibility: unknown
-): Promise<ActionReturn<ExpandedArticleCategory>> {
-    throw new Error('Not implemented')
-}

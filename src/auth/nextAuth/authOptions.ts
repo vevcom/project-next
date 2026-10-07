@@ -131,7 +131,9 @@ export const authOptions: AuthOptions = {
                             throw new Error('Account has no access token!')
                         }
 
-                        if (profile?.email) await updateEmailForFeideAccount(account.providerAccountId, profile.email)
+                        if (profile?.email) {
+                            await updateEmailForFeideAccount(account.providerAccountId, profile.email.trim().toLowerCase())
+                        }
 
                         const userId = user ? Number(user.id) : token.user.id
 

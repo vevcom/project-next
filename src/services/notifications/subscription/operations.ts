@@ -1,3 +1,4 @@
+import '@pn-server-only'
 import { notificationMethodIncluder } from './constants'
 import { notificationSubscriptionAuth } from './auth'
 import { subscriptionSchemas } from './schemas'

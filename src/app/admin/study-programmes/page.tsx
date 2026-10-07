@@ -23,7 +23,7 @@ const { page, generateMetadata } = serverPage({
         <PageWrapper
             headerItem={
                 capabilities.canCreate.authorized && (
-                    <AddHeaderItemPopUp popUpKey="create ombul">
+                    <AddHeaderItemPopUp popUpKey="CreateStudyProgramme">
                         <UpdateStudyProgrammeForm />
                     </AddHeaderItemPopUp>
                 )

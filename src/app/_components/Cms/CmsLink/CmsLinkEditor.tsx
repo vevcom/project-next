@@ -24,7 +24,7 @@ export default function CmsLinkEditor({ cmsLink, updateCmsLinkAction, canEdit }:
     if (!editable) return null
     return (
         <PopUp
-            popUpKey={cmsLink.id}
+            popUpKey={`EditCmsLink${cmsLink.id}`}
             showButtonClass={styles.openBtn}
             showButtonContent={
                 <EditOverlay />

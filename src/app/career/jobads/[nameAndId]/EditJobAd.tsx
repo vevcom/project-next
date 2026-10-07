@@ -15,7 +15,6 @@ import useEditMode from '@/hooks/useEditMode'
 import { jobAdAuth } from '@/services/career/jobAds/auth'
 import { configureAction } from '@/services/configureAction'
 import { formatVevenUri } from '@/lib/urlEncoding'
-import { v4 as uuid } from 'uuid'
 import { useContext, type ReactNode } from 'react'
 import type { ExpandedJobAd } from '@/services/career/jobAds/types'
 
@@ -63,21 +62,18 @@ export default function EditJobAd({ jobAd, children }: PropTypes) {
                             defaultValue={jobAd.location || ''}
                             label="Sted"
                             name="location"
-                            key={uuid()}
                         />
                         <SelectedCompany />
                         <SelectString
                             options={jobAdOptions}
                             label="Type"
                             name="type"
-                            key={uuid()}
                             defaultValue={jobAd.type}
                         />
                         <DateInput
                             includeTime
                             label="Søknadsfrist"
                             name="applicationDeadline"
-                            key={uuid()}
                             defaultValue={jobAd.applicationDeadline || ''}
                         />
                         <Slider

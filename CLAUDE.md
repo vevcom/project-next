@@ -74,24 +74,51 @@ The codebase uses a ServiceOperation pattern for all business logic. Services ar
 **Key concepts:**
 - **ServiceOperation**: Core abstraction defined in `src/services/serviceOperation.ts`. All business logic is wrapped in ServiceOperations.
 - **Server Actions**: Client-callable functions created by wrapping ServiceOperations with `makeAction()` from `src/services/serverAction.ts`.
-- **Authorization**: Custom authorization system with Authorizer classes (see `src/auth/authorizer/`). Each ServiceOperation specifies its required permissions.
+- **Authorization**: Every ServiceOperation has an authorizer built with the `Require` chain from `src/auth/authorizer/Require.ts` (see [Authorizers](#authorizers)).
 - **Transaction Management**: The `opensTransaction` flag signals that a ServiceOperation will open its own database transaction. Since transactions cannot be nested, this allows the type system and runtime validation to prevent calling such operations from within an existing transaction.
 
 **Pattern example:**
 ```typescript
-// Define a ServiceOperation
-const myServiceOperation = defineOperation({
+// auth.ts
+export const fooAuth = {
+  update: Require.permission('FOO_ADMIN').or().userId(),
+} as const
+
+// operations.ts
+const update = defineOperation({
   paramsSchema: z.object({ id: z.number() }),
-  dataSchema: z.object({ name: z.string() }),
-  authorizer: ({ params }) => MyAuthorizer.dynamicFields({ id: params.id }),
+  dataSchema: fooSchemas.update,
+  authorizer: async ({ params, prisma }) => {
+    const foo = await prisma.foo.findUniqueOrThrow({ where: { id: params.id }, select: { ownerId: true } })
+    return fooAuth.update.data({ userId: foo.ownerId })
+  },
   operation: async ({ params, data, session, prisma }) => {
     // Business logic here
   }
 })
 
-// Wrap it as a Server Action for client use
-export const myAction = makeAction(myServiceOperation)
+// actions.ts
+export const updateFooAction = makeAction(fooOperations.update)
 ```
+
+### Authorizers
+
+Rules are written once in the service's `auth.ts` as `Require` chains, so the same rule can run on the server (in the operation) and in the frontend (with `useAuthorizer`). `operations.ts` only supplies data to them with `.data({...})`; it never builds a `Require` chain itself.
+
+- **Conditions:** `.permission('X')`, `.user()`, `.userId()` (needs `{ userId }`), `.userField()`, `.groupAdmin()` (needs `{ groupId }`), `.levelOfDoubleVisibility({ level })` (needs `{ visibility }`), `.ownership<Data>(check)` and `.custom<Data>(check)` for caller-defined checks, `.visibilityFilter()` for list queries (attaches a Prisma `where` filter instead of denying), and `.nothing()` for operations with no access rule.
+- **Combining:** conditions in a chain are ANDed; `.or()` starts a new OR'd group. `.anyOf(...)` and `.allOf(...)` combine already-built chains. `chain.allOf(extra)` only extends the last group of `chain`; use `Require.allOf(chain, extra)` to require `extra` on every branch.
+- **Data:** a chain that needs data (`userId`, `groupId`, ...) is a type error until `.data({...})` has supplied all of it. Rules that need data from the database fetch it in the operation's `authorizer` (which may be async and receives `prisma`), then call `.data()`.
+
+### Sub-operations, ownership checks and internal calls
+
+- **`defineSubOperation`** defines an operation for a sub-service (CMS paragraphs, images, links, ...) that other services embed. It has no authorizer of its own; schemas and `operation` are functions so an implementer can pass implementation fields.
+- **`.implement({ authorizer, ownershipCheck, beforeRun? })`** turns a sub-operation into a callable operation for one owning service (e.g. `careerOperations` implements `cmsParagraphOperations.updateContent`).
+  - `authorizer`: may this user act on the owning resource?
+  - `ownershipCheck`: does the sub-resource actually belong to the owning resource (e.g. the paragraph is the career page's special paragraph)? Returning false rejects the call. It is resource-to-resource integrity, not user permission.
+  - `beforeRun`: optional extra checks that run after both and may throw.
+- **`.internalCall({ params, data, ... })`** runs a sub-operation from server code with no authorizer and no ownership check. Only for calls from other operations or server code that has already authorized the user.
+- **`bypassAuth: true`** skips the authorizer of a top-level operation when calling it from trusted server code (e.g. NextAuth callbacks, seeders). Clients cannot set it; `makeAction` never passes it.
+- Operations called inside another operation inherit its context (prisma client or transaction, session, `bypassAuth`) through async local storage; pass `prisma: tx` explicitly to run one inside a transaction.
 
 ### Service Folder Structure
 
@@ -100,7 +127,7 @@ Each service domain follows a standard file layout. See `src/services/omegaquote
 ```
 src/services/[domain]/
 ├── actions.ts      # 'use server' — makeAction() wrappers, one per operation
-├── auth.ts         # Authorizer definitions (RequirePermission.staticFields etc.)
+├── auth.ts         # Authorizer definitions (`Require` chains, shared with the frontend)
 ├── constants.ts    # Domain constants and config values (env vars, field selections)
 ├── operations.ts   # defineOperation() calls, exported as `{ ... } as const`
 ├── schemas.ts      # Plain Zod schemas (no ValidationBase)
@@ -277,13 +304,13 @@ In `'use client'` components, use the `useAuthorizer` hook from `@/hooks/useAuth
 import useAuthorizer from '@/hooks/useAuthorizer'
 import { someAuth } from '@/services/some/auth'
 
-const canDoThing = useAuthorizer({ authorizer: someAuth.operation.dynamicFields({}) }).authorized
+const canDoThing = useAuthorizer({ authorizer: someAuth.operation.data({ userId }) }).authorized
 ```
 
 Never do this manually in client components:
 ```typescript
 const session = useSession()
-const canDoThing = !session.loading && someAuth.operation.dynamicFields({}).auth(session.session).authorized
+const canDoThing = !session.loading && someAuth.operation.data({ userId }).auth(session.session).authorized
 ```
 
 ### Operation Naming Conventions
@@ -291,7 +318,7 @@ const canDoThing = !session.loading && someAuth.operation.dynamicFields({}).auth
 For every `defineOperation()` call, the operation key must align with its schema and authorizer keys:
 
 - `dataSchema` and `paramsSchema`: if taken from a schemas object, the key must match the operation name exactly — e.g. operation `destroyFoo` must use `fooSchemas.destroyFoo`, not `fooSchemas.createFoo`.
-- `authorizer`: must reference the same operation name — e.g. `fooAuth.destroyFoo.dynamicFields({})`, not `fooAuth.createFoo`.
+- `authorizer`: must reference the same operation name — e.g. `fooAuth.destroyFoo`, not `fooAuth.createFoo`.
 
 When create and destroy operations share the same schema shape, define a shared variable and reference it from both keys in the schemas object:
 

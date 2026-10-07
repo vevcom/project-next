@@ -1,3 +1,4 @@
+import '@pn-server-only'
 import { ledgerAccountSchemas } from './schemas'
 import { ledgerAccountAuth } from './auth'
 import { resolveAccountOwnership, resolveAccountsOwnership } from './ownership'

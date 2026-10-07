@@ -1,3 +1,4 @@
+import '@pn-server-only'
 import { authAuth } from './auth'
 import { authSchemas } from './schemas'
 import { moveFeideAccountToUser } from './feideAccounts/move'
@@ -5,6 +6,7 @@ import { userFilterSelection } from '@/services/users/constants'
 import { userSchemas } from '@/services/users/schemas'
 import { sendResetPasswordMail } from '@/lib/email/systemMail/resetPassword'
 import { sendLinkFeideAccountMail } from '@/lib/email/systemMail/linkFeideAccount'
+import { sendEmailChangedMail } from '@/lib/email/systemMail/emailChanged'
 import { defineOperation } from '@/services/serviceOperation'
 import { ServiceError } from '@/services/error'
 import { userOperations } from '@/services/users/operations'
@@ -60,7 +62,7 @@ export const authOperations = {
                 throw new ServiceError('JWT INVALID', 'The user has changed since the token was generated.')
             }
 
-            return await prisma.user.update({
+            const updatedUser = await prisma.user.update({
                 where: {
                     id: userId,
                 },
@@ -70,6 +72,9 @@ export const authOperations = {
                 },
                 select: userFilterSelection,
             })
+            await sendEmailChangedMail(updatedUser, user.email)
+
+            return updatedUser
         }
     }),
 

@@ -11,6 +11,7 @@ import { permissionOperations } from '@/services/permissions/operations'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
 import { userOperations } from '@/services/users/operations'
 import { withFallback, withPageSession } from '@/app/serverPage'
+import ReleaseCountdownGate from '@/components/ReleaseCountdown/ReleaseCountdownGate'
 import ThemeEnabler from '@/UI/ThemeEnabler'
 import ServiceWorkerRegister from '@/UI/ServiceWorkerRegister'
 import GlobalSearch from '@/UI/GlobalSearch'
@@ -102,27 +103,29 @@ export default async function RootLayout({ children }: PropTypes) {
                             <EditModeProvider>
                                 <PopUpProvider>
                                     <PageTitleProvider>
-                                        <div className={styles.wrapper}>
-                                            <div className={styles.navBar}>
-                                                <NavBar
-                                                    isLoggedIn={navUser !== null}
-                                                    profileImage={navUser?.image ?? null}
-                                                    navItems={navItems}
-                                                />
+                                        <ReleaseCountdownGate>
+                                            <div className={styles.wrapper}>
+                                                <div className={styles.navBar}>
+                                                    <NavBar
+                                                        isLoggedIn={navUser !== null}
+                                                        profileImage={navUser?.image ?? null}
+                                                        navItems={navItems}
+                                                    />
+                                                </div>
+                                                <aside className={styles.sideBar}>
+                                                    <DesktopSideBar navItems={navItems} />
+                                                </aside>
+                                                <main className={styles.content}>
+                                                    {children}
+                                                </main>
+                                                <div className={styles.mobileNavBar}>
+                                                    <MobileNavBar
+                                                        isLoggedIn={navUser !== null}
+                                                        navItems={navItems}
+                                                    />
+                                                </div>
                                             </div>
-                                            <aside className={styles.sideBar}>
-                                                <DesktopSideBar navItems={navItems} />
-                                            </aside>
-                                            <main className={styles.content}>
-                                                {children}
-                                            </main>
-                                            <div className={styles.mobileNavBar}>
-                                                <MobileNavBar
-                                                    isLoggedIn={navUser !== null}
-                                                    navItems={navItems}
-                                                />
-                                            </div>
-                                        </div>
+                                        </ReleaseCountdownGate>
                                     </PageTitleProvider>
                                 </PopUpProvider>
                             </EditModeProvider>
