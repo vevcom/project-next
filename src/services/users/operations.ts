@@ -644,8 +644,8 @@ export const userOperations = {
     }),
 
     readUserWithBalance: defineOperation({
-        authorizer: ({ params }) => userAuth.readUserWithBalance.data({
-            userField: { username: params.username || '' },
+        authorizer: async ({ params, prisma }) => userAuth.readUserWithBalance.data({
+            userField: { id: (await prisma.user.findFirst({ where: params, select: { id: true } }))?.id },
         }),
         paramsSchema: z.object({
             username: z.string().optional(),
