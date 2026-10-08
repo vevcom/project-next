@@ -157,7 +157,7 @@ export function implementDoubleLevelVisibilityOperations<
             })).adminLevel.id === params.visibilityId,
             beforeRun: async ({ prisma, implementationParams, data }) => {
                 if (data.requirements.length === 0) {
-                    throw new ServerError('BAD DATA', 'Du må velge hvem som kan administrere')
+                    throw new ServiceError('BAD DATA', 'Du må velge hvem som kan administrere')
                 }
                 assertAdminLevelIsSubOfRegularLevel({
                     regularLevel: (await readDoubleLevelMatrixInternal({
