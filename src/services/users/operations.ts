@@ -669,8 +669,8 @@ export const userOperations = {
                 })
             }
 
-            // bypassAuth: reading this user's own balance is already covered by userAuth.read
-            // above; ledgerAccountAuth.read/calculateBalance's own ownership check would
+            // bypassAuth: userAuth.readUserWithBalance above already applies the ledger's rule (the
+            // user themselves or LEDGER_ADMIN); ledgerAccountAuth.read/calculateBalance's own check would
             // otherwise reject an API-key caller (no session user) looking up someone else's
             // balance.
             const account = await ledgerAccountOperations.read({

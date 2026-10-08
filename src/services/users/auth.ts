@@ -11,7 +11,7 @@ export const userAuth = {
     readBasic: userFieldOrUsersUse,
     read: userFieldOrUsersAdmin,
     readOrNull: userFieldOrUsersAdmin,
-    readUserWithBalance: userFieldOrUsersUse,
+    readUserWithBalance: Require.permission('LEDGER_ADMIN').or().userField(),
     readPage: Require.permission('USERS_USE'),
     search: Require.permission('USERS_USE'),
     create: Require.permission('USERS_ADMIN'),

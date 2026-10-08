@@ -119,6 +119,25 @@ describe('users', () => {
         })).rejects.toThrow(Smorekopp)
     })
 
+    test('a balance is only for the user themselves and LEDGER_ADMIN', async () => {
+        await expect(userOperations.readUserWithBalance({
+            params: { studentCard: 'exposure-card' },
+            session: sessionOf(viewer, ['USERS_USE']),
+        })).rejects.toThrow(Smorekopp)
+
+        const results = await Promise.all([
+            userOperations.readUserWithBalance({
+                params: { username: target.username },
+                session: sessionOf(target, []),
+            }),
+            userOperations.readUserWithBalance({
+                params: { studentCard: 'exposure-card' },
+                session: sessionOf(viewer, ['LEDGER_ADMIN']),
+            }),
+        ])
+        results.forEach(result => expect(result.user.id).toBe(target.id))
+    })
+
     test('USERS_USE reads the basic fields of another user', async () => {
         const user = await userOperations.readBasic({
             params: { id: target.id },
