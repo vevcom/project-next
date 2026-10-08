@@ -31,7 +31,6 @@ const { page, generateMetadata } = serverPage({
         })
     },
     capabilities: () => ({
-        canUpdate: ombulAuth.update,
         canUpdateParagraph: ombulAuth.updateParagraphContent,
     }),
     metadata: (ombul) => ({ title: ombul.name }),
@@ -42,7 +41,7 @@ const { page, generateMetadata } = serverPage({
             <PageWrapper hideTitle className={styles.ombulPage}>
                 <div className={styles.header}>
                     <div className={styles.titleBlock}>
-                        <ChangeName editable={capabilities.canUpdate.authorized} ombulId={ombul.id}>
+                        <ChangeName ombulId={ombul.id}>
                             <h1>{ombul.name}</h1>
                         </ChangeName>
                         <p className={styles.issue}>{ombul.year} &middot; utgave {ombul.issueNumber}</p>

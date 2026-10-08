@@ -1,3 +1,4 @@
+'use client'
 import styles from './School.module.scss'
 import CmsLink from '@/cms/CmsLink/CmsLink'
 import CmsImage from '@/cms/CmsImage/CmsImage'
@@ -9,23 +10,22 @@ import {
 } from '@/services/education/schools/actions'
 import { configureAction } from '@/services/configureAction'
 import { schoolAuth } from '@/services/education/schools/auth'
+import useAuthorizer from '@/hooks/useAuthorizer'
 import type { ExpandedSchool } from '@/services/education/schools/types'
-import type{ SessionMaybeUser } from '@/auth/session/Session'
 
 type PropTypes = {
     school: ExpandedSchool
-    session: SessionMaybeUser
 }
 
-export default function School({ school, session }: PropTypes) {
+export default function School({ school }: PropTypes) {
     const updateCmsImageAction = configureAction(
         updateSchoolCmsImageAction,
         { implementationParams: { shortName: school.shortName } }
     )
 
-    const canEditCmsImage = schoolAuth.updateCmsImage.auth(session)
-    const canEditCmsParagraph = schoolAuth.updateCmsParagraphContent.auth(session)
-    const canEditCmsLink = schoolAuth.updateCmsLink.auth(session)
+    const canEditCmsImage = useAuthorizer({ authorizer: schoolAuth.updateCmsImage })
+    const canEditCmsParagraph = useAuthorizer({ authorizer: schoolAuth.updateCmsParagraphContent })
+    const canEditCmsLink = useAuthorizer({ authorizer: schoolAuth.updateCmsLink })
 
     return (
         <div className={styles.School}>

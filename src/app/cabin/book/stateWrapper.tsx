@@ -11,6 +11,8 @@ import CountDown from '@/components/countDown/CountDown'
 import CabinBookingPaymentModal from '@/components/Ledger/Modals/CabinBookingPaymentModal'
 import { calculateCabinBookingPrice, calculateTotalCabinBookingPrice } from '@/services/cabin/booking/cabinPriceCalculator'
 import { useSession } from '@/auth/session/useSession'
+import { cabinBookingAuth } from '@/services/cabin/booking/auth'
+import useAuthorizer from '@/hooks/useAuthorizer'
 import { createActionError } from '@/services/actionError'
 import { configureAction } from '@/services/configureAction'
 import {
@@ -78,8 +80,6 @@ export default function StateWrapper({
     cabinAvailability,
     releaseUntil,
     cabinProducts,
-    canBookCabin,
-    canBookBed,
     pricePeriods,
     availableBalance,
     customerSessionClientSecret,
@@ -87,12 +87,12 @@ export default function StateWrapper({
     cabinAvailability: BookingFiltered[],
     releaseUntil: Date,
     cabinProducts: CabinProductExtended[],
-    canBookCabin: boolean,
-    canBookBed: boolean,
     pricePeriods: PricePeriod[],
     availableBalance?: number,
     customerSessionClientSecret?: string,
 }) {
+    const canBookCabin = useAuthorizer({ authorizer: cabinBookingAuth.createCabinBookingNoUser }).authorized
+    const canBookBed = useAuthorizer({ authorizer: cabinBookingAuth.createBedBookingNoUser }).authorized
     const cabinProduct = cabinProducts.find(product => product.type === 'CABIN')
     if (!cabinProduct) {
         throw new Error('Ingen produkt med type CABIN.')

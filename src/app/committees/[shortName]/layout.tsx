@@ -7,7 +7,6 @@ import CommitteeImage from '@/components/Committee/CommitteeImage/CommitteeImage
 import { committeeAuth } from '@/services/groups/committees/auth'
 import { serverLayout } from '@/app/serverPage'
 import { Require } from '@/auth/authorizer/Require'
-import { committeeParticipationAuth } from '@/services/applications/committeeParticipation/auth'
 import type { LayoutOperationArgs } from '@/app/serverPage'
 
 export default serverLayout({
@@ -22,7 +21,6 @@ export default serverLayout({
             committeeAuth.updateArticle.data({ groupId: committee.groupId }),
             Require.custom(() => !committee.pensioned, { errorMessage: 'Komiteen er pensjonert' }),
         ),
-        canReadCommitteeApplication: committeeParticipationAuth.readAll.data({ groupId: committee.groupId }),
     }),
     render: ({ data: { committee, shortNameParam }, capabilities, children }) => (
         <div className={styles.pageLayout}>
@@ -44,10 +42,7 @@ export default serverLayout({
                     { children }
                 </PageWrapper>
             </div>
-            <Nav
-                shortName={shortNameParam}
-                canReadCommitteeApplication={capabilities.canReadCommitteeApplication.toJsObject()}
-            />
+            <Nav shortName={shortNameParam} groupId={committee.groupId} />
         </div>
     ),
 })

@@ -25,8 +25,6 @@ const interestGroupAuthorizers = (interestGroup: ExpandedInterestGroup) => {
     const groupId = interestGroup.groupId
     const notPensioned = Require.custom(() => !interestGroup.pensioned, { errorMessage: 'Gruppen er pensjonert' })
     return {
-        canUpdate: interestGroupAuth.update.data({ groupId }),
-        canDestroy: interestGroupAuth.destroy,
         canEditArticleSection: Require.allOf(interestGroupAuth.updateArticleSection.data({ groupId }), notPensioned),
         canAdministrate: Require.anyOf(
             Require.allOf(notPensioned, Require.anyOf(

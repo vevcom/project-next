@@ -18,7 +18,7 @@ import type { ExpandedInterestGroup } from '@/services/groups/interestGroups/typ
 
 type PropTypes = {
     interestGroup: ExpandedInterestGroup
-    capabilities: Capabilities<'canUpdate' | 'canDestroy' | 'canEditArticleSection' | 'canAdministrate'>
+    capabilities: Capabilities<'canEditArticleSection' | 'canAdministrate'>
 }
 
 export default function InterestGroup({ interestGroup, capabilities }: PropTypes) {
@@ -41,8 +41,7 @@ export default function InterestGroup({ interestGroup, capabilities }: PropTypes
                 <InterestGroupSettings
                     interestGroupId={interestGroup.id}
                     interestGroupName={interestGroup.name}
-                    canUpdate={capabilities.canUpdate.toJsObject()}
-                    canDestroy={capabilities.canDestroy.toJsObject()}
+                    groupId={interestGroup.groupId}
                 />
             </div>
             <ArticleSection

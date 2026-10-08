@@ -206,7 +206,7 @@ const { page, generateMetadata } = serverPage({
                             dotPunishment={dotPunishment}
                             availableBalance={data.eventPaymentBalance}
                             customerSessionClientSecret={data.eventPaymentCustomerSessionSecret}
-                            canRegister={capabilities.canRegister.authorized}
+                            capabilities={{ canRegister: capabilities.canRegister.toJsObject() }}
                         />
                     </> : <p>
                         <FontAwesomeIcon icon={faExclamation} />

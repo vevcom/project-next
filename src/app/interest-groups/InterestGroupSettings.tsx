@@ -5,13 +5,12 @@ import { SettingsHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopU
 import useEditMode from '@/hooks/useEditMode'
 import { configureAction } from '@/services/configureAction'
 import { updateInterestGroupAction, destroyInterestGroupAction } from '@/services/groups/interestGroups/actions'
-import type { AuthResultTypeAny } from '@/auth/authorizer/AuthResult'
+import { interestGroupAuth } from '@/services/groups/interestGroups/auth'
 
 type PropTypes = {
     interestGroupId: number
     interestGroupName: string
-    canUpdate: AuthResultTypeAny
-    canDestroy: AuthResultTypeAny
+    groupId: number
 }
 
 /**
@@ -21,11 +20,10 @@ type PropTypes = {
 export default function InterestGroupSettings({
     interestGroupId,
     interestGroupName,
-    canUpdate,
-    canDestroy,
+    groupId,
 }: PropTypes) {
-    const editableUpdate = useEditMode({ authResult: canUpdate })
-    const editableDestroy = useEditMode({ authResult: canDestroy })
+    const editableUpdate = useEditMode({ authorizer: interestGroupAuth.update.data({ groupId }) })
+    const editableDestroy = useEditMode({ authorizer: interestGroupAuth.destroy })
 
     if (!editableUpdate && !editableDestroy) return null
 

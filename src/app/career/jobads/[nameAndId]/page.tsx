@@ -41,7 +41,7 @@ const { page, generateMetadata } = serverPage({
         canEdit: jobAdAuth.updateArticle,
     }),
     metadata: (jobAd) => ({ title: jobAd.article.name }),
-    render: ({ data: jobAd, capabilities, session }) => (
+    render: ({ data: jobAd, capabilities }) => (
         <div className={styles.wrapper}>
             <main className={styles.main}>
                 <Article
@@ -141,7 +141,6 @@ const { page, generateMetadata } = serverPage({
                                     disableEdit
                                     squareLogo={false}
                                     company={jobAd.company}
-                                    session={session}
                                 />
                             </div>
                         </>

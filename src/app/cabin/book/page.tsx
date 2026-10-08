@@ -73,8 +73,6 @@ const { page, generateMetadata } = serverPage({
         }
     },
     capabilities: () => ({
-        canBookCabin: cabinBookingAuth.createCabinBookingNoUser,
-        canBookBed: cabinBookingAuth.createBedBookingNoUser,
         canEditSpecialCmsParagraphContract: cabinBookingAuth.updateSpecialCmsParagraphContentCabinContract,
     }),
     metadata: () => ({ title: 'Hyttebooking' }),
@@ -100,8 +98,6 @@ const { page, generateMetadata } = serverPage({
                 cabinAvailability={data.cabinAvailability}
                 releaseUntil={releaseUntil}
                 cabinProducts={data.cabinProducts}
-                canBookCabin={capabilities.canBookCabin.authorized}
-                canBookBed={capabilities.canBookBed.authorized}
                 pricePeriods={data.pricePeriods}
                 availableBalance={data.cabinBookingBalance}
                 customerSessionClientSecret={data.cabinBookingCustomerSessionSecret}

@@ -41,10 +41,7 @@ const { page, generateMetadata } = serverPage({
                         <th>Del av Omega</th>
                     </tr>
                 </thead>
-                <StudyProgrammeTableBody
-                    studyprogrammes={studyprogrammes}
-                    canEdit={capabilities.canEdit.authorized}
-                />
+                <StudyProgrammeTableBody studyprogrammes={studyprogrammes} />
             </table>
         </PageWrapper>
     ),

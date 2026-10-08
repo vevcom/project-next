@@ -11,7 +11,6 @@ import { companyListRenderer } from '@/components/Company/CompanyListRenderer'
 import SponsorLegend from '@/components/Company/SponsorLegend'
 import { QueryParams } from '@/lib/queryParams/queryParams'
 import CompanyListFilter from '@/app/_components/Company/CompanyListFilter'
-import { ServerSession } from '@/auth/session/ServerSession'
 import { configureAction } from '@/services/configureAction'
 import type { SearchParamsServerSide } from '@/lib/queryParams/types'
 import type { PageSizeCompany } from '@/contexts/paging/CompanyPaging'
@@ -22,7 +21,6 @@ export default async function CompaniesPage({ searchParams }: PropTypes) {
     const pageSize = 10 satisfies PageSizeCompany
     const name = QueryParams.companyName.decode(await searchParams) ?? undefined
 
-    const session = await ServerSession.fromNextAuth()
     const res = await configureAction(readCompanyPageAction, {
         params: {
             paging: {
@@ -70,11 +68,7 @@ export default async function CompaniesPage({ searchParams }: PropTypes) {
                     <CompanyListFilter currentName={name ?? ''} />
                     <SponsorLegend />
                 </div>
-                <CompanyList serverRenderedData={serverRenderedData.map(
-                    companyListRenderer({
-                        session,
-                    })
-                )} />
+                <CompanyList serverRenderedData={serverRenderedData.map(companyListRenderer())} />
             </CompanyPagingProvider>
         </PageWrapper>
     )
