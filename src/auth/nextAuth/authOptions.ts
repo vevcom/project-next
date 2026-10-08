@@ -1,8 +1,10 @@
 import '@pn-server-only'
 import VevenAdapter from './VevenAdapter'
+import { feideLoginMayLinkByEmail } from './feideEmailLinking'
 import { compressJwt, decompressJwt } from './jwtCompression'
 import { decryptAndComparePassword } from '@/auth/passwordHash'
 import FeideProvider from '@/lib/feide/FeideProvider'
+import { fetchStudyProgrammeRealmsFromFeide } from '@/lib/feide/api'
 import {
     inferClassFromStudyProgrammes,
     inferOmegaMembershipFromStudyProgrammes,
@@ -115,6 +117,16 @@ export const authOptions: AuthOptions = {
         },
     },
     callbacks: {
+        async signIn({ account, profile }) {
+            if (account?.provider !== 'feide') return true
+            const accessToken = account.access_token
+            const mayLink = await feideLoginMayLinkByEmail(prisma, {
+                providerAccountId: account.providerAccountId,
+                email: profile?.email,
+                readRealms: async () => (accessToken ? fetchStudyProgrammeRealmsFromFeide(accessToken) : []),
+            })
+            return mayLink ? true : '/login?error=FeideEmailInUse'
+        },
         async session({ session, token }) {
             session.user = token.user
             session.permissions = token.permissions
