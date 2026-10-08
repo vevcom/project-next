@@ -55,7 +55,9 @@ export default function FeideProvider<P extends FeideProfile>(
                 lastname: extendedUserInfo.sn?.join(' '),
             }
         },
-        allowDangerousEmailAccountLinking: true, // This will try to link accounts with the same email
+        // Links a new Feide login to the user with the same email. The signIn callback in authOptions
+        // refuses this unless feideLoginMayLinkByEmail allows it.
+        allowDangerousEmailAccountLinking: true,
         options,
     }
 }
