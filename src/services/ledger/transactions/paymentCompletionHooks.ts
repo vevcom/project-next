@@ -5,14 +5,14 @@ import type { LedgerTransactionPurpose, Prisma } from '@/prisma-generated-pn-typ
 
 /**
  * A hook a domain registers to react once a ledger transaction for one of its purposes has
- * actually reached SUCCEEDED - e.g. sending a confirmation, fulfilling an order. Runs after the
- * transaction's own state is already committed, so a hook can only fail its own side effects
- * (see runPaymentCompletionHook below), never the payment itself.
+ * actually reached SUCCEEDED - e.g. sending a confirmation, fulfilling an order. A hook can only
+ * fail its own side effects (see runPaymentCompletionHook below), never the payment itself.
  *
  * `prisma` is whatever client is ambient in the ledgerTransactionOperations.advance call that
  * triggered this - the same transaction as the state update when advance runs synchronously
  * inside create(), or a plain client when advance runs standalone (e.g. from the Stripe
- * webhook).
+ * webhook). Database writes go through it, so they commit together with the state update. Side
+ * effects that must not happen unless that commits, such as mail, go through runAfterCommit.
  */
 export type PaymentCompletionHook = (
     transaction: ExpandedLedgerTransaction,

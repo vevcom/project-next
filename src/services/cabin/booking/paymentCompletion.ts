@@ -1,5 +1,6 @@
 import { notificationOperations } from '@/services/notifications/operations'
 import { sendMailOperations } from '@/services/notifications/send-mail/operations'
+import { runAfterCommit } from '@/services/serviceOperation'
 import type { ExpandedLedgerTransaction } from '@/services/ledger/transactions/types'
 import type { Prisma } from '@/prisma-generated-pn-types'
 
@@ -60,5 +61,5 @@ export async function cabinBookingPaymentCompletionHook(
         include: { guestUser: true },
     })
 
-    await sendBookingConfirmation(booking)
+    await runAfterCommit(prisma, () => sendBookingConfirmation(booking))
 }

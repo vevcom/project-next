@@ -303,12 +303,8 @@ export const ledgerTransactionOperations = {
             // count > 0 means this call is the one that actually performed the PENDING ->
             // SUCCEEDED transition (updateMany matches 0 rows once it's already terminal), so
             // the hook fires exactly once no matter how many times/where advance is called from
-            // (synchronously from create, or later from the Stripe webhook).
-            // TODO: When advance() runs synchronously inside create() from within a caller's
-            // prisma.$transaction, prisma here is that ambient tx client, so a hook's side
-            // effects (e.g. a confirmation email) can fire before the transaction commits. If the
-            // transaction then fails to commit, the side effect already happened. Defer hook
-            // execution until after commit instead.
+            // (synchronously from create, or later from the Stripe webhook). Inside a caller's
+            // transaction the hook's side effects wait for it to commit (see PaymentCompletionHook).
             if (count > 0 && transaction.state === 'SUCCEEDED') {
                 await runPaymentCompletionHook(transaction, { prisma })
             }
