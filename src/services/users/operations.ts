@@ -441,19 +441,12 @@ export const userOperations = {
         operation: async ({ prisma, data, params }) => {
             const passwordHash = await hashAndEncryptPassword(data.password)
 
-            await prisma.credentials.update({
-                where: {
-                    userId: params.id,
-                },
-                data: {
-                    passwordHash,
-                }
-            })
-
-            // Ends every session of the user, Feide sessions included.
             await prisma.user.update({
                 where: { id: params.id },
-                data: { sessionEpoch: { increment: 1 } },
+                data: {
+                    sessionEpoch: { increment: 1 },
+                    credentials: { update: { passwordHash } },
+                },
             })
 
             return null
