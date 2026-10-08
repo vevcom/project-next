@@ -9,6 +9,11 @@ const sponsorTierIcon = {
     SPONSOR: faStar,
 } as const
 
+const sponsorTierClass = {
+    MAIN: styles.tierMain,
+    SPONSOR: styles.tierSponsor,
+} as const
+
 type PropTypes = {
     sponsorTier: CompanySponsorTier,
     iconOnly?: boolean,
@@ -22,7 +27,7 @@ export default function SponsorBadge({ sponsorTier, iconOnly = false, className 
 
     return (
         <span
-            className={`${styles.SponsorBadge} ${styles[sponsorTier]} ${className ?? ''}`}
+            className={`${styles.SponsorBadge} ${sponsorTierClass[sponsorTier]} ${className ?? ''}`}
             title={`${label} — ${description}`}
         >
             <FontAwesomeIcon icon={sponsorTierIcon[sponsorTier]} aria-hidden />

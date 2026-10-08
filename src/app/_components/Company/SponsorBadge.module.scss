@@ -25,13 +25,13 @@
     text-overflow: ellipsis;
 }
 
-.MAIN {
+.tierMain {
     color: ohma.$colors-accent-yellow;
     border-color: color-mix(in srgb, ohma.$colors-accent-yellow, transparent 55%);
     background-color: color-mix(in srgb, ohma.$colors-accent-yellow, ohma.$colors-surface-raised 85%);
 }
 
-.SPONSOR {
+.tierSponsor {
     color: ohma.$colors-accent-cyan;
     border-color: color-mix(in srgb, ohma.$colors-accent-cyan, transparent 60%);
     background-color: color-mix(in srgb, ohma.$colors-accent-cyan, ohma.$colors-surface-raised 88%);

@@ -82,7 +82,7 @@
     padding-right: calc(5 * #{ohma.$gap});
 }
 
-.MAIN {
+.tierMain {
     border-color: color-mix(in srgb, ohma.$colors-accent-yellow, transparent 50%);
     background-color: color-mix(in srgb, ohma.$colors-accent-yellow, ohma.$colors-surface-raised 94%);
 
@@ -91,6 +91,6 @@
     }
 }
 
-.SPONSOR {
+.tierSponsor {
     border-color: color-mix(in srgb, ohma.$colors-accent-cyan, transparent 65%);
 }

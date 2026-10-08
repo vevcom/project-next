@@ -13,8 +13,15 @@ import {
     updateCompanyCmsLogoAction
 } from '@/services/career/companies/actions'
 import { configureAction } from '@/services/configureAction'
+import type { CompanySponsorTier } from '@/prisma-generated-pn-types'
 import type { CompanyExpanded } from '@/services/career/companies/types'
 import type { SessionMaybeUser } from '@/auth/session/Session'
+
+const sponsorTierClass = {
+    MAIN: styles.tierMain,
+    SPONSOR: styles.tierSponsor,
+    NONE: '',
+} satisfies Record<CompanySponsorTier, string>
 
 type PropTypes = {
     company: CompanyExpanded,
@@ -52,7 +59,7 @@ export default function Company({
         canUpdate.authorized || canUpdateSponsorTier.authorized || canDestroy.authorized
     )
     return (
-        <div className={`${styles.Company} ${styles[company.sponsorTier] ?? ''}`}>
+        <div className={`${styles.Company} ${sponsorTierClass[company.sponsorTier]}`}>
             <div className={styles.logoFrame}>
                 <CmsImage
                     canEdit={canEditCmsImageLogo}
