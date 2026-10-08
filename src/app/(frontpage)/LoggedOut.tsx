@@ -99,7 +99,7 @@ export default async function LoggedOutLandingPage() {
                 <MazeMapLophtet height={'80vh'}/>
             </div>
             <div className={styles.footer}>
-                <Footer canEditSpecialCmsImage={canEditSpecialCmsImage} />
+                <Footer />
             </div>
         </div>
     )

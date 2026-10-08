@@ -1,7 +1,7 @@
 import '@pn-server-only'
 import { jobAdAuth } from './auth'
 import { jobAdSchemas } from './schemas'
-import { articleAndCompanyIncluder, simpleArticleAndCompanyIncluder } from './constants'
+import { activeJobAdOrdering, articleAndCompanyIncluder, simpleArticleAndCompanyIncluder } from './constants'
 import { logoIncluder } from '@/services/career/companies/constants'
 import { defineOperation } from '@/services/serviceOperation'
 import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
@@ -90,20 +90,17 @@ export const jobAdOperations = {
         authorizer: () => jobAdAuth.readActive,
         operation: async ({ prisma }): Promise<SimpleJobAd[]> => {
             const jobAds = await prisma.jobAd.findMany({
-                orderBy: {
-                    article: {
-                        createdAt: 'desc',
-                    },
-                },
+                orderBy: activeJobAdOrdering,
                 where: {
                     active: true,
                 },
                 include: simpleArticleAndCompanyIncluder,
             })
-            return jobAds.map(ad => ({
-                ...ad,
-                coverImage: ad.article.coverImage.image,
-                companyName: ad.company.name,
+            return jobAds.map(jobAd => ({
+                ...jobAd,
+                coverImage: jobAd.article.coverImage.image,
+                companyName: jobAd.company.name,
+                companySponsorTier: jobAd.company.sponsorTier,
             }))
         }
     }),
@@ -129,10 +126,11 @@ export const jobAdOperations = {
                 },
                 include: simpleArticleAndCompanyIncluder,
             })
-            return jobAds.map(ad => ({
-                ...ad,
-                coverImage: ad.article.coverImage.image,
-                companyName: ad.company.name,
+            return jobAds.map(jobAd => ({
+                ...jobAd,
+                coverImage: jobAd.article.coverImage.image,
+                companyName: jobAd.company.name,
+                companySponsorTier: jobAd.company.sponsorTier,
             }))
         }
     }),

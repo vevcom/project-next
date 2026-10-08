@@ -16,7 +16,6 @@ import { ombulOperations } from '@/services/ombul/operations'
 import { omegaquoteOperations } from '@/services/omegaquotes/operations'
 import { ombulAuth } from '@/services/ombul/auth'
 import { omegaQuotesAuth } from '@/services/omegaquotes/auth'
-import { frontpageAuth } from '@/services/frontpage/auth'
 import { withPageSession } from '@/app/serverPage'
 import Footer from '@/components/Footer/Footer'
 import PageTitleSetter from '@/contexts/PageTitleSetter'
@@ -29,7 +28,7 @@ export default async function LoggedInLandingPage() {
 
     const {
         promo, news, jobAds, events, ombuls, omegaquotes,
-        canReadOmbul, canReadOmegaquotes, canEditSpecialCmsImage,
+        canReadOmbul, canReadOmegaquotes,
     } = await withPageSession(async (session) => {
         const [newsRead, jobAdsRead, eventsRead, promoRead] = await Promise.all([
             newsOperations.readCurrent({}),
@@ -70,8 +69,6 @@ export default async function LoggedInLandingPage() {
             omegaquotes: omegaquotesRead,
             canReadOmbul: canReadOmbulResult.authorized,
             canReadOmegaquotes: canReadOmegaquotesResult.authorized,
-            canEditSpecialCmsImage: frontpageAuth.updateSpecialCmsImage
-                .auth(session).toJsObject(),
         }
     })
 
@@ -164,7 +161,7 @@ export default async function LoggedInLandingPage() {
                 </div>
             </div>
             <div className={styles.footer}>
-                <Footer canEditSpecialCmsImage={canEditSpecialCmsImage} />
+                <Footer />
             </div>
         </div>
     )

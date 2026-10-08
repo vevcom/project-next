@@ -29,9 +29,6 @@ const seedSpecialCmsImageConfig: Record<SpecialCmsImage, ImagesAvailablieForCms>
     FRONTPAGE_2: { dynamicImageSeededForCmsName: 'ohma' },
     FRONTPAGE_3: { dynamicImageSeededForCmsName: 'ov' },
     FRONTPAGE_4: { dynamicImageSeededForCmsName: 'ohma' },
-    FOOTER_SPONSOR_1: { dynamicImageSeededForCmsName: 'nordic' },
-    FOOTER_SPONSOR_2: { dynamicImageSeededForCmsName: 'kongsberg' },
-    FOOTER_SPONSOR_3: { dynamicImageSeededForCmsName: 'ov' },
 }
 
 /**
@@ -116,10 +113,10 @@ const seedSpecialCmsArticleConfig: Record<SpecialCmsArticle, SeedSpecialArticleC
 
 /**
  * Seeds the special cms images, paragraphs, links and articles - the pieces of content addressed
- * by a fixed `special` enum value rather than by id (frontpage/footer sponsor images and
- * paragraphs, the career contact link, and special articles like the report page). None of this
- * is strictly necessary, as every one of these self-heals with blank/placeholder content on first
- * read if missing - this just gives a nicer initial state for development.
+ * by a fixed `special` enum value rather than by id (frontpage images and paragraphs, the career
+ * contact link, and special articles like the report page). None of this is strictly necessary,
+ * as every one of these self-heals with blank/placeholder content on first read if missing - this
+ * just gives a nicer initial state for development.
  */
 export const seedSpecialCms = defineSeedOperation(async prisma => {
     await Promise.all([
