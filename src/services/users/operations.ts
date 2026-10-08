@@ -571,6 +571,10 @@ export const userOperations = {
 
             if (storedUser.acceptedTerms) throw new ServiceError('DUPLICATE', 'Brukeren er allerede registrert.')
 
+            if (!storedUser.emailVerified) {
+                throw new ServiceError('DISSALLOWED', 'Du må bekrefte e-posten din før du kan registrere deg.')
+            }
+
             const passwordHash = await hashAndEncryptPassword(password)
 
             const results = await prisma.$transaction([
