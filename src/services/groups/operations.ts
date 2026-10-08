@@ -11,7 +11,6 @@ import {
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { MigratedStraightAwayOnIncrement } from '@/services/omegaOrder/constants'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
-import { userFilterSelection } from '@/services/users/constants'
 import { defineSubOperation } from '@/services/serviceOperation'
 import { ServiceError } from '@/services/error'
 import { getMembershipFilter } from '@/auth/getMembershipFilter'
@@ -27,7 +26,7 @@ import type {
     MembershipFiltered,
     MembershipSelectorType,
 } from './types'
-import type { UserFiltered } from '@/services/users/types'
+import type { UserBasic } from '@/services/users/types'
 
 const membershipSelectorSchema: z.ZodType<MembershipSelectorType> = z.union([
     z.number(),
@@ -549,7 +548,7 @@ export const groupOperations = {
                 admin: z.boolean(),
             })),
         }),
-        operation: () => async ({ prisma, params }): Promise<UserFiltered[]> => {
+        operation: () => async ({ prisma, params }): Promise<Pick<UserBasic, 'id'>[]> => {
             const memberships = await prisma.membership.findMany({
                 where: {
                     OR: params.groups.map(({ admin, groupId }) => ({
@@ -559,7 +558,7 @@ export const groupOperations = {
                 },
                 select: {
                     user: {
-                        select: userFilterSelection,
+                        select: { id: true },
                     }
                 }
             })

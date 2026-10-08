@@ -2,13 +2,13 @@ import '@pn-server-only'
 import { EmailChangedTemplate } from '@/lib/email/templates/emailChanged'
 import { sendMailOperations } from '@/services/notifications/send-mail/operations'
 import logger from '@/lib/logger'
-import type { UserFiltered } from '@/services/users/types'
+import type { UserBasicWithEmail } from '@/services/users/types'
 
 /**
  * Tells the old address that the email of a user was changed. A failure is only logged: the change
  * itself has already happened.
  */
-export async function sendEmailChangedMail(user: UserFiltered, oldEmail: string) {
+export async function sendEmailChangedMail(user: UserBasicWithEmail, oldEmail: string) {
     if (oldEmail === user.email) return
 
     try {

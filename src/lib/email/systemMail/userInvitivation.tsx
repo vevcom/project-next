@@ -4,9 +4,9 @@ import { sendMailOperations } from '@/services/notifications/send-mail/operation
 import { UserInvitationTemplate } from '@/lib/email/templates/userInvitation'
 import { generateJWT } from '@/jwt/jwt'
 import { QueryParams } from '@/lib/queryParams/queryParams'
-import type { UserFiltered } from '@/services/users/types'
+import type { UserBasicWithEmail } from '@/services/users/types'
 
-export async function sendUserInvitationEmail(user: UserFiltered) {
+export async function sendUserInvitationEmail(user: UserBasicWithEmail) {
     const jwt = generateJWT('verifyemail', {
         sub: user.id,
         email: user.email,

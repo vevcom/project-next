@@ -1,13 +1,13 @@
 import '@pn-server-only'
 
 import { Html } from '@react-email/components'
-import type { UserFiltered } from '@/services/users/types'
+import type { UserBasicWithEmail } from '@/services/users/types'
 
 export function EmailChangedTemplate({
     user,
     newEmail,
 }: {
-    user: UserFiltered,
+    user: UserBasicWithEmail,
     newEmail: string,
 }) {
     return (

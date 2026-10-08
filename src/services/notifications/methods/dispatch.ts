@@ -5,7 +5,7 @@ import { DEFAULT_NOTIFICATION_ALIAS } from '@/lib/email/constants'
 import { wrapInHTML } from '@/lib/email/wrapInHTML'
 import logger from '@/lib/logger'
 import type { Notification } from '@/prisma-generated-pn-types'
-import type { UserFiltered } from '@/services/users/types'
+import type { UserBasicWithEmail } from '@/services/users/types'
 
 /**
  * Sends a notification as one immediate email per recipient. The recipients are expected to be
@@ -20,7 +20,7 @@ import type { UserFiltered } from '@/services/users/types'
 export async function sendNotificationEmails(
     senderAddress: string | null,
     notification: Notification,
-    users: UserFiltered[]
+    users: UserBasicWithEmail[]
 ) {
     const senderAlias = senderAddress ?? DEFAULT_NOTIFICATION_ALIAS
 
