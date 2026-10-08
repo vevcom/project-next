@@ -210,7 +210,7 @@ const { page, generateMetadata } = serverPage({
                                                 updateUserBioParagraphContentAction,
                                                 { implementationParams: { userId: profile.user.id } }
                                             )}
-                                            canEdit={capabilities.canUpdateBio.toJsObject()}
+                                            capabilities={{ canEdit: capabilities.canUpdateBio }}
                                         />
                                     </div>
                                 }

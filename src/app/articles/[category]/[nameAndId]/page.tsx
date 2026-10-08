@@ -45,7 +45,7 @@ const { page, generateMetadata } = serverPage({
     render: ({ data, capabilities }) => (
         <div className={styles.wrapper}>
             <Article
-                canEdit={capabilities.canEdit.toJsObject()}
+                capabilities={capabilities}
                 coverImageClass={styles.coverImage}
                 article={data.article}
                 actions={{

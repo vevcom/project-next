@@ -130,7 +130,7 @@ const { page, generateMetadata } = serverPage({
             <div className={styles.wrapper}>
                 <span className={styles.coverImage}>
                     <CmsImage
-                        canEdit={capabilities.canEditCmsCoverImage.toJsObject()}
+                        capabilities={{ canEdit: capabilities.canEditCmsCoverImage }}
                         cmsImage={event.coverImage}
                         width={900}
                         updateCmsImageAction={
@@ -216,7 +216,7 @@ const { page, generateMetadata } = serverPage({
                 </aside>
                 <main>
                     <CmsParagraph
-                        canEdit={capabilities.canEditCmsParagraph.toJsObject()}
+                        capabilities={{ canEdit: capabilities.canEditCmsParagraph }}
                         cmsParagraph={event.paragraph}
                         updateCmsParagraphAction={
                             configureAction(

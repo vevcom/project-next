@@ -34,7 +34,7 @@ const { page, generateMetadata } = serverPage({
         return (
             <div className={styles.wrapper}>
                 <Article
-                    canEdit={capabilities.canEdit.toJsObject()}
+                    capabilities={capabilities}
                     article={data.article}
                     hideCoverImage
                     noMargin

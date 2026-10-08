@@ -23,14 +23,14 @@ export default function School({ school, session }: PropTypes) {
         { implementationParams: { shortName: school.shortName } }
     )
 
-    const canEditCmsImage = schoolAuth.updateCmsImage.auth(session).toJsObject()
-    const canEditCmsParagraph = schoolAuth.updateCmsParagraphContent.auth(session).toJsObject()
-    const canEditCmsLink = schoolAuth.updateCmsLink.auth(session).toJsObject()
+    const canEditCmsImage = schoolAuth.updateCmsImage.auth(session)
+    const canEditCmsParagraph = schoolAuth.updateCmsParagraphContent.auth(session)
+    const canEditCmsLink = schoolAuth.updateCmsLink.auth(session)
 
     return (
         <div className={styles.School}>
             <CmsImage
-                canEdit={canEditCmsImage}
+                capabilities={{ canEdit: canEditCmsImage }}
                 className={styles.cmsImage}
                 classNameImage={styles.image}
                 cmsImage={school.cmsImage}
@@ -50,7 +50,7 @@ export default function School({ school, session }: PropTypes) {
                             { implementationParams: { shortName: school.shortName } }
                         )
                     }
-                    canEdit={canEditCmsParagraph}
+                    capabilities={{ canEdit: canEditCmsParagraph }}
                 />
                 <CmsLink
                     cmsLink={school.cmsLink}
@@ -62,7 +62,7 @@ export default function School({ school, session }: PropTypes) {
                             { implementationParams: { shortName: school.shortName } }
                         )
                     }
-                    canEdit={canEditCmsLink}
+                    capabilities={{ canEdit: canEditCmsLink }}
                 />
             </div>
         </div>

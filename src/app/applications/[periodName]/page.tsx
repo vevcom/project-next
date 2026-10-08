@@ -92,13 +92,11 @@ const { page, generateMetadata } = serverPage({
                     <h2>{part.committee.name}</h2>
                     <CmsParagraph
                         className={styles.committeeParagraph}
-                        canEdit={
-                            committeeAuth.updateParagraphContent.data(
+                        capabilities={{
+                            canEdit: committeeAuth.updateParagraphContent.data(
                                 { groupId: part.committee.groupId }
-                            ).auth(
-                                sessionOfRequest
-                            ).toJsObject()
-                        }
+                            ).auth(sessionOfRequest),
+                        }}
                         cmsParagraph={part.committee.paragraph}
                         updateCmsParagraphAction={
                             configureAction(

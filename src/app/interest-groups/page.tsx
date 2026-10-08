@@ -29,7 +29,7 @@ const { page, generateMetadata } = serverPage({
                         </AddHeaderItemPopUp>
                     )}
                     <SpecialCmsParagraph
-                        canEdit={capabilities.canEditGeneralInfo.toJsObject()}
+                        capabilities={{ canEdit: capabilities.canEditGeneralInfo }}
                         special="INTEREST_GROUP_GENERAL_INFO"
                         readSpecialCmsParagraphAction={readSpecialCmsParagraphGeneralInfoAction}
                         updateCmsParagraphAction={updateSpecialCmsParagraphContentGeneralInfoAction}

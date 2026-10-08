@@ -50,7 +50,7 @@ const { page, generateMetadata } = serverPage({
         return (
             <div className={styles.wrapper}>
                 <Article
-                    canEdit={capabilities.canEdit.toJsObject()}
+                    capabilities={capabilities}
                     articleClassName={styles.article}
                     article={news.article}
                     actions={{

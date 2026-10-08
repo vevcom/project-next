@@ -108,7 +108,7 @@ const { page, generateMetadata } = serverPage({
             />
 
             <SpecialCmsParagraph
-                canEdit={capabilities.canEditSpecialCmsParagraphContract.toJsObject()}
+                capabilities={{ canEdit: capabilities.canEditSpecialCmsParagraphContract }}
                 special="CABIN_CONTRACT"
                 readSpecialCmsParagraphAction={readSpecialCmsParagraphCabinContractAction}
                 updateCmsParagraphAction={updateSpecialCmsParagraphCabinContractAction}

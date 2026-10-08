@@ -26,7 +26,7 @@ const { page, generateMetadata } = serverPage({
         <PageWrapper>
             <SpecialArticle
                 article={article}
-                canEdit={capabilities.canEdit.toJsObject()}
+                capabilities={capabilities}
                 actions={{
                     update: updateNewStudentArticleAction,
                     addSection: updateNewStudentArticleAddSectionAction,

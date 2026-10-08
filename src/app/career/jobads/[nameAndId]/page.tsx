@@ -45,7 +45,7 @@ const { page, generateMetadata } = serverPage({
         <div className={styles.wrapper}>
             <main className={styles.main}>
                 <Article
-                    canEdit={capabilities.canEdit.toJsObject()}
+                    capabilities={capabilities}
                     article={jobAd.article}
                     coverImageClass={styles.coverImage}
                     sideBarClassName={styles.sideBar}

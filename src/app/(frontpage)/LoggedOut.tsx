@@ -16,12 +16,8 @@ import Link from 'next/link'
 
 export default async function LoggedOutLandingPage() {
     const session = await ServerSession.fromNextAuth()
-    const canEditSpecialCmsImage = frontpageAuth.updateSpecialCmsImage.auth(
-        session
-    ).toJsObject()
-    const canEditSpecialCmsParagraph = frontpageAuth.updateSpecialCmsParagraphContentSection.auth(
-        session
-    ).toJsObject()
+    const canEditSpecialCmsImage = frontpageAuth.updateSpecialCmsImage.auth(session)
+    const canEditSpecialCmsParagraph = frontpageAuth.updateSpecialCmsParagraphContentSection.auth(session)
 
     return (
         <div className={styles.wrapper}>

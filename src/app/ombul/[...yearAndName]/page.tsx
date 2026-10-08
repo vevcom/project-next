@@ -72,7 +72,7 @@ const { page, generateMetadata } = serverPage({
                     </div>
                     <CmsParagraph
                         className={styles.paragraph}
-                        canEdit={capabilities.canUpdateParagraph.toJsObject()}
+                        capabilities={{ canEdit: capabilities.canUpdateParagraph }}
                         cmsParagraph={ombul.paragraph}
                         updateCmsParagraphAction={configureAction(
                             updateOmbulParagraphContentAction,

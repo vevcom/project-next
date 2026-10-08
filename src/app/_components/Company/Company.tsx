@@ -50,7 +50,7 @@ export default function Company({
     const canUpdate = companyAuth.update.auth(session)
     const canUpdateSponsorTier = companyAuth.updateSponsorTier.auth(session)
     const canDestroy = companyAuth.destroy.auth(session)
-    const canEditCmsImageLogo = companyAuth.updateCmsImageLogo.auth(session).toJsObject()
+    const canEditCmsImageLogo = companyAuth.updateCmsImageLogo.auth(session)
     const updateCmsImageAction = configureAction(
         updateCompanyCmsLogoAction,
         { implementationParams: { companyId: company.id } }
@@ -62,7 +62,7 @@ export default function Company({
         <div className={`${styles.Company} ${sponsorTierClass[company.sponsorTier]}`}>
             <div className={styles.logoFrame}>
                 <CmsImage
-                    canEdit={canEditCmsImageLogo}
+                    capabilities={{ canEdit: canEditCmsImageLogo }}
                     disableEditor={disableEdit}
                     className={squareLogo ? styles.logoSq : styles.logo}
                     cmsImage={company.logo}

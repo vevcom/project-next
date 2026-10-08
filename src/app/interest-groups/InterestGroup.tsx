@@ -28,10 +28,9 @@ export default function InterestGroup({ interestGroup, session }: PropTypes) {
     const canDestroy = interestGroupAuth.destroy.auth(session)
     // A pensioned group's article is history too: the service refuses the write, so the editing
     // controls are not offered either.
-    const canEditArticleSection = (interestGroup.pensioned
+    const canEditArticleSection = interestGroup.pensioned
         ? new AuthResult(session, false, undefined, 'Gruppen er pensjonert')
         : interestGroupAuth.updateArticleSection.data({ groupId: interestGroup.groupId }).auth(session)
-    ).toJsObject()
 
     // The interest group's own page is where its members and migration are administered. The link
     // shows for anyone who may do one of those things - which includes the group's own admins, not
@@ -72,7 +71,7 @@ export default function InterestGroup({ interestGroup, session }: PropTypes) {
                 />
             </div>
             <ArticleSection
-                canEdit={canEditArticleSection}
+                capabilities={{ canEdit: canEditArticleSection }}
                 key={interestGroup.id}
                 articleSection={interestGroup.articleSection}
                 actions={{

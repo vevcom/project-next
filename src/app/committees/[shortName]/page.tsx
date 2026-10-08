@@ -40,7 +40,7 @@ const { page, generateMetadata } = serverPage({
     render: ({ data, capabilities }) => (
         <div className={styles.wrapper}>
             <CmsParagraph
-                canEdit={capabilities.canEditCommitteeParagraph.toJsObject()}
+                capabilities={{ canEdit: capabilities.canEditCommitteeParagraph }}
                 cmsParagraph={data.paragraph}
                 updateCmsParagraphAction={configureAction(
                     updateCommitteeParagraphAction,

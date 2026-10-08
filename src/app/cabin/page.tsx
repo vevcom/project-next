@@ -27,7 +27,7 @@ const { page, generateMetadata } = serverPage({
         <PageWrapper headerItem={<Link href="/cabin/book">Trykk her for å Booke</Link>}>
             <SpecialArticle
                 article={article}
-                canEdit={capabilities.canEdit.toJsObject()}
+                capabilities={capabilities}
                 actions={{
                     update: updateCabinArticleAction,
                     addSection: updateCabinArticleAddSectionAction,
