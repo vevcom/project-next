@@ -56,7 +56,6 @@ describe('linking a Feide login to an existing user by email', () => {
         const user = await createUser()
         await prisma.feideAccount.create({ data: {
             id: `other-sub-${user.id}`,
-            accessToken: '',
             email: `other-${user.email}`,
             expiresAt: new Date(),
             issuedAt: new Date(),
@@ -74,7 +73,6 @@ describe('linking a Feide login to an existing user by email', () => {
         const login = loginOf(user.email, ['uio.no'])
         await prisma.feideAccount.create({ data: {
             id: login.providerAccountId,
-            accessToken: '',
             email: user.email,
             expiresAt: new Date(),
             issuedAt: new Date(),

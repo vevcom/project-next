@@ -27,7 +27,6 @@ async function createUser({ withPassword }: { withPassword: boolean }) {
             ledgerAccount: { create: { type: 'USER' } },
             feideAccount: { create: {
                 id: `feide-sub-${username}`,
-                accessToken: '',
                 email: feideEmail,
                 expiresAt: new Date(),
                 issuedAt: new Date(),

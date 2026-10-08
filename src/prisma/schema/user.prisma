@@ -124,13 +124,12 @@ model Credentials {
 
 // Associates each user with their Feide account.
 model FeideAccount {
-  id          String   @id
-  accessToken String   @db.Text
-  email       String   @unique
-  expiresAt   DateTime
-  issuedAt    DateTime
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId      Int      @unique
+  id        String   @id
+  email     String   @unique
+  expiresAt DateTime
+  issuedAt  DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId    Int      @unique
 }
 
 // Associates each user with their Stripe customer id.
