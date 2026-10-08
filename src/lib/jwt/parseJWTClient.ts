@@ -1,6 +1,6 @@
 'use client'
 
-import { readJWTPayload } from './jwtReadUnsecure'
+import { decodeBase64Url, readJWTPayload } from './jwtReadUnsecure'
 import { createActionError } from '@/services/actionError'
 import { JWT_ISSUER } from '@/lib/jwt/constants'
 import type { OmegaJWTAudience } from '@/lib/jwt/types'
@@ -21,8 +21,6 @@ export async function parseJWT(
     timeOffset: number,
     audience: OmegaJWTAudience
 ): Promise<ActionReturn<number>> {
-    // TODO: This only works in safari and firefox :///
-
     function invalidJWT(message?: string): ActionReturn<number> {
         return createActionError('JWT INVALID', message || 'Invalid JWT')
     }
@@ -38,14 +36,13 @@ export async function parseJWT(
     }
 
     const keyStripped = publicKey
-        .replaceAll('\n', '')
         .replace('-----BEGIN PUBLIC KEY-----', '')
         .replace('-----END PUBLIC KEY-----', '')
-        .trim()
+        .replace(/\s/g, '')
 
     const key = await crypto.subtle.importKey(
         'spki', // Subject Public Key Info
-        Buffer.from(keyStripped, 'base64'),
+        decodeBase64Url(keyStripped),
         {
             name: 'ECDSA',
             namedCurve: 'P-256',
@@ -60,8 +57,8 @@ export async function parseJWT(
             hash: 'SHA-256'
         },
         key,
-        Buffer.from(tokenS[2], 'base64'),
-        Buffer.from(`${tokenS[0]}.${tokenS[1]}`),
+        decodeBase64Url(tokenS[2]),
+        new TextEncoder().encode(`${tokenS[0]}.${tokenS[1]}`),
     )
 
 
