@@ -96,7 +96,7 @@ export const navDef: NavItem[] = [
         authorizers: () => [eventAuth.readManyCurrent],
     },
     {
-        name: 'Ombul',
+        name: 'OmBul',
         href: '/ombul',
         icon: faBook,
         authorizers: () => [ombulAuth.readLatest],
