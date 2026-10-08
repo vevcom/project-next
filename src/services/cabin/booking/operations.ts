@@ -530,5 +530,63 @@ export const cabinBookingOperations = {
 
             return { payment }
         },
-    })
+    }),
+
+    /**
+     * Gives up a reservation that was never paid for, so its dates free up right away instead of
+     * once its payment window runs out. A payment attempt still under way is canceled with it, so
+     * it can never complete for dates that are no longer held. Releasing it again does nothing.
+     */
+    releaseReservation: defineOperation({
+        paramsSchema: z.object({
+            bookingId: z.number(),
+            secret: z.string().min(1),
+        }),
+        authorizer: async ({ params, prisma }) => {
+            const booking = await prisma.booking.findUnique({
+                where: { id: params.bookingId },
+                select: { userId: true, secret: true },
+            })
+
+            return cabinBookingAuth.releaseReservation.data({
+                booking: booking ?? { userId: null, secret: '' },
+                providedSecret: params.secret,
+            })
+        },
+        operation: async ({ prisma, params }) => {
+            const booking = await prisma.booking.findUniqueOrThrow({
+                where: { id: params.bookingId },
+                select: { canceled: true, transactionTimeout: true },
+            })
+
+            if (booking.canceled !== null) return
+
+            const attempt = await prisma.ledgerTransaction.findFirst({
+                where: {
+                    bookingId: params.bookingId,
+                    state: { in: ['PENDING', 'SUCCEEDED'] },
+                },
+            })
+            if (booking.transactionTimeout === null || attempt?.state === 'SUCCEEDED') {
+                throw new Smorekopp('BAD PARAMETERS', 'Denne reservasjonen er allerede betalt.')
+            }
+            if (attempt) {
+                // Bypassed: the authorizer above already established the caller holds this
+                // booking, which is the right bar for canceling a payment attempt on it.
+                await ledgerTransactionOperations.cancel({
+                    params: { id: attempt.id },
+                    bypassAuth: true,
+                })
+            }
+
+            await prisma.booking.updateMany({
+                where: {
+                    id: params.bookingId,
+                    canceled: null,
+                    transactionTimeout: { not: null }, // Protect against canceling a booking that just got paid.
+                },
+                data: { canceled: new Date() },
+            })
+        },
+    }),
 }
