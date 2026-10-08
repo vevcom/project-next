@@ -263,7 +263,7 @@ export const newsOperations = {
                     data: {
                         title: 'Ny nyhetsartikkel', // TODO: Add info about the article
                         message: 'En ny nyhetsartikkel er publisert',
-                        visibilityId: news.visibilityRegularId,
+                        audience: { visibilityId: news.visibilityRegularId },
                     },
                 })
             }
