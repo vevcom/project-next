@@ -27,6 +27,10 @@ export const eventRegistrationSchemas = {
         note: true,
     }),
 
+    setAttendance: z.object({
+        attended: z.boolean(),
+    }),
+
     createGuest: baseSchema.pick({
         name: true,
         note: true,

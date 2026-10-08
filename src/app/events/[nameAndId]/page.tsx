@@ -24,7 +24,7 @@ import { eventRegistrationOperations } from '@/services/events/registration/oper
 import { ledgerAccountOperations } from '@/services/ledger/accounts/operations'
 import { stripeCustomerOperations } from '@/services/stripeCustomers/operations'
 import { configureAction } from '@/services/configureAction'
-import { decodeVevenUriHandleError } from '@/lib/urlEncoding'
+import { decodeVevenUriHandleError, formatVevenUri } from '@/lib/urlEncoding'
 import { eventAuth } from '@/services/events/auth'
 import { eventRegistrationAuth } from '@/services/events/registration/auth'
 import { EMPTY_VISIBILITY } from '@/auth/visibility/emptyVisibility'
@@ -115,6 +115,9 @@ const { page, generateMetadata } = serverPage({
         canRegisterOthers: (data) => eventRegistrationAuth.createGuest.data({
             visibility: data.doubleLevelVisibility ?? EMPTY_VISIBILITY,
         }),
+        canTakeAttendance: (data) => eventRegistrationAuth.registerAttendance.data({
+            visibility: data.doubleLevelVisibility ?? EMPTY_VISIBILITY,
+        }),
     },
     metadata: (data) => ({ title: data.event.name }),
     render: ({ data, capabilities, session }) => {
@@ -162,6 +165,14 @@ const { page, generateMetadata } = serverPage({
                         <SettingsHeaderItemPopUp scale={30} popUpKey="EditEvent">
                             <CreateOrUpdateEventForm event={event} eventTags={tags} />
                             <EventVisibilityAdmin event={event} doubleLevelVisibility={doubleLevelVisibility} />
+                            {event.takesRegistration && capabilities.canTakeAttendance.authorized &&
+                                <Link
+                                    className={styles.attendanceLink}
+                                    href={`/events/${formatVevenUri(event.name, event.id)}/attendance`}
+                                >
+                                    Registrer oppmøte
+                                </Link>
+                            }
                             { capabilities.canDestroy.authorized &&
                                 <Form
                                     action={configureAction(destroyEventAction, { params: { id: event.id } })}
