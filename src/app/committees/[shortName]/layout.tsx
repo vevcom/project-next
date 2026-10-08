@@ -28,7 +28,7 @@ export default serverLayout({
         <div className={styles.pageLayout}>
             <div className={styles.main}>
                 <CommitteeImage
-                    canEditCoverImage={capabilities.canEditCoverImage}
+                    capabilities={capabilities}
                     shortName={committee.shortName}
                     logoImage={committee.logoImage}
                     coverImage={committee.coverImage}

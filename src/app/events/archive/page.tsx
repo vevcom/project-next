@@ -52,9 +52,7 @@ const { page, generateMetadata } = serverPage({
                         <TagHeaderItem
                             eventTags={eventTags}
                             currentTags={currentTags}
-                            canUpdate={capabilities.canUpdateTags.authorized}
-                            canCreate={capabilities.canCreateTags.authorized}
-                            canDestroy={capabilities.canDestroyTags.authorized}
+                            capabilities={capabilities}
                             page="EVENT_ARCHIVE"
                         />
                         <Link
