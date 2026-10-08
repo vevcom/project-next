@@ -4,7 +4,7 @@ import { bullshitSchemas } from './schemas'
 import { bullshitFilterSelection } from './constants'
 import { defineOperation } from '@/services/serviceOperation'
 import { Smorekopp } from '@/services/error'
-import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
+import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 
 export const bullshitOperations = {
     create: defineOperation({
@@ -39,7 +39,7 @@ export const bullshitOperations = {
                     { timestamp: 'desc' },
                     { id: 'desc' },
                 ],
-                ...cursorPageingSelection(params.paging.page),
+                ...cursorPagingSelection(params.paging.page),
                 select: bullshitFilterSelection,
             })
     }),

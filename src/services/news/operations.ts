@@ -12,7 +12,7 @@ import {
     visibilityIncluder
 } from '@/services/visibility/implement'
 import { defineOperation } from '@/services/serviceOperation'
-import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
+import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { ServiceError } from '@/services/error'
 import { implementUpdateArticleOperations } from '@/cms/articles/implement'
 import { z } from 'zod'
@@ -196,7 +196,7 @@ export const newsOperations = {
                         ]
                     } : {}),
                 },
-                ...cursorPageingSelection(params.paging.page),
+                ...cursorPagingSelection(params.paging.page),
                 orderBy: {
                     article: {
                         createdAt: 'desc',

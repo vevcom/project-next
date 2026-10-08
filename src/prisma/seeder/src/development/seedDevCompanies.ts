@@ -17,7 +17,7 @@ export const devCompanyName = (index: number) => `dev_companies_${index}`
 
 export const seedDevCompanies = defineSeedOperation(async (prisma: PrismaClient) => {
     await Promise.all(Array.from({ length: COMPANY_COUNT }).map((_, index) => upsert({
-        checkExistance: () => prisma.company.findUnique({
+        checkExistence: () => prisma.company.findUnique({
             where: { name: devCompanyName(index) },
             select: { id: true },
         }),

@@ -16,7 +16,7 @@ import { sendMailOperations } from '@/services/notifications/send-mail/operation
 import { eventOperations } from '@/services/events/operations'
 import { checkVisibility } from '@/auth/visibility/checkVisibility'
 import { defineOperation, defineSubOperation, type PrismaPossibleTransaction } from '@/services/serviceOperation'
-import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
+import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { paymentOperations } from '@/services/ledger/payments/operations'
 import { ledgerTransactionOperations } from '@/services/ledger/transactions/operations'
 import { stalePendingTransactionMs } from '@/services/ledger/transactions/constants'
@@ -279,7 +279,7 @@ export const eventRegistrationOperations = {
             })
 
             const registrations = await prisma.eventRegistration.findMany({
-                ...cursorPageingSelection(params.paging.page),
+                ...cursorPagingSelection(params.paging.page),
                 where: segment,
                 orderBy: eventRegistrationQueueOrder,
                 select: eventRegistrationSelection,
@@ -302,7 +302,7 @@ export const eventRegistrationOperations = {
             if (!segment) return []
 
             return await prisma.eventRegistration.findMany({
-                ...cursorPageingSelection(params.paging.page),
+                ...cursorPagingSelection(params.paging.page),
                 where: segment,
                 orderBy: eventRegistrationQueueOrder,
                 select: eventRegistrationSelectionDetailed,
