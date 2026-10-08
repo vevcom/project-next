@@ -8,7 +8,12 @@ async function createUser({ withPassword = false }: { withPassword?: boolean } =
     const username = `feide-link-${++userCounter}`
     const email = `${username}@stud.ntnu.no`
     const user = await prisma.user.create({
-        data: { username, email, bioParagraph: { create: {} } },
+        data: {
+            username,
+            email,
+            bioParagraph: { create: {} },
+            ledgerAccount: { create: { type: 'USER' } },
+        },
     })
     if (withPassword) {
         await prisma.credentials.create({
