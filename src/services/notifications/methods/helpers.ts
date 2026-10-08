@@ -40,7 +40,7 @@ export function booleanOperationOnMethods(
     return ret
 }
 
-export function repalceSpecialSymbols(text: string, user: UserBasic) {
+export function replaceSpecialSymbols(text: string, user: UserBasic) {
     return text
         .replaceAll('%u', user.username)
         .replaceAll('%n', user.firstname)

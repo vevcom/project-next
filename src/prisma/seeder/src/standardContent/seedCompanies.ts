@@ -56,7 +56,7 @@ async function upsertCompany(prisma: PrismaClient, company: SeedCompanyConfig) {
     const logo = await getImageForCmsImageRelation(company.logo, prisma)
 
     return upsert({
-        checkExistance: () => prisma.company.findUnique({
+        checkExistence: () => prisma.company.findUnique({
             where: { name: company.name },
             select: { id: true },
         }),

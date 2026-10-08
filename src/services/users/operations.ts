@@ -19,11 +19,11 @@ import { NTNUEmailDomain } from '@/services/mail/constants'
 import { sendVerifyEmail } from '@/lib/email/systemMail/verifyEmail'
 import { sendEmailChangedMail } from '@/lib/email/systemMail/emailChanged'
 import { omegaMembershipGroupOperations } from '@/services/groups/omegaMembershipGroups/operations'
-import { sendUserInvitationEmail } from '@/lib/email/systemMail/userInvitivation'
+import { sendUserInvitationEmail } from '@/lib/email/systemMail/userInvitation'
 import { defineOperation } from '@/services/serviceOperation'
 import { ServiceError } from '@/services/error'
 import { getMembershipFilter } from '@/auth/getMembershipFilter'
-import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
+import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { decryptAndComparePassword, hashAndEncryptPassword } from '@/auth/passwordHash'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { ledgerAccountOperations } from '@/services/ledger/accounts/operations'
@@ -246,7 +246,7 @@ export const userOperations = {
             const groups = [...details.groups, ...(details.selectedGroup ? [details.selectedGroup] : [])]
 
             const users = await prisma.user.findMany({
-                ...cursorPageingSelection(page),
+                ...cursorPagingSelection(page),
                 select: {
                     ...userCardSelection,
                     memberships: {

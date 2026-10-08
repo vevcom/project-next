@@ -1,4 +1,4 @@
-import getCommitee from './getCommittee'
+import getCommittee from './getCommittee'
 import Nav from './Nav'
 import styles from './layout.module.scss'
 import PageTitleSetter from '@/contexts/PageTitleSetter'
@@ -12,7 +12,7 @@ import type { LayoutOperationArgs } from '@/app/serverPage'
 
 export default serverLayout({
     operation: async ({ params, session }: LayoutOperationArgs<{ shortName: string }>) => {
-        const committee = await getCommitee(params.shortName)
+        const committee = await getCommittee(params.shortName)
 
         return {
             committee,

@@ -8,7 +8,7 @@ import {
 } from './constants'
 import { companySchemas } from './schemas'
 import { defineOperation } from '@/services/serviceOperation'
-import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
+import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { cmsImageOperations } from '@/cms/images/operations'
 import { CompanySponsorTier } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
@@ -46,7 +46,7 @@ export const companyOperations = {
         paramsSchema: companySchemas.readPage,
         authorizer: () => companyAuth.readPage,
         operation: async ({ prisma, params }) => await prisma.company.findMany({
-            ...cursorPageingSelection(params.paging.page),
+            ...cursorPagingSelection(params.paging.page),
             where: {
                 name: {
                     contains: params.paging.details.name,
