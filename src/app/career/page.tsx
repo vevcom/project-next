@@ -30,10 +30,10 @@ const { page, generateMetadata } = serverPage({
         ])
         return { contactorCmsLink, companyPresentationEventTag, isLoggedIn: Boolean(session.user) }
     },
-    capabilityChecks: {
-        canEditSpecialCmsLink: () => careerAuth.updateSpecialCmsLink,
-        canEditSpecialCmsParagraph: () => careerAuth.updateSpecialCmsParagraphContentCareerInfo,
-    },
+    capabilities: () => ({
+        canEditSpecialCmsLink: careerAuth.updateSpecialCmsLink,
+        canEditSpecialCmsParagraph: careerAuth.updateSpecialCmsParagraphContentCareerInfo,
+    }),
     metadata: (data) => ({ title: data.isLoggedIn ? 'Karriere' : 'For bedrifter' }),
     render: ({ data, capabilities }) => (
         <PageWrapper headerItem={

@@ -14,10 +14,10 @@ import { serverPage } from '@/app/serverPage'
 
 const { page, generateMetadata } = serverPage({
     operation: async () => interestGroupOperations.readMany({}),
-    capabilityChecks: {
-        canCreate: () => interestGroupAuth.create,
-        canEditGeneralInfo: () => interestGroupAuth.updateSpecialCmsParagraphContentGeneralInfo,
-    },
+    capabilities: () => ({
+        canCreate: interestGroupAuth.create,
+        canEditGeneralInfo: interestGroupAuth.updateSpecialCmsParagraphContentGeneralInfo,
+    }),
     metadata: () => ({ title: 'Interessegrupper' }),
     render: ({ data: interestGroups, capabilities, session }) => (
         <PageWrapper transparent>

@@ -14,10 +14,10 @@ const { page, generateMetadata } = serverPage({
         authorizeAdminPage('study-programmes', session)
         return studyProgrammeOperations.readMany({})
     },
-    capabilityChecks: {
-        canCreate: () => studyProgrammeAuth.create,
-        canEdit: () => studyProgrammeAuth.update,
-    },
+    capabilities: () => ({
+        canCreate: studyProgrammeAuth.create,
+        canEdit: studyProgrammeAuth.update,
+    }),
     metadata: () => ({ title: 'Studieprogrammer' }),
     render: ({ data: studyprogrammes, capabilities }) => (
         <PageWrapper

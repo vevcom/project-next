@@ -24,6 +24,9 @@ export type AuthResultType<
 
 export type AuthResultTypeAny = AuthResultType<UserGuaranteeOption, boolean, object | undefined>
 
+/** An AuthResult of any authorizer: what running one against a session gives, without the specifics. */
+export type AuthResultAny = AuthResult<UserGuaranteeOption, boolean, object | undefined>
+
 export class AuthResult<
     const UserGuarantee extends UserGuaranteeOption,
     const Authorized extends boolean,

@@ -19,11 +19,11 @@ const { page, generateMetadata } = serverPage({
         const eventTags = await eventTagOperations.readAll({})
         return { tagNames, eventTags }
     },
-    capabilityChecks: {
-        canUpdateTags: () => eventTagAuth.update,
-        canCreateTags: () => eventTagAuth.create,
-        canDestroyTags: () => eventTagAuth.destroy,
-    },
+    capabilities: () => ({
+        canUpdateTags: eventTagAuth.update,
+        canCreateTags: eventTagAuth.create,
+        canDestroyTags: eventTagAuth.destroy,
+    }),
     metadata: () => ({ title: 'Hvad der har hendt' }),
     render: ({ data, capabilities }) => {
         const { tagNames, eventTags } = data

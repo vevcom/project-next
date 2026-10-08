@@ -72,12 +72,11 @@ const { page, generateMetadata } = serverPage({
             cabinBookingCustomerSessionSecret,
         }
     },
-    capabilityChecks: {
-        canBookCabin: () => cabinBookingAuth.createCabinBookingNoUser,
-        canBookBed: () => cabinBookingAuth.createBedBookingNoUser,
-        canEditSpecialCmsParagraphContract: () =>
-            cabinBookingAuth.updateSpecialCmsParagraphContentCabinContract,
-    },
+    capabilities: () => ({
+        canBookCabin: cabinBookingAuth.createCabinBookingNoUser,
+        canBookBed: cabinBookingAuth.createBedBookingNoUser,
+        canEditSpecialCmsParagraphContract: cabinBookingAuth.updateSpecialCmsParagraphContentCabinContract,
+    }),
     metadata: () => ({ title: 'Hyttebooking' }),
     render: ({ data, capabilities }) => {
         const releaseUntil = findCurrentReleasePeriod(data.releasePeriods)

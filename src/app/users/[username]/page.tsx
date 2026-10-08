@@ -45,9 +45,9 @@ const { page, generateMetadata } = serverPage({
             flairs: [...flairs].sort((flairOne, flairTwo) => flairOne.rank - flairTwo.rank),
         }
     },
-    capabilityChecks: {
-        canUpdateBio: ({ profile }) => userAuth.updateBioParagraphContent.data({ userId: profile.user.id }),
-    },
+    capabilities: ({ profile }) => ({
+        canUpdateBio: userAuth.updateBioParagraphContent.data({ userId: profile.user.id }),
+    }),
     metadata: () => ({ title: 'Profil' }),
     render: ({ data, capabilities, session }) => {
         const { profile, flairs } = data

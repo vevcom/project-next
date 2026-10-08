@@ -30,10 +30,10 @@ const { page, generateMetadata } = serverPage({
             }
         })
     },
-    capabilityChecks: {
-        canUpdate: () => ombulAuth.update,
-        canUpdateParagraph: () => ombulAuth.updateParagraphContent,
-    },
+    capabilities: () => ({
+        canUpdate: ombulAuth.update,
+        canUpdateParagraph: ombulAuth.updateParagraphContent,
+    }),
     metadata: (ombul) => ({ title: ombul.name }),
     render: ({ data: ombul, capabilities }) => {
         const path = `/store/ombul/${ombul.fsLocation}`

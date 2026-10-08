@@ -20,9 +20,9 @@ const { page, generateMetadata } = serverPage({
             },
         },
     }),
-    capabilityChecks: {
-        canAdministrateSchools: () => schoolAuth.create,
-    },
+    capabilities: () => ({
+        canAdministrateSchools: schoolAuth.create,
+    }),
     metadata: () => ({ title: 'Skoler' }),
     render: ({ data: serverRenderedData, capabilities, session }) => (
         <PageWrapper headerItem={

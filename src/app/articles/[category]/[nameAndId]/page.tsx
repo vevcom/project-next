@@ -38,9 +38,9 @@ const { page, generateMetadata } = serverPage({
 
         return { articleCategory, article }
     },
-    capabilityChecks: {
-        canEdit: () => articleCategoryAuth.updateArticle,
-    },
+    capabilities: () => ({
+        canEdit: articleCategoryAuth.updateArticle,
+    }),
     metadata: (data) => ({ title: data.article.name }),
     render: ({ data, capabilities }) => (
         <div className={styles.wrapper}>

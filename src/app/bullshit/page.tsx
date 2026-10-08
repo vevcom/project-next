@@ -28,9 +28,9 @@ const { page, generateMetadata } = serverPage({
         null,
         ['UNAUTHORIZED', 'UNAUTHENTICATED']
     ),
-    capabilityChecks: {
-        canCreate: () => bullshitAuth.create,
-    },
+    capabilities: () => ({
+        canCreate: bullshitAuth.create,
+    }),
     metadata: () => ({ title: 'Bullshit' }),
     render: ({ data: bullshits, capabilities, session }) => (
         <PageWrapper headerItem={
