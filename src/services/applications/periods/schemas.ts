@@ -9,14 +9,22 @@ const fields = z.object({
     participatingCommitteeIds: Zpn.numberListCheckboxFriendly({ label: 'Deltakende komiteer' })
 })
 
-const refineDates = {
-    fcn: (data: { startDate?: Date, endDate?: Date, endPriorityDate?: Date }) => {
-        if (!data.startDate && !data.endDate && !data.endPriorityDate) return true
-        if (!data.startDate || !data.endDate || !data.endPriorityDate) return false
-        return data.startDate < data.endDate && data.endDate <= data.endPriorityDate
-    },
-    message: 'Starttidspunktet må være før sluttidspunktet.'
-}
+/**
+ * The period starts before applications close, and prioritizing closes no earlier than that.
+ * Only the pairs that are both given are compared, so a partial update is judged on what it
+ * changes alone - the operation compares the merged dates.
+ */
+export const periodDatesInOrder = ({ startDate, endDate, endPriorityDate }: {
+    startDate?: Date,
+    endDate?: Date,
+    endPriorityDate?: Date,
+}) => (
+    (!startDate || !endDate || startDate < endDate)
+    && (!endDate || !endPriorityDate || endDate <= endPriorityDate)
+)
+
+export const periodDatesMessage =
+    'Søknadsfristen må være etter starten, og prioriteringsfristen kan ikke være før søknadsfristen.'
 
 export const applicationPeriodSchemas = {
     create: fields.pick({
@@ -25,7 +33,7 @@ export const applicationPeriodSchemas = {
         endDate: true,
         endPriorityDate: true,
         participatingCommitteeIds: true
-    }).refine(refineDates.fcn, refineDates.message),
+    }).refine(periodDatesInOrder, periodDatesMessage),
 
     update: fields.pick({
         name: true,
@@ -33,5 +41,5 @@ export const applicationPeriodSchemas = {
         endDate: true,
         endPriorityDate: true,
         participatingCommitteeIds: true
-    }).partial().refine(refineDates.fcn, refineDates.message),
+    }).partial().refine(periodDatesInOrder, periodDatesMessage),
 }
