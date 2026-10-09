@@ -13,7 +13,7 @@ export const cabinProductOperations = {
 
     create: defineOperation({
         authorizer: () => cabinProductAuth.create,
-        dataSchema: cabinProductSchemas.createProduct,
+        dataSchema: cabinProductSchemas.create,
         operation: ({ prisma, data }) => prisma.cabinProduct.create({
             data,
         })
@@ -24,18 +24,15 @@ export const cabinProductOperations = {
         paramsSchema: z.object({
             cabinProductId: z.number(),
         }),
-        dataSchema: cabinProductSchemas.createProductPrice,
-        operation: async ({ prisma, params, data, session }) => {
+        dataSchema: cabinProductSchemas.createPrice,
+        operation: async ({ prisma, params, data }) => {
             const [pricePeriod, releasePeriod] = await Promise.all([
                 prisma.pricePeriod.findUniqueOrThrow({
                     where: {
                         id: data.pricePeriodId,
                     }
                 }),
-                cabinReleasePeriodOperations.getCurrentReleasePeriod({
-                    bypassAuth: true,
-                    session
-                })
+                cabinReleasePeriodOperations.getCurrentReleasePeriod({ bypassAuth: true })
             ])
 
             if (releasePeriod && pricePeriod.validFrom <= releasePeriod.releaseUntil) {

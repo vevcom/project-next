@@ -9,7 +9,7 @@ export const cabinReleasePeriodOperations = {
 
     create: defineOperation({
         authorizer: () => cabinReleasePeriodAuth.create,
-        dataSchema: cabinReleasePeriodSchemas.createReleasePeriod,
+        dataSchema: cabinReleasePeriodSchemas.create,
         operation: async ({ prisma, data }) => {
             const latestReleasePeriod = await prisma.releasePeriod.findFirst({
                 orderBy: {
@@ -77,15 +77,15 @@ export const cabinReleasePeriodOperations = {
 
     update: defineOperation({
         authorizer: () => cabinReleasePeriodAuth.update,
-        dataSchema: cabinReleasePeriodSchemas.updateReleasePeriod,
-        operation: async ({ prisma, data }) => prisma.releasePeriod.update({
+        paramsSchema: z.object({
+            id: z.number(),
+        }),
+        dataSchema: cabinReleasePeriodSchemas.update,
+        operation: async ({ prisma, params, data }) => prisma.releasePeriod.update({
             where: {
-                id: data.id, // TODO: Figure out why id is in data and not a param
+                id: params.id,
             },
-            data: {
-                releaseUntil: data.releaseUntil,
-                releaseTime: data.releaseTime,
-            },
+            data,
         })
     }),
 } as const

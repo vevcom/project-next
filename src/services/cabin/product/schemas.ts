@@ -9,24 +9,23 @@ const baseSchema = z.object({
     name: z.string().min(2),
     description: z.string().min(0).max(20),
     price: z.coerce.number().min(0).transform((val) => convertAmount(val)),
-    validFrom: z.coerce.date(),
     cronInterval: Zpn.simpleCronExpression(),
     memberShare: z.coerce.number().min(0).max(100),
     pricePeriodId: z.coerce.number(),
 })
 
 export const cabinProductSchemas = {
-    createProduct: baseSchema.pick({
+    create: baseSchema.pick({
         name: true,
         type: true,
         amount: true,
     }),
 
-    createProductPrice: baseSchema.pick({
+    createPrice: baseSchema.pick({
         description: true,
         price: true,
         cronInterval: true,
         memberShare: true,
         pricePeriodId: true,
     }),
-}
+} as const
