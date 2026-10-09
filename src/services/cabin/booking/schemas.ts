@@ -18,31 +18,33 @@ const baseSchema = z.object({
     })
 })
 
-const startEndDateRefiner = {
-    fcn: (data: { start: Date, end: Date }) =>
-        dateLessThan(data.start, data.end) && dateLessThanOrEqualTo(new Date(), data.start),
-    message: 'Start dato må være før sluttdato. Start daten må være i ramtiden'
-}
+const startsBeforeEndAndNotInThePast = (data: { start: Date, end: Date }) =>
+    dateLessThan(data.start, data.end) && dateLessThanOrEqualTo(new Date(), data.start)
+const datesMessage = 'Startdatoen må være før sluttdatoen, og kan ikke være i fortiden.'
+
+const bookingUserAttached = baseSchema.pick({
+    start: true,
+    end: true,
+    tenantNotes: true,
+    acceptedTerms: true,
+    numberOfMembers: true,
+    numberOfNonMembers: true,
+}).refine(startsBeforeEndAndNotInThePast, datesMessage)
+
+const bookingNoUser = baseSchema.pick({
+    start: true,
+    end: true,
+    tenantNotes: true,
+    acceptedTerms: true,
+    firstname: true,
+    lastname: true,
+    email: true,
+    mobile: true,
+}).refine(startsBeforeEndAndNotInThePast, datesMessage)
 
 export const cabinBookingSchemas = {
-    createBookingUserAttached: baseSchema.pick({
-        start: true,
-        end: true,
-        tenantNotes: true,
-        acceptedTerms: true,
-        numberOfMembers: true,
-        numberOfNonMembers: true,
-    }).refine(startEndDateRefiner.fcn, startEndDateRefiner.message),
-
-    createBookingNoUser: baseSchema.pick({
-        start: true,
-        end: true,
-        tenantNotes: true,
-        acceptedTerms: true,
-        firstname: true,
-        lastname: true,
-        email: true,
-        mobile: true,
-    }).refine(startEndDateRefiner.fcn, startEndDateRefiner.message),
-}
-
+    createCabinBookingUserAttached: bookingUserAttached,
+    createBedBookingUserAttached: bookingUserAttached,
+    createCabinBookingNoUser: bookingNoUser,
+    createBedBookingNoUser: bookingNoUser,
+} as const
