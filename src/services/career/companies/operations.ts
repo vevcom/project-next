@@ -18,19 +18,12 @@ export const companyOperations = {
     create: defineOperation({
         dataSchema: companySchemas.create,
         authorizer: () => companyAuth.create,
-        operation: async ({ prisma, data }) => {
-            //TODO: tranaction when createCmsImage is service operation.
-            const logo = await cmsImageOperations.create.internalCall({
-                data: {},
-                operationImplementationFields: { special: null }
-            })
-            return await prisma.company.create({
-                data: {
-                    ...data,
-                    logoId: logo.id,
-                }
-            })
-        }
+        operation: async ({ prisma, data }) => prisma.company.create({
+            data: {
+                ...data,
+                logo: { create: {} },
+            },
+        }),
     }),
     readSponsors: defineOperation({
         authorizer: () => companyAuth.readSponsors,
@@ -112,12 +105,14 @@ export const companyOperations = {
             id: z.number()
         }),
         authorizer: () => companyAuth.destroy,
-        operation: async ({ prisma, params: { id } }) => {
-            await prisma.company.delete({
-                where: {
-                    id
-                }
+        opensTransaction: true,
+        operation: async ({ prisma, params: { id } }) => prisma.$transaction(async (tx) => {
+            // The logo is on the company's side of the relation, so it does not cascade.
+            const company = await tx.company.delete({
+                where: { id },
+                select: { logoId: true },
             })
-        }
+            await cmsImageOperations.destroy.internalCall({ params: { cmsImageId: company.logoId }, prisma: tx })
+        }),
     }),
 } as const
