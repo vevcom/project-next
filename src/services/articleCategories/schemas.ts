@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 const baseSchema = z.object({
-    name: z.string().min(2, 'Minmum lengde er 2.').max(18, 'Maks lengde er 2.').trim(),
+    name: z.string().trim().min(2, 'Minimum lengde er 2.').max(18, 'Maks lengde er 18.'),
     description: z.string().max(70, 'Maks lengde er 70.'),
 })
 
