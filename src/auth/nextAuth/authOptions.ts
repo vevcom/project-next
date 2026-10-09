@@ -13,7 +13,7 @@ import {
 } from '@/lib/feide/userRoutines'
 import { prisma } from '@/prisma-pn-client-instance'
 import { groupOperations } from '@/services/groups/operations'
-import { updateEmailForFeideAccount } from '@/services/auth/feideAccounts/update'
+import { feideAccountOperations } from '@/services/auth/feideAccounts/operations'
 import { userOperations } from '@/services/users/operations'
 import { permissionOperations } from '@/services/permissions/operations'
 import logger from '@/lib/logger'
@@ -135,7 +135,11 @@ export const authOptions: AuthOptions = {
                         }
 
                         if (profile?.email) {
-                            await updateEmailForFeideAccount(account.providerAccountId, profile.email.trim().toLowerCase())
+                            await feideAccountOperations.updateEmail({
+                                params: { feideAccountId: account.providerAccountId },
+                                data: { email: profile.email },
+                                bypassAuth: true,
+                            })
                         }
 
                         const userId = user ? Number(user.id) : token.user.id

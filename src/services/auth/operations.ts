@@ -3,7 +3,6 @@ import { authAuth } from './auth'
 import { authSchemas } from './schemas'
 import { moveFeideAccountToUser } from './feideAccounts/move'
 import { userBasicSelection } from '@/services/users/constants'
-import { userSchemas } from '@/services/users/schemas'
 import { sendResetPasswordMail } from '@/lib/email/systemMail/resetPassword'
 import { sendLinkFeideAccountMail } from '@/lib/email/systemMail/linkFeideAccount'
 import { sendEmailChangedMail } from '@/lib/email/systemMail/emailChanged'
@@ -14,17 +13,9 @@ import { verifyJWT } from '@/lib/jwt/jwt'
 import logger from '@/lib/logger'
 import { z } from 'zod'
 
-const linkFeideAccountClaimsSchema = z.object({
-    sub: z.coerce.number(),
-    feideUserId: z.coerce.number(),
-    feideAccountId: z.string(),
-    feideName: z.string(),
-    feideEmail: z.string(),
-}).transform(({ sub, ...claims }) => ({ targetUserId: sub, ...claims }))
-
 /** Verifies and reads the claims of a link Feide account token. */
 function readLinkFeideAccountClaims(token: string) {
-    const claims = linkFeideAccountClaimsSchema.safeParse(verifyJWT(token, 'linkfeideaccount'))
+    const claims = authSchemas.linkFeideAccountClaims.safeParse(verifyJWT(token, 'linkfeideaccount'))
 
     if (!claims.success) {
         throw new ServiceError('JWT INVALID', 'The JWT does not contain the mandatory fields')
@@ -86,7 +77,7 @@ export const authOperations = {
         paramsSchema: z.object({
             token: z.string()
         }),
-        authorizer: () => authAuth.resetPassword,
+        authorizer: () => authAuth.verifyResetPasswordToken,
         operation: async ({ prisma, params }) => {
             const payload = verifyJWT(params.token, 'resetpassword')
 
@@ -117,7 +108,7 @@ export const authOperations = {
         paramsSchema: z.object({
             token: z.string()
         }),
-        dataSchema: userSchemas.updatePassword,
+        dataSchema: authSchemas.resetPassword,
         authorizer: () => authAuth.resetPassword,
         operation: async ({ params, data }) => {
             const userId = await authOperations.verifyResetPasswordToken({ params })
@@ -133,18 +124,17 @@ export const authOperations = {
     }),
 
     sendLinkFeideAccountEmail: defineOperation({
+        paramsSchema: z.object({
+            userId: z.number(),
+        }),
         dataSchema: authSchemas.sendLinkFeideAccountEmail,
-        authorizer: () => authAuth.sendLinkFeideAccountEmail,
-        operation: async ({ prisma, data, session }) => {
-            if (!session.user) {
-                throw new ServiceError('DISSALLOWED', 'This endpoint requires a user connected to the session.')
-            }
-
+        authorizer: ({ params }) => authAuth.sendLinkFeideAccountEmail.data({ userId: params.userId }),
+        operation: async ({ prisma, data, params }) => {
             // Only a user created by a Feide login that has not completed registration may ask
             // to be moved onto a migrated user - any other user asking, such as a migrated user
             // the Feide login was linked to by email, would end with that user being deleted.
             const feideUser = await prisma.user.findUniqueOrThrow({
-                where: { id: session.user.id },
+                where: { id: params.userId },
                 select: {
                     id: true,
                     firstname: true,
@@ -203,19 +193,18 @@ export const authOperations = {
     }),
 
     /**
-     * Reads how the Feide login of the session user was matched to a user, so registration can
-     * tell the user whether it was linked to their existing user or a new user was created.
-     * Returns null if the session user has no Feide account.
+     * Reads how the Feide login of a user was matched to a user, so registration can tell them
+     * whether it was linked to their existing user or a new user was created. Returns null if
+     * the user has no Feide account.
      */
     readFeideLoginMatch: defineOperation({
-        authorizer: () => authAuth.readFeideLoginMatch,
-        operation: async ({ prisma, session }) => {
-            if (!session.user) {
-                throw new ServiceError('DISSALLOWED', 'This endpoint requires a user connected to the session.')
-            }
-
+        paramsSchema: z.object({
+            userId: z.number(),
+        }),
+        authorizer: ({ params }) => authAuth.readFeideLoginMatch.data({ userId: params.userId }),
+        operation: async ({ prisma, params }) => {
             const user = await prisma.user.findUniqueOrThrow({
-                where: { id: session.user.id },
+                where: { id: params.userId },
                 select: {
                     createdByFeideLoginOnProjectNext: true,
                     feideAccount: { select: { email: true } },
@@ -304,7 +293,7 @@ export const authOperations = {
                     bypassAuth: true,
                 })
 
-                sendResetPasswordMail(user.email)
+                await sendResetPasswordMail(user.email)
             } catch (err) {
                 logger.error(`Failed to send reset password to email '${data.email}'`, { error: err })
                 return data.email
