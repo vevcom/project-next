@@ -4,17 +4,19 @@ import EditCategory from './EditCategory'
 import useScroll from '@/hooks/useScroll'
 import useOnNavigation from '@/hooks/useOnNavigation'
 import useViewPort from '@/hooks/useViewPort'
+import useAuthorizer from '@/hooks/useAuthorizer'
 import { removeArticleFromCategoryAction } from '@/services/articleCategories/actions'
+import { articleCategoryAuth } from '@/services/articleCategories/auth'
 import { formatVevenUri } from '@/lib/urlEncoding'
 import React, { useRef, useState } from 'react'
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronUp, faX } from '@fortawesome/free-solid-svg-icons'
 import { useRouter } from 'next/navigation'
-import type { ExpandedArticleCategory } from '@/services/articleCategories/types'
+import type { ExpandedArticleCategoryWithVisibility } from '@/services/articleCategories/types'
 
 type PropTypes = {
-    category: ExpandedArticleCategory
+    category: ExpandedArticleCategoryWithVisibility
     children: React.ReactNode
 }
 
@@ -73,9 +75,10 @@ export default function SideBar({ category, children }: PropTypes) {
     )
 }
 
-function MainListContent({ category }: { category: ExpandedArticleCategory }) {
-    // Make a visibility check for edit - no just call the apropriate authorizer.
-    const canEditCategory = true
+function MainListContent({ category }: { category: ExpandedArticleCategoryWithVisibility }) {
+    const canRemoveArticle = useAuthorizer({
+        authorizer: articleCategoryAuth.removeArticleFromCategory.data({ visibility: category.visibility })
+    }).authorized
     const { push, refresh } = useRouter()
 
     const handleDestroy = async (id: number) => {
@@ -94,7 +97,7 @@ function MainListContent({ category }: { category: ExpandedArticleCategory }) {
                             {article.name.toUpperCase()}
                         </Link>
                         {
-                            canEditCategory && (
+                            canRemoveArticle && (
                                 <button
                                     className={styles.destroyArticle}
                                     onClick={() => handleDestroy(article.id)}

@@ -1,6 +1,8 @@
 import '@pn-server-only'
 import { interestGroupAuth } from './auth'
 import { interestGroupSchemas } from './schemas'
+import { groupOperations } from '@/services/groups/operations'
+import { invalidateManyUserSessionData } from '@/services/auth/invalidateSession'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { articleSectionsRealtionsIncluder } from '@/services/cms/articleSections/constants'
 import { defineOperation } from '@/services/serviceOperation'
@@ -166,14 +168,16 @@ export const interestGroupOperations = {
         operation: async ({ prisma, params: { id } }) => {
             await assertNotPensioned(prisma, id)
 
-            await prisma.$transaction(async tx => {
+            const memberIds = await prisma.$transaction(async tx => {
                 const intrestGroup = await tx.interestGroup.delete({
                     where: { id }
                 })
-                await tx.group.delete({
-                    where: { id: intrestGroup.groupId }
+                return groupOperations.destroy.internalCall({
+                    prisma: tx,
+                    params: { groupId: intrestGroup.groupId },
                 })
             })
+            await invalidateManyUserSessionData(memberIds)
         }
     }),
 

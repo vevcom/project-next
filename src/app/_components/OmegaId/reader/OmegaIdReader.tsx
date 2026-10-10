@@ -1,7 +1,7 @@
 'use client'
 import { qrCodeReaderConfig } from './ConfigVars'
 import styles from './OmegaIdReader.module.scss'
-import { parseJWT } from '@/jwt/parseJWTClient'
+import { parseJWTClient } from '@/jwt/parseJWTClient'
 import { decompressOmegaId } from '@/services/omegaid/compress'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import { useEffect, useId, useState } from 'react'
@@ -59,7 +59,7 @@ export default function OmegaIdReader({
                 })
                 return
             }
-            const parse = await parseJWT(token.data, publicKey, expiryOffset ?? 100, 'omegaid')
+            const parse = await parseJWTClient(token.data, publicKey, expiryOffset ?? 100, 'omegaid')
             if (!parse.success) {
                 const msg = parse.error?.map(e => e.message).join(' / ') ?? 'Ukjent feil'
 

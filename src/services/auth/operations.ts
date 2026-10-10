@@ -2,7 +2,7 @@ import '@pn-server-only'
 import { authAuth } from './auth'
 import { authSchemas } from './schemas'
 import { moveFeideAccountToUser } from './feideAccounts/move'
-import { userFilterSelection } from '@/services/users/constants'
+import { userBasicSelection } from '@/services/users/constants'
 import { userSchemas } from '@/services/users/schemas'
 import { sendResetPasswordMail } from '@/lib/email/systemMail/resetPassword'
 import { sendLinkFeideAccountMail } from '@/lib/email/systemMail/linkFeideAccount'
@@ -70,7 +70,11 @@ export const authOperations = {
                     emailVerified: new Date(),
                     email,
                 },
-                select: userFilterSelection,
+                select: {
+                    ...userBasicSelection,
+                    email: true,
+                    acceptedTerms: true,
+                },
             })
             await sendEmailChangedMail(updatedUser, user.email)
 
@@ -175,7 +179,10 @@ export const authOperations = {
                     credentials: null,
                     NOT: { id: feideUser.id },
                 },
-                select: userFilterSelection,
+                select: {
+                    ...userBasicSelection,
+                    email: true,
+                },
             })
 
             if (targetUser) {
