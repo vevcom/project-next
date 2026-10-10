@@ -142,6 +142,25 @@ describe('creating payments', () => {
             .rejects.toThrow(new Smorekopp('BAD PARAMETERS'))
         expect(stripeMocks.createIntent).toHaveBeenCalledTimes(1)
     })
+
+    test('an initiation that a cancel got ahead of cancels the intent it made', async () => {
+        const payment = await paymentOperations.create({
+            params: { provider: 'STRIPE', funds: DEPOSIT },
+            bypassAuth: true,
+        })
+        stripeMocks.createIntent.mockImplementationOnce(async () => {
+            await paymentOperations.cancel({ params: { paymentId: payment.id }, bypassAuth: true })
+            return { id: 'pi_test_raced', client_secret: 'pi_test_raced_secret' } as never
+        })
+
+        await expect(paymentOperations.initiate({ params: { paymentId: payment.id }, bypassAuth: true }))
+            .rejects.toThrow(new Smorekopp('BAD PARAMETERS'))
+
+        expect(await prisma.payment.findUniqueOrThrow({ where: { id: payment.id }, include: { stripePayment: true } }))
+            .toMatchObject({ state: 'CANCELED', stripePayment: { paymentIntentId: null } })
+        expect(stripeMocks.cancelIntent).toHaveBeenCalledTimes(1)
+        expect(stripeMocks.cancelIntent.mock.calls[0][0]).toBe('pi_test_raced')
+    })
 })
 
 describe('canceling payments', () => {

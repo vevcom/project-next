@@ -6,6 +6,7 @@ import { defineOperation } from '@/services/serviceOperation'
 import { PaymentProvider } from '@/prisma-generated-pn-types'
 import { stripeCustomerOperations } from '@/services/stripeCustomers/operations'
 import logger from '@/lib/logger'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 import { z } from 'zod'
 
 export const paymentOperations = {
@@ -131,24 +132,38 @@ export const paymentOperations = {
                     throw new ServiceError('UNKNOWN ERROR', 'Noe gikk galt med forespørselen til Stripe.')
                 }
 
-                return await prisma.payment.update({
-                    where: {
-                        id: params.paymentId,
-                    },
-                    data: {
-                        stripePayment: {
-                            update: {
-                                paymentIntentId: paymentIntent.id,
-                                clientSecret: paymentIntent.client_secret,
-                            },
+                // A cancel may have got in between the read above and this write. Writing only
+                // while still PENDING keeps a canceled payment canceled, and the intent made for
+                // it is canceled too, so it cannot be paid for something already given up.
+                try {
+                    return await prisma.payment.update({
+                        where: {
+                            id: params.paymentId,
+                            state: 'PENDING',
                         },
-                        state: 'PROCESSING',
-                    },
-                    include: {
-                        stripePayment: true,
-                        manualPayment: true,
-                    }
-                })
+                        data: {
+                            stripePayment: {
+                                update: {
+                                    paymentIntentId: paymentIntent.id,
+                                    clientSecret: paymentIntent.client_secret,
+                                },
+                            },
+                            state: 'PROCESSING',
+                        },
+                        include: {
+                            stripePayment: true,
+                            manualPayment: true,
+                        }
+                    })
+                } catch (error) {
+                    if (!(error instanceof PrismaClientKnownRequestError) || error.code !== 'P2025') throw error
+                    await stripe.paymentIntents.cancel(
+                        paymentIntent.id,
+                        {},
+                        { idempotencyKey: `project-next-payment-intent-${paymentIntent.id}-cancel-unstarted` },
+                    )
+                    throw new ServiceError('BAD PARAMETERS', 'Betalingen ble avbrutt før den kom i gang.')
+                }
             }
 
             // If we reach here, the payment provider is unknown.
