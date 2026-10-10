@@ -3,8 +3,8 @@ import { lockerReservationIncluder } from './reservations/constants'
 import { lockersSchemas } from './schemas'
 import { lockerAuth } from './auth'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
-import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
+import { ServiceError } from '@/services/error'
+import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { z } from 'zod'
 import type { Prisma } from '@/prisma-generated-pn-types'
 import type { LockerWithReservation } from '@/services/lockers/types'
@@ -26,7 +26,7 @@ export async function updateLockerReservationIfExpired(prisma: Prisma.Transactio
             }
         })
         if (!updateResult) {
-            throw new ServerError('NOT FOUND', 'lockerReservation not found while updating')
+            throw new ServiceError('NOT FOUND', 'lockerReservation not found while updating')
         }
         locker.LockerReservation = []
     }
@@ -85,7 +85,7 @@ export const lockerOperations = {
         paramsSchema: lockersSchemas.readPage,
         operation: async ({ prisma, params }) => {
             const lockers = await prisma.locker.findMany({
-                ...cursorPageingSelection(params.paging.page),
+                ...cursorPagingSelection(params.paging.page),
                 orderBy: {
                     id: 'asc'
                 },

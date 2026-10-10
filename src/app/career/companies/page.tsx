@@ -1,3 +1,5 @@
+import styles from './page.module.scss'
+import PageTitleSetter from '@/contexts/PageTitleSetter'
 import { createCompanyAction, readCompanyPageAction } from '@/services/career/companies/actions'
 import Form from '@/components/Form/Form'
 import { AddHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopUp'
@@ -6,6 +8,7 @@ import PageWrapper from '@/components/PageWrapper/PageWrapper'
 import { CompanyPagingProvider } from '@/contexts/paging/CompanyPaging'
 import CompanyList from '@/components/Company/CompanyList'
 import { companyListRenderer } from '@/components/Company/CompanyListRenderer'
+import SponsorLegend from '@/components/Company/SponsorLegend'
 import { QueryParams } from '@/lib/queryParams/queryParams'
 import CompanyListFilter from '@/app/_components/Company/CompanyListFilter'
 import { ServerSession } from '@/auth/session/ServerSession'
@@ -38,7 +41,7 @@ export default async function CompaniesPage({ searchParams }: PropTypes) {
     const serverRenderedData = res.success ? res.data : []
 
     return (
-        <PageWrapper title="Bedrifter" headerItem={
+        <PageWrapper headerItem={
             <AddHeaderItemPopUp popUpKey="CreateCompany">
                 <Form
                     title="Ny bedrift"
@@ -52,6 +55,7 @@ export default async function CompaniesPage({ searchParams }: PropTypes) {
                 </Form>
             </AddHeaderItemPopUp>
         }>
+            <PageTitleSetter title="Bedrifter" />
             <CompanyPagingProvider
                 serverRenderedData={serverRenderedData}
                 startPage={{
@@ -62,7 +66,10 @@ export default async function CompaniesPage({ searchParams }: PropTypes) {
                     name
                 }}
             >
-                <CompanyListFilter currentName={name ?? ''} />
+                <div className={styles.toolbar}>
+                    <CompanyListFilter currentName={name ?? ''} />
+                    <SponsorLegend />
+                </div>
                 <CompanyList serverRenderedData={serverRenderedData.map(
                     companyListRenderer({
                         session,

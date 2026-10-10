@@ -1,5 +1,6 @@
 import styles from './page.module.scss'
 import UpdateSchool from './UpdateSchool'
+import PageTitleSetter from '@/contexts/PageTitleSetter'
 import { destroySchoolAction, readSchoolAction } from '@/education/schools/actions'
 import Form from '@/components/Form/Form'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
@@ -23,7 +24,8 @@ export default async function SchoolAdmin({ params }: PropTypes) {
     const session = await ServerSession.fromNextAuth()
 
     return (
-        <PageWrapper title="Administrer skole">
+        <PageWrapper>
+            <PageTitleSetter title="Administrer skole" />
             <UpdateSchool school={school} />
             <div className={styles.preview}>
                 <School school={school} session={session.toJsObject()} />

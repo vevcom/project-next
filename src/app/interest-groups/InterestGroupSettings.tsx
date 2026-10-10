@@ -3,6 +3,7 @@ import Form from '@/components/Form/Form'
 import TextInput from '@/components/UI/TextInput'
 import { SettingsHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopUp'
 import useEditMode from '@/hooks/useEditMode'
+import { configureAction } from '@/services/configureAction'
 import { updateInterestGroupAction, destroyInterestGroupAction } from '@/services/groups/interestGroups/actions'
 import type { AuthResultTypeAny } from '@/auth/authorizer/AuthResult'
 
@@ -39,7 +40,7 @@ export default function InterestGroupSettings({
                         <Form
                             refreshOnSuccess
                             closePopUpOnSuccess={popUpKey}
-                            action={updateInterestGroupAction.bind(null, { params: { id: interestGroupId } })}
+                            action={configureAction(updateInterestGroupAction, { params: { id: interestGroupId } })}
                             submitText="Endre"
                         >
                             <TextInput
@@ -56,7 +57,7 @@ export default function InterestGroupSettings({
                     <Form
                         refreshOnSuccess
                         closePopUpOnSuccess={popUpKey}
-                        action={destroyInterestGroupAction.bind(null, { params: { id: interestGroupId } })}
+                        action={configureAction(destroyInterestGroupAction, { params: { id: interestGroupId } })}
                         submitText="Slett"
                         submitColor="red"
                         confirmation={{

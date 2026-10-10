@@ -3,6 +3,8 @@ import { committeeAuth } from './auth'
 import { committeeExpandedIncluder, committeeLogoIncluder } from './constants'
 import { committeeSchemas } from './schemas'
 import { committeeLogoImageOperations } from './committeeLogoCollection'
+import { groupOperations } from '@/services/groups/operations'
+import { invalidateManyUserSessionData } from '@/services/auth/invalidateSession'
 import { cmsParagraphOperations } from '@/cms/paragraphs/operations'
 import { defineOperation } from '@/services/serviceOperation'
 import {
@@ -15,12 +17,12 @@ import { implementUpdateArticleOperations } from '@/cms/articles/implement'
 import { articleOperations } from '@/cms/articles/operations'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { GroupType } from '@/prisma-generated-pn-types'
-import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
-import type { Prisma } from '@/prisma-generated-pn-types'
 import { expandedImageIncluder } from '@/services/images/subservice/constants'
 import { z } from 'zod'
+import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
+import type { Prisma } from '@/prisma-generated-pn-types'
 
 async function readDefaultCommitteeLogo() {
     return standardImageCollectionOperations.readStandardImage({
@@ -51,9 +53,6 @@ const read = defineOperation({
         z.object({ shortName: z.string() })
     ]),
     operation: async ({ prisma, params }) => {
-        const defaultProfileImage = await standardImageCollectionOperations.readStandardImage({
-            params: { standardImage: 'DEFAULT_PROFILE_IMAGE' },
-        })
         const defaultCommitteeLogo = await readDefaultCommitteeLogo()
 
         const result = await prisma.committee.findUniqueOrThrow({
@@ -65,16 +64,6 @@ const read = defineOperation({
             ...result,
             logoImage: result.logoImage ?? defaultCommitteeLogo,
             coverImage: result.committeeArticle.coverImage,
-            group: {
-                ...result.group,
-                memberships: result.group.memberships.map(membership => ({
-                    ...membership,
-                    user: {
-                        ...membership.user,
-                        image: membership.user.image ?? defaultProfileImage
-                    }
-                }))
-            }
         }
     }
 })
@@ -121,7 +110,7 @@ async function assertNotPensioned(
     })
 
     if (committee.pensioned) {
-        throw new ServerError(
+        throw new ServiceError(
             'BAD PARAMETERS',
             `${committee.name} er pensjonert og kan ikke endres. Gjenopprett komiteen først.`
         )
@@ -202,14 +191,32 @@ const destroy = defineOperation({
     paramsSchema: z.object({
         id: z.number()
     }),
+    opensTransaction: true,
     operation: async ({ prisma, params }) => {
         await assertNotPensioned(prisma, { id: params.id })
 
-        const committee = await prisma.committee.delete({
-            where: {
-                id: params.id,
-            },
+        const { committee, memberIds } = await prisma.$transaction(async tx => {
+            const deleted = await tx.committee.delete({
+                where: {
+                    id: params.id,
+                },
+            })
+            await cmsParagraphOperations.destroy.internalCall({
+                prisma: tx,
+                params: { paragraphId: deleted.paragraphId },
+            })
+            await cmsParagraphOperations.destroy.internalCall({
+                prisma: tx,
+                params: { paragraphId: deleted.applicationParagraphId },
+            })
+            const formerMemberIds = await groupOperations.destroy.internalCall({
+                prisma: tx,
+                params: { groupId: deleted.groupId },
+            })
+            return { committee: deleted, memberIds: formerMemberIds }
         })
+        await invalidateManyUserSessionData(memberIds)
+
         await articleOperations.destroy.internalCall({ params: { articleId: committee.committeeArticleId } })
 
         if (committee.logoImageId) {

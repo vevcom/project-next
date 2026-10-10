@@ -4,7 +4,7 @@ import { applicationPeriodSchemas } from './schemas'
 import { committeesParticipatingincluder } from './constants'
 import { applicationOperations } from '@/services/applications/operations'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { defineOperation } from '@/services/serviceOperation'
 import { z } from 'zod'
 
@@ -153,7 +153,7 @@ export const applicationPeriodOperations = {
                 session
             })
             if (period.endPriorityDate.getTime() > Date.now()) {
-                throw new ServerError(
+                throw new ServiceError(
                     'DISSALLOWED', 'You cannot remove application texts before the end of the priority date.'
                 )
             }

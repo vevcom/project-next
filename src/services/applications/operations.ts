@@ -1,7 +1,7 @@
 import '@pn-server-only'
 import { applicationAuth } from './auth'
 import { applicationSchemas } from './schemas'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { defineOperation } from '@/services/serviceOperation'
 import { z } from 'zod'
 
@@ -44,11 +44,11 @@ export const applicationOperations = {
             })
 
             if (Date.now() < commiteeParticipation.applicationPeriod.startDate.getTime()) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS', 'The application period has not started yet.'
                 )
             } else if (Date.now() > commiteeParticipation.applicationPeriod.endDate.getTime()) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS', 'The application period has ended.'
                 )
             }
@@ -112,14 +112,14 @@ export const applicationOperations = {
             })
             const { startDate, endDate, endPriorityDate } = application.applicationPeriodCommitee.applicationPeriod
             if (Date.now() < startDate.getTime()) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS', 'The application period has not started yet.'
                 )
             }
 
             if (data.text !== undefined) {
                 if (Date.now() > endDate.getTime()) {
-                    throw new ServerError(
+                    throw new ServiceError(
                         'BAD PARAMETERS', 'The application period has ended.'
                     )
                 }
@@ -137,7 +137,7 @@ export const applicationOperations = {
             }
             if (data.priority === undefined) return
             if (Date.now() > endPriorityDate.getTime()) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS', 'The priority period has ended.'
                 )
             }
@@ -151,7 +151,7 @@ export const applicationOperations = {
             })
 
             if (!otherApplication) {
-                throw new ServerError(
+                throw new ServiceError(
                     'BAD PARAMETERS', 'The application is already at the top or bottom of the priority list.'
                 )
             }
@@ -225,7 +225,7 @@ export const applicationOperations = {
                     }
                 })
                 if (Date.now() > application.applicationPeriodCommitee.applicationPeriod.endDate.getTime()) {
-                    throw new ServerError(
+                    throw new ServiceError(
                         'BAD PARAMETERS', 'The application period has ended.'
                     )
                 }

@@ -8,10 +8,10 @@ import {
     notificationMethodsArray,
 } from '@/services/notifications/constants'
 import { notificationMethodSchema } from '@/services/notifications/schemas'
-import { booleanOperationOnMethods } from '@/services/notifications/notificationMethodOperations'
+import { booleanOperationOnMethods } from '@/services/notifications/methods/helpers'
 import { defineOperation } from '@/services/serviceOperation'
 import { DEFAULT_NOTIFICATION_ALIAS } from '@/lib/email/constants'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { z } from 'zod'
 import type { ExpandedNotificationChannel, NotificationMethodGeneral } from '@/services/notifications/types'
 
@@ -26,7 +26,7 @@ export const notificationChannelOperations = {
         }),
         operation: async ({ prisma, data, params }): Promise<ExpandedNotificationChannel> => {
             if (!validateMethods(params.availableMethods, params.defaultMethods)) {
-                throw new ServerError('BAD PARAMETERS', 'Default methods cannot exceed available methods.')
+                throw new ServiceError('BAD PARAMETERS', 'Default methods cannot exceed available methods.')
             }
 
             const channel = await prisma.notificationChannel.create({
@@ -136,7 +136,7 @@ export const notificationChannelOperations = {
         opensTransaction: true,
         operation: async ({ prisma, data, params }) => {
             if (!validateMethods(params.availableMethods, params.defaultMethods)) {
-                throw new ServerError('BAD PARAMETERS', 'Default methods cannot exceed available methods.')
+                throw new ServiceError('BAD PARAMETERS', 'Default methods cannot exceed available methods.')
             }
 
 
@@ -161,7 +161,7 @@ export const notificationChannelOperations = {
                 })
 
                 if (!validateNewParent(params.id, data.parentId, allChannels)) {
-                    throw new ServerError('BAD PARAMETERS', 'Cannot set parentId in a loop')
+                    throw new ServiceError('BAD PARAMETERS', 'Cannot set parentId in a loop')
                 }
 
                 updateParentId = true

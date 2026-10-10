@@ -8,17 +8,15 @@ import NewsCard from '@/app/news/NewsCard'
 import OmbulRow from '@/app/ombul/OmbulRow'
 import OmegaquoteRow from '@/app/omegaquotes/OmegaquoteRow'
 import StandardImageServer from '@/components/Image/StandardImageServer'
-import { unwrapActionReturn } from '@/app/redirectToErrorPage'
-import { readNewsCurrentAction } from '@/services/news/actions'
-import { readActiveJobAdsAction } from '@/services/career/jobAds/actions'
-import { readCurrentEventsAction } from '@/services/events/actions'
-import { readOmbulsAction } from '@/services/ombul/actions'
-import { readQuotesPageAction } from '@/services/omegaquotes/actions'
-import { readActivePromoAction } from '@/services/promo/actions'
+import { newsOperations } from '@/services/news/operations'
+import { promoOperations } from '@/services/promo/operations'
+import { jobAdOperations } from '@/services/career/jobAds/operations'
+import { eventOperations } from '@/services/events/operations'
+import { ombulOperations } from '@/services/ombul/operations'
+import { omegaquoteOperations } from '@/services/omegaquotes/operations'
 import { ombulAuth } from '@/services/ombul/auth'
 import { omegaQuotesAuth } from '@/services/omegaquotes/auth'
-import { frontpageAuth } from '@/services/frontpage/auth'
-import { ServerSession } from '@/auth/session/ServerSession'
+import { withPageSession } from '@/app/serverPage'
 import Footer from '@/components/Footer/Footer'
 import PageTitleSetter from '@/contexts/PageTitleSetter'
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
@@ -27,42 +25,52 @@ import Link from 'next/link'
 
 export default async function LoggedInLandingPage() {
     const MAX_NUMBER_OF_ELEMENTS = 3
-    const news = unwrapActionReturn(await readNewsCurrentAction())
-        .slice(0, MAX_NUMBER_OF_ELEMENTS)
-    const jobAds = unwrapActionReturn(await readActiveJobAdsAction())
-        .slice(0, MAX_NUMBER_OF_ELEMENTS)
-    const events = unwrapActionReturn(await readCurrentEventsAction({ params: { tags: null } }))
-        .slice(0, MAX_NUMBER_OF_ELEMENTS)
-    const promo = unwrapActionReturn(await readActivePromoAction())
 
-    const session = await ServerSession.fromNextAuth()
+    const {
+        promo, news, jobAds, events, ombuls, omegaquotes,
+        canReadOmbul, canReadOmegaquotes,
+    } = await withPageSession(async (session) => {
+        const [newsRead, jobAdsRead, eventsRead, promoRead] = await Promise.all([
+            newsOperations.readCurrent({}),
+            jobAdOperations.readActive({}),
+            eventOperations.readManyCurrent({ params: { tags: null } }),
+            promoOperations.readActive({}),
+        ])
 
-    // Ombul and omegaquotes are membership permissions rather than default ones, so a logged in
-    // user without them gets the islands left out entirely instead of an error page.
-    const canReadOmbul = ombulAuth.readAll.auth(session).authorized
-    const ombuls = canReadOmbul
-        ? unwrapActionReturn(await readOmbulsAction()).slice(0, MAX_NUMBER_OF_ELEMENTS)
-        : []
+        // Ombul and omegaquotes are membership permissions rather than default ones, so a logged
+        // in user without them gets the islands left out entirely instead of an error page.
+        const canReadOmbulResult = ombulAuth.readAll.auth(session)
+        const ombulsRead = canReadOmbulResult.authorized
+            ? (await ombulOperations.readAll({})).slice(0, MAX_NUMBER_OF_ELEMENTS)
+            : []
 
-    const canReadOmegaquotes = omegaQuotesAuth.readPage.auth(session).authorized
-    const omegaquotes = canReadOmegaquotes
-        ? unwrapActionReturn(await readQuotesPageAction({
-            params: {
-                paging: {
-                    page: {
-                        pageSize: MAX_NUMBER_OF_ELEMENTS,
-                        page: 0,
-                        cursor: null,
-                    },
-                    details: undefined,
+        const canReadOmegaquotesResult = omegaQuotesAuth.readPage.auth(session)
+        const omegaquotesRead = canReadOmegaquotesResult.authorized
+            ? await omegaquoteOperations.readPage({
+                params: {
+                    paging: {
+                        page: {
+                            pageSize: MAX_NUMBER_OF_ELEMENTS,
+                            page: 0,
+                            cursor: null,
+                        },
+                        details: undefined,
+                    }
                 }
-            }
-        }))
-        : []
+            })
+            : []
 
-    const canEditSpecialCmsImage = frontpageAuth.updateSpecialCmsImage.auth(
-        session
-    ).toJsObject()
+        return {
+            promo: promoRead,
+            news: newsRead.slice(0, MAX_NUMBER_OF_ELEMENTS),
+            jobAds: jobAdsRead.slice(0, MAX_NUMBER_OF_ELEMENTS),
+            events: eventsRead.slice(0, MAX_NUMBER_OF_ELEMENTS),
+            ombuls: ombulsRead,
+            omegaquotes: omegaquotesRead,
+            canReadOmbul: canReadOmbulResult.authorized,
+            canReadOmegaquotes: canReadOmegaquotesResult.authorized,
+        }
+    })
 
     return (
         <div className={styles.wrapper}>
@@ -153,7 +161,7 @@ export default async function LoggedInLandingPage() {
                 </div>
             </div>
             <div className={styles.footer}>
-                <Footer canEditSpecialCmsImage={canEditSpecialCmsImage} />
+                <Footer />
             </div>
         </div>
     )

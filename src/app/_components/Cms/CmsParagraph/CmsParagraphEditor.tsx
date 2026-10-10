@@ -21,7 +21,7 @@ export default function CmsParagraphEditor({ cmsParagraph, editorClassName, upda
     if (!editable) return null
     return (
         <PopUp
-            popUpKey={cmsParagraph.id}
+            popUpKey={`EditCmsParagraph${cmsParagraph.id}`}
             showButtonClass={styles.openBtn}
             showButtonContent={
                 <EditOverlay />

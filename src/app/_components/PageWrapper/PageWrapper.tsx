@@ -1,9 +1,7 @@
 import styles from './PageWrapper.module.scss'
-import PageTitleSetter from '@/contexts/PageTitleSetter'
 import React from 'react'
 
 export default function PageWrapper({
-    title,
     children,
     headerItem,
     fillHeight = false,
@@ -12,7 +10,6 @@ export default function PageWrapper({
     className,
 }: {
     children: React.ReactNode,
-    title: string,
     headerItem?: React.ReactNode,
     fillHeight?: boolean,
     hideTitle?: boolean,
@@ -30,7 +27,6 @@ export default function PageWrapper({
 
     return (
         <div className={wrapperClass}>
-            <PageTitleSetter title={title} />
             {!hideTitle && (
                 <div className={styles.inlineHeader}>
                     <div>

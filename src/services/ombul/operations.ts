@@ -3,7 +3,7 @@ import { ombulAuth } from './auth'
 import { ombulSchemas } from './schemas'
 import { ombulCoverImageOperations } from './ombulCoverCollection'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { implementStore } from '@/lib/store/implementStore'
 import { cmsParagraphOperations } from '@/cms/paragraphs/operations'
 import { notificationOperations } from '@/services/notifications/operations'
@@ -129,7 +129,7 @@ const destroy = defineOperation({
                 id: params.id
             }
         })
-        if (!ombul) throw new ServerError('NOT FOUND', 'Ombul ikke funnet.')
+        if (!ombul) throw new ServiceError('NOT FOUND', 'Ombul ikke funnet.')
 
         await ombulStore.destroyFile(ombul.fsLocation)
 
@@ -219,6 +219,7 @@ const create = defineOperation({
                 data: {
                     title: 'Ny ombul',
                     message: `Ny ombul er ute! ${ombul.name}`,
+                    audience: { permission: 'OMBUL_USE' },
                 },
             })
 
@@ -259,7 +260,7 @@ const updateFile = defineOperation({
                 id: params.id
             }
         })
-        if (!ombul) throw new ServerError('NOT FOUND', 'Ombul ikke funnet')
+        if (!ombul) throw new ServiceError('NOT FOUND', 'Ombul ikke funnet')
 
         const oldFsLocation = ombul.fsLocation
 

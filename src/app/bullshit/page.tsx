@@ -3,22 +3,17 @@ import Bullshit from './Bullshit'
 import BullshitForm from './CreateBullshitForm'
 import { BullshitPagingProvider } from '@/contexts/paging/BullshitPaging'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
-import { readBullshitPageAction } from '@/services/bullshit/actions'
-import { ServerSession } from '@/auth/session/ServerSession'
+import { bullshitOperations } from '@/services/bullshit/operations'
 import { bullshitAuth } from '@/services/bullshit/auth'
-import { notFound } from 'next/navigation'
-import { v4 as uuid } from 'uuid'
+import { serverPage, withFallback } from '@/app/serverPage'
 import type { PageSizeBullshit } from '@/contexts/paging/BullshitPaging'
-export default async function BullshitPage() {
-    const session = await ServerSession.fromNextAuth()
-    const showCreateButton = session.user && bullshitAuth.create.auth(session).authorized || false
 
-    const showBullshit = session.user && bullshitAuth.readPage.auth(session).authorized || false
+const pageSize: PageSizeBullshit = 20
 
-    const pageSize: PageSizeBullshit = 20
-
-    if (showBullshit) {
-        const readBullshit = await readBullshitPageAction({
+const { page, generateMetadata } = serverPage({
+    // Someone who may not read the page still gets it, empty - they may be allowed to create.
+    operation: async () => withFallback(
+        bullshitOperations.readPage({
             params: {
                 paging: {
                     page: {
@@ -29,13 +24,19 @@ export default async function BullshitPage() {
                     details: undefined
                 }
             }
-        })
-        if (!readBullshit.success) notFound()
-        const bullshits = readBullshit.data
-        return (
-            <PageWrapper title="Bullshit" headerItem={
-                showCreateButton && <BullshitForm />
-            }>
+        }),
+        null,
+        ['UNAUTHORIZED', 'UNAUTHENTICATED']
+    ),
+    capabilityChecks: {
+        canCreate: () => bullshitAuth.create,
+    },
+    metadata: () => ({ title: 'Bullshit' }),
+    render: ({ data: bullshits, capabilities, session }) => (
+        <PageWrapper headerItem={
+            session.user && capabilities.canCreate.authorized && <BullshitForm />
+        }>
+            {bullshits && (
                 <BullshitPagingProvider
                     // router.refresh() after a submit hands down a new first page, but the provider
                     // seeds its paging state from serverRenderedData only on mount. Keying on the
@@ -50,18 +51,14 @@ export default async function BullshitPage() {
                 >
                     <main>
                         <BullshitList
-                            serverRendered={bullshits.map(bullshit => <Bullshit key={uuid()} quote={bullshit} />)}
+                            serverRendered={bullshits.map(bullshit => <Bullshit key={bullshit.id} quote={bullshit} />)}
                         />
                     </main>
                 </BullshitPagingProvider>
-            </PageWrapper>
-        )
-    }
-    return (
-        <PageWrapper title="Bullshit" headerItem={
-            showCreateButton && <BullshitForm />
-        }>
-            <></>
+            )}
         </PageWrapper>
-    )
-}
+    ),
+})
+
+export default page
+export { generateMetadata }

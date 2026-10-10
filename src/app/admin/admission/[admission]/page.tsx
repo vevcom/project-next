@@ -2,44 +2,42 @@ import RegisterAdmissiontrial from './registration'
 import { admissionDisplayNames, allAdmissions } from '@/services/admission/constants'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
 import { UserPagingProvider } from '@/contexts/paging/UserPaging'
-import { readOmegaJWTPublicKeyAction } from '@/services/omegaid/actions'
-import { unwrapActionReturn } from '@/app/redirectToErrorPage'
-import { ServerSession } from '@/auth/session/ServerSession'
+import { omegaIdOperations } from '@/services/omegaid/operations'
+import { serverPage } from '@/app/serverPage'
 import { userAuth } from '@/services/users/auth'
-import { type Admission as AdmissionType } from '@/prisma-generated-pn-types'
 import { notFound } from 'next/navigation'
+import type { PageOperationArgs } from '@/app/serverPage'
+import type { Admission as AdmissionType } from '@/prisma-generated-pn-types'
 
-type PropTypes = {
-    params: Promise<{
-        admission: AdmissionType
-    }>
-}
+const { page, generateMetadata } = serverPage({
+    operation: async ({ params }: PageOperationArgs<{ admission: AdmissionType }>) => {
+        if (!allAdmissions.includes(params.admission)) {
+            notFound()
+        }
 
-export default async function AdmissionTrials({ params }: PropTypes) {
-    if (!allAdmissions.includes((await params).admission)) {
-        notFound()
-    }
+        const publicKey = await omegaIdOperations.readPublicKey({})
+        return { admission: params.admission, publicKey }
+    },
+    capabilityChecks: {
+        canSearchUsers: () => userAuth.readPage,
+    },
+    metadata: (data) => ({ title: `Registrer opptak for ${admissionDisplayNames[data.admission]}` }),
+    render: ({ data, capabilities }) => (
+        <PageWrapper>
+            <UserPagingProvider
+                startPage={{ page: 0, pageSize: 50 }}
+                serverRenderedData={[]}
+                details={{ partOfName: '', groups: [] }}
+            >
+                <RegisterAdmissiontrial
+                    admission={data.admission}
+                    omegaIdPublicKey={data.publicKey}
+                    canSearchUsers={capabilities.canSearchUsers.authorized}
+                />
+            </UserPagingProvider>
+        </PageWrapper>
+    ),
+})
 
-    const admission = (await params).admission
-
-    const publicKey = unwrapActionReturn(await readOmegaJWTPublicKeyAction())
-
-    const session = await ServerSession.fromNextAuth()
-    const canSearchUsers = userAuth.readPage.auth(session).authorized
-
-    return <PageWrapper
-        title={`Registrer opptak for ${admissionDisplayNames[admission]}`}
-    >
-        <UserPagingProvider
-            startPage={{ page: 0, pageSize: 50 }}
-            serverRenderedData={[]}
-            details={{ partOfName: '', groups: [] }}
-        >
-            <RegisterAdmissiontrial
-                admission={admission}
-                omegaIdPublicKey={publicKey}
-                canSearchUsers={canSearchUsers}
-            />
-        </UserPagingProvider>
-    </PageWrapper>
-}
+export default page
+export { generateMetadata }

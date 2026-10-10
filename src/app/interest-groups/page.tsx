@@ -3,36 +3,33 @@ import CreateInterestGroupForm from './CreateInterestGroupForm'
 import InterestGroup from './InterestGroup'
 import SpecialCmsParagraph from '@/cms/CmsParagraph/SpecialCmsParagraph'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
-import { unwrapActionReturn } from '@/app/redirectToErrorPage'
 import { AddHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopUp'
 import { interestGroupAuth } from '@/services/groups/interestGroups/auth'
 import {
-    readInterestGroupsAction,
     readSpecialCmsParagraphGeneralInfoAction,
     updateSpecialCmsParagraphContentGeneralInfoAction
 } from '@/services/groups/interestGroups/actions'
-import { ServerSession } from '@/auth/session/ServerSession'
+import { interestGroupOperations } from '@/services/groups/interestGroups/operations'
+import { serverPage } from '@/app/serverPage'
 
-export default async function InterestGroups() {
-    const interestGroups = unwrapActionReturn(await readInterestGroupsAction())
-
-    const session = await ServerSession.fromNextAuth()
-    const canCreate = interestGroupAuth.create.auth(session)
-    const canEditGeneralInfo = interestGroupAuth.updateSpecialCmsParagraphContentGeneralInfo.auth(
-        session
-    ).toJsObject()
-
-    return (
-        <PageWrapper transparent title="Interessegrupper">
+const { page, generateMetadata } = serverPage({
+    operation: async () => interestGroupOperations.readMany({}),
+    capabilityChecks: {
+        canCreate: () => interestGroupAuth.create,
+        canEditGeneralInfo: () => interestGroupAuth.updateSpecialCmsParagraphContentGeneralInfo,
+    },
+    metadata: () => ({ title: 'Interessegrupper' }),
+    render: ({ data: interestGroups, capabilities, session }) => (
+        <PageWrapper transparent>
             <div className={styles.content}>
                 <div className={styles.generalInfo}>
-                    {canCreate.authorized && (
+                    {capabilities.canCreate.authorized && (
                         <AddHeaderItemPopUp popUpKey="Create interest group">
                             <CreateInterestGroupForm/>
                         </AddHeaderItemPopUp>
                     )}
                     <SpecialCmsParagraph
-                        canEdit={canEditGeneralInfo}
+                        canEdit={capabilities.canEditGeneralInfo.toJsObject()}
                         special="INTEREST_GROUP_GENERAL_INFO"
                         readSpecialCmsParagraphAction={readSpecialCmsParagraphGeneralInfoAction}
                         updateCmsParagraphAction={updateSpecialCmsParagraphContentGeneralInfoAction}
@@ -55,5 +52,8 @@ export default async function InterestGroups() {
                 </main>
             </div>
         </PageWrapper>
-    )
-}
+    ),
+})
+
+export default page
+export { generateMetadata }

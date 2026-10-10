@@ -7,7 +7,6 @@ import { ClassLevelConfig } from '@/services/groups/constants'
 import Link from 'next/link'
 import { faPencil } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { v4 as uuid } from 'uuid'
 import type { StudyProgramme } from '@/prisma-generated-pn-types'
 
 
@@ -20,11 +19,11 @@ export default function StudyProgrammeTableBody({
 }) {
     return <tbody>
         {studyprogrammes.map(studyProgramme =>
-            <tr key={uuid()}>
+            <tr key={studyProgramme.id}>
                 {canEdit && <td className={styles.editButtonWrapper}><PopUp
                     showButtonContent={<FontAwesomeIcon icon={faPencil} />}
                     showButtonClass={styles.editButton}
-                    popUpKey={uuid()}
+                    popUpKey={`UpdateStudyProgramme${studyProgramme.id}`}
                 >
                     <UpdateStudyProgrammeForm studyProgramme={studyProgramme} />
                 </PopUp></td>}

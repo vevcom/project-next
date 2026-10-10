@@ -10,7 +10,6 @@ export const bullshitSchemas = {
         quote: true,
     }),
     readPage: readPageInputSchemaObject(
-        z.number(),
         z.object({
             id: z.number(),
         }),

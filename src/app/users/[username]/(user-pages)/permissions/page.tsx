@@ -1,25 +1,26 @@
 import styles from './page.module.scss'
 import Permission from '@/components/Permission/Permission'
 import { getProfileForUserPage } from '@/app/users/[username]/(user-pages)/getProfileForUserPage'
-import { readPermissionsOfUserAction } from '@/services/permissions/actions'
-import { unwrapActionReturn } from '@/app/redirectToErrorPage'
-import { v4 as uuid } from 'uuid'
-import type { PropTypes } from '@/app/users/[username]/page'
+import { permissionOperations } from '@/services/permissions/operations'
+import { serverPage } from '@/app/serverPage'
+import type { PageOperationArgs } from '@/app/serverPage'
 
-export default async function UserSettings({ params }: PropTypes) {
-    const { profile } = await getProfileForUserPage(await params, 'permissions')
-    const permissions = unwrapActionReturn(
-        await readPermissionsOfUserAction({ params: { userId: profile.user.id } })
-    )
-
-    return (
+const { page, generateMetadata } = serverPage({
+    operation: async ({ params, session }: PageOperationArgs<{ username: string }>) => {
+        const { profile } = await getProfileForUserPage(params, 'permissions', session)
+        return permissionOperations.readPermissionsOfUser({ params: { userId: profile.user.id } })
+    },
+    render: ({ data: permissions }) => (
         <div className={styles.wrapper}>
             <h2>Tillganger:</h2>
             <ul>
                 {permissions.map(permission =>
-                    <Permission key={uuid()} permission={permission} className={styles.permission} />
+                    <Permission key={permission} permission={permission} className={styles.permission} />
                 )}
             </ul>
         </div>
-    )
-}
+    ),
+})
+
+export default page
+export { generateMetadata }

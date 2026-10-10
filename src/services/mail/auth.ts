@@ -1,16 +1,14 @@
 import { Require } from '@/auth/authorizer/Require'
 
 export const mailAuth = {
-    createAliasMailingListRelation: Require.permission('MAILINGLIST_ADMIN'),
-    createMailingListExternalRelation: Require.permission('MAILINGLIST_ADMIN'),
-    createMailingListUserRelation: Require.permission('MAILINGLIST_ADMIN'),
-    createMailingListGroupRelation: Require.permission('MAILINGLIST_ADMIN'),
-    destroyAliasMailingListRelation: Require.permission('MAILINGLIST_ADMIN'),
-    destroyMailingListExternalRelation: Require.permission('MAILINGLIST_ADMIN'),
-    destroyMailingListUserRelation: Require.permission('MAILINGLIST_ADMIN'),
-    destroyMailingListGroupRelation: Require.permission('MAILINGLIST_ADMIN'),
-    readMailFlow: Require.permission('MAILINGLIST_USE')
-        .permission('MAILALIAS_USE').permission('MAILADDRESS_EXTERNAL_USE'),
-    readMailOptions: Require.permission('MAILINGLIST_USE')
-        .permission('MAILALIAS_USE').permission('MAILADDRESS_EXTERNAL_USE'),
+    createAliasMailingListRelation: Require.permission('MAILSERVER_ADMIN'),
+    createMailingListExternalRelation: Require.permission('MAILSERVER_ADMIN'),
+    createMailingListUserRelation: Require.permission('MAILSERVER_ADMIN'),
+    createMailingListGroupRelation: Require.permission('MAILSERVER_ADMIN'),
+    destroyAliasMailingListRelation: Require.permission('MAILSERVER_ADMIN'),
+    destroyMailingListExternalRelation: Require.permission('MAILSERVER_ADMIN'),
+    destroyMailingListUserRelation: Require.permission('MAILSERVER_ADMIN'),
+    destroyMailingListGroupRelation: Require.permission('MAILSERVER_ADMIN'),
+    readMailFlow: Require.permission('MAILSERVER_USE'),
+    readMailOptions: Require.permission('MAILSERVER_USE'),
 } as const

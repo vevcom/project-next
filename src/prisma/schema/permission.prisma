@@ -72,17 +72,9 @@ enum Permission {
   // Mail
   MAIL_USE
 
-  // Mail Aliases
-  MAILALIAS_USE
-  MAILALIAS_ADMIN
-
-  // Mailing list
-  MAILINGLIST_USE
-  MAILINGLIST_ADMIN
-
-  // External mail addresses
-  MAILADDRESS_EXTERNAL_ADMIN
-  MAILADDRESS_EXTERNAL_USE
+  // Mail server: aliases, mailing lists and external addresses
+  MAILSERVER_USE
+  MAILSERVER_ADMIN
 
   // Admisstion
   ADMISSION_USE
