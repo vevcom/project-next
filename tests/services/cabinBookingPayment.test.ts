@@ -9,12 +9,20 @@ import { afterEach, beforeAll, beforeEach, describe, expect, jest, test } from '
 
 const dayMs = 24 * 60 * 60 * 1000
 
-/** Replaces the Stripe calls a STRIPE payment attempt makes, so no test reaches Stripe. */
+let paymentIntentCount = 0
+
+/**
+ * Replaces the Stripe calls a STRIPE payment attempt makes, so no test reaches Stripe. Each
+ * intent gets its own id, since the id is unique across the stored payments.
+ */
 function mockStripe() {
-    jest.spyOn(stripe.paymentIntents, 'create').mockImplementation(async () => ({
-        id: 'pi_test',
-        client_secret: 'pi_test_secret',
-    }) as never)
+    jest.spyOn(stripe.paymentIntents, 'create').mockImplementation(async () => {
+        paymentIntentCount += 1
+        return {
+            id: `pi_test_${paymentIntentCount}`,
+            client_secret: `pi_test_${paymentIntentCount}_secret`,
+        } as never
+    })
     jest.spyOn(stripe.paymentIntents, 'cancel').mockResolvedValue({} as never)
 }
 
