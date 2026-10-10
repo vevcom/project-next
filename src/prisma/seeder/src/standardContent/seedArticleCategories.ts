@@ -117,7 +117,7 @@ export const seedArticleCategoriesConfig = [
 export const seedArticleCategories = defineSeedOperation(async (prisma) => {
     await Promise.all(seedArticleCategoriesConfig.map(async category => {
         const categoryResult = await upsert({
-            checkExistance: () => articleCategoryOperations.read({ params: { name: category.name } }),
+            checkExistence: () => articleCategoryOperations.read({ params: { name: category.name } }),
             create: () => articleCategoryOperations.create({
                 // Standard content is readable by everyone and edited through the
                 // ARTICLE_CATEGORY_ADMIN permission rather than by any group: a requirement with no
@@ -149,7 +149,7 @@ async function upsertArticleInCategory(
     article: SeedArticleConfig
 ) {
     return upsert({
-        checkExistance: () => prisma.article.findUnique({
+        checkExistence: () => prisma.article.findUnique({
             where: {
                 articleCategoryId_name: { articleCategoryId: articleCategory.id, name: article.name }
             },

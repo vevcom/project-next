@@ -9,26 +9,20 @@ const ownsEveryAccount = ledgerAccountAccess('LEDGER_ADMIN')
 // is otherwise disabled. Mutations require LEDGER_USE, plus ownership whenever they act on a
 // specific account.
 export const ledgerAccountAuth = {
-    // A USER account may be self-service created by anyone with LEDGER_USE (see readOrCreate's
-    // comment). A GROUP account has no owning user to fall back on, so it's LEDGER_ADMIN only.
-    create: {
-        ledgerUse: Require.permission('LEDGER_USE'),
-        ledgerAdmin: Require.permission('LEDGER_ADMIN'),
-    },
+    // USER accounts are created automatically alongside their User, not through this operation
+    // (see operations.ts's create). A GROUP account has no owning user to fall back on, so this
+    // is LEDGER_ADMIN only.
+    create: Require.permission('LEDGER_ADMIN'),
 
     read: ownsEveryAccount,
 
     readMany: ownsEveryAccount,
 
-    // Its only caller, paymentOperations.initiate, already requires LEDGER_USE, so the account
-    // creation this performs stays gated even though this authorizer alone doesn't check it.
-    readOrCreate: Require.permission('LEDGER_ADMIN').or().userId(),
-
     // Browses every account with no owner filter, so this is LEDGER_ADMIN only, not exempt.
     readPage: Require.permission('LEDGER_ADMIN'),
 
-    // Can reassign an account's owner or payout number, so ownership is required too, even
-    // though updating doesn't move money.
+    // Can reassign an account's group links or payout number, so ownership is required too,
+    // even though updating doesn't move money.
     //
     // Group links decide who can access the account (ledgerAccountAccess treats an owning group's
     // members as owners), so changing them takes LEDGER_ADMIN on top, even of a caller who already

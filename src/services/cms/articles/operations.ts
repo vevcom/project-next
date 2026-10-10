@@ -5,7 +5,7 @@ import { defineSubOperation } from '@/services/serviceOperation'
 import { articleSectionOperations } from '@/cms/articleSections/operations'
 import { cmsImageOperations } from '@/cms/images/operations'
 import logger from '@/lib/logger'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { SpecialCmsArticle } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
 import { v4 } from 'uuid'
@@ -108,7 +108,7 @@ export const articleOperations = {
                     id: params.articleId,
                 },
             })
-            if (!article) throw new ServerError('NOT FOUND', 'Artikkel ikke funnet.')
+            if (!article) throw new ServiceError('NOT FOUND', 'Artikkel ikke funnet.')
 
             const highestOrderSection = await prisma.articleSection.findMany({
                 where: {
@@ -128,7 +128,7 @@ export const articleOperations = {
                 },
             })
             if (numberOfSections >= maxSections) {
-                throw new ServerError('BAD PARAMETERS', `The maximum number of sections is ${maxSections}`)
+                throw new ServiceError('BAD PARAMETERS', `The maximum number of sections is ${maxSections}`)
             }
 
             const updatedArticle = await prisma.article.update({
@@ -180,7 +180,7 @@ export const articleOperations = {
                     id: params.sectionId,
                 },
             })
-            if (!section) throw new ServerError('NOT FOUND', 'Seksjon ikke funnet.')
+            if (!section) throw new ServiceError('NOT FOUND', 'Seksjon ikke funnet.')
 
             //find the section with the order one higher/lower than the current section
             const otherSection = await prisma.articleSection.findMany({
@@ -199,7 +199,7 @@ export const articleOperations = {
             }).then(
                 res => (res.length > 0 ? res[0] : null)
             )
-            if (!otherSection) throw new ServerError('BAD PARAMETERS', 'Seksjon kan ikke flyttes opp/ned.')
+            if (!otherSection) throw new ServiceError('BAD PARAMETERS', 'Seksjon kan ikke flyttes opp/ned.')
 
             //flip thir order numbers
             const tempOrder = -1 // Or any other value that won't violate the unique constraint
@@ -230,7 +230,7 @@ export const articleOperations = {
                 })
 
                 if (!updatedSection || !updatedOtherSection) {
-                    throw new ServerError('UNKNOWN ERROR', 'Noe uventet skjedde under flytting av seksjonen.')
+                    throw new ServiceError('UNKNOWN ERROR', 'Noe uventet skjedde under flytting av seksjonen.')
                 }
 
                 return updatedSection
@@ -247,7 +247,7 @@ export const articleOperations = {
                 },
                 include: articleRealtionsIncluder
             })
-            if (!article) throw new ServerError('NOT FOUND', 'Artikkel ikke funnet.')
+            if (!article) throw new ServiceError('NOT FOUND', 'Artikkel ikke funnet.')
             return article
         }
     })

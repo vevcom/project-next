@@ -1,6 +1,8 @@
 import '@pn-server-only'
 import { manualGroupAuth } from './auth'
 import { manualGroupSchemas } from './schemas'
+import { groupOperations } from '@/services/groups/operations'
+import { invalidateManyUserSessionData } from '@/services/auth/invalidateSession'
 import {
     implementGroupType,
     implementManualMigrationPerGroup,
@@ -8,10 +10,10 @@ import {
 } from '@/services/groups/implementGroupType'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
-import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
+import { ServiceError } from '@/services/error'
 import { GroupType } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
+import type { PrismaPossibleTransaction } from '@/services/serviceOperation'
 
 const commonGroupOperations = implementGroupType({
     type: GroupType.MANUAL_GROUP,
@@ -89,7 +91,7 @@ async function assertNotPensioned(prisma: PrismaPossibleTransaction<false>, id: 
     })
 
     if (manualGroup.pensioned) {
-        throw new ServerError(
+        throw new ServiceError(
             'BAD PARAMETERS',
             `${manualGroup.name} er pensjonert og kan ikke endres. Gjenopprett gruppen først.`
         )
@@ -121,15 +123,18 @@ const destroy = defineOperation({
     operation: async ({ prisma, params }) => {
         await assertNotPensioned(prisma, params.id)
 
-        return prisma.$transaction(async tx => {
-            const manualGroup = await tx.manualGroup.delete({
+        const { manualGroup, memberIds } = await prisma.$transaction(async tx => {
+            const deleted = await tx.manualGroup.delete({
                 where: { id: params.id },
             })
-            await tx.group.delete({
-                where: { id: manualGroup.groupId },
+            const formerMemberIds = await groupOperations.destroy.internalCall({
+                prisma: tx,
+                params: { groupId: deleted.groupId },
             })
-            return manualGroup
+            return { manualGroup: deleted, memberIds: formerMemberIds }
         })
+        await invalidateManyUserSessionData(memberIds)
+        return manualGroup
     }
 })
 

@@ -4,9 +4,6 @@ import { makeAction } from '@/services/serverAction'
 
 export const createArticleCategoryAction = makeAction(articleCategoryOperations.create)
 export const destroyArticleCategoryAction = makeAction(articleCategoryOperations.destroy)
-export const readArticleCategoriesAction = makeAction(articleCategoryOperations.readAll)
-export const readArticleCategoryAction = makeAction(articleCategoryOperations.read)
-export const readArticleInCategoryAction = makeAction(articleCategoryOperations.readArticleInCategory)
 export const updateArticleCategoryAction = makeAction(articleCategoryOperations.update)
 export const addArticleToCategoryAction = makeAction(articleCategoryOperations.addArticleToCategory)
 export const removeArticleFromCategoryAction = makeAction(articleCategoryOperations.removeArticleFromCategory)

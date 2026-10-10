@@ -1,9 +1,9 @@
 import { Require } from '@/auth/authorizer/Require'
 
 export const mailingListAuth = {
-    create: Require.permission('MAILINGLIST_ADMIN'),
-    readMany: Require.permission('MAILINGLIST_USE'),
-    read: Require.permission('MAILINGLIST_USE'),
-    update: Require.permission('MAILINGLIST_ADMIN'),
-    destroy: Require.permission('MAILINGLIST_ADMIN'),
+    create: Require.permission('MAILSERVER_ADMIN'),
+    readMany: Require.permission('MAILSERVER_USE'),
+    read: Require.permission('MAILSERVER_USE'),
+    update: Require.permission('MAILSERVER_ADMIN'),
+    destroy: Require.permission('MAILSERVER_ADMIN'),
 } as const

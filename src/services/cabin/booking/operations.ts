@@ -1,4 +1,4 @@
-import 'server-only'
+import '@pn-server-only'
 import { calculateCabinBookingPrice, calculateTotalCabinBookingPrice } from './cabinPriceCalculator'
 import { cabinBookingSchemas } from './schemas'
 import { cabinBookingAuth } from './auth'
@@ -6,7 +6,7 @@ import { cabinReservationWindowMs, cabinBookingFilerSelection, cabinBookingInclu
 import { cabinPricePeriodOperations } from '@/services/cabin/pricePeriod/operations'
 import { cabinProductPriceIncluder } from '@/services/cabin/product/constants'
 import { defineOperation, defineSubOperation } from '@/services/serviceOperation'
-import { Smorekopp, ServerError } from '@/services/error'
+import { Smorekopp, ServiceError } from '@/services/error'
 import { cabinReleasePeriodOperations } from '@/services/cabin/releasePeriod/operations'
 import { cmsParagraphOperations } from '@/cms/paragraphs/operations'
 import { paymentOperations } from '@/services/ledger/payments/operations'
@@ -68,17 +68,17 @@ const create = defineSubOperation({
         })
 
         if (latestReleaseDate === null) {
-            throw new ServerError('SERVER ERROR', 'Hyttebooking siden er ikke tilgjengelig.')
+            throw new ServiceError('SERVER ERROR', 'Hyttebooking siden er ikke tilgjengelig.')
         }
 
         if (data.end > latestReleaseDate.releaseUntil) {
-            throw new ServerError('BAD PARAMETERS', 'Hytta kan ikke bookes etter siste slippdato.')
+            throw new ServiceError('BAD PARAMETERS', 'Hytta kan ikke bookes etter siste slippdato.')
         }
 
         if (!await cabinAvailable.internalCall({
             params: data,
         })) {
-            throw new ServerError('BAD PARAMETERS', 'Hytta er ikke tilgjengelig i den perioden.')
+            throw new ServiceError('BAD PARAMETERS', 'Hytta er ikke tilgjengelig i den perioden.')
         }
 
         const products = await prisma.cabinProduct.findMany({
@@ -90,7 +90,7 @@ const create = defineSubOperation({
             include: cabinProductPriceIncluder,
         })
         if (products.length !== params.bookingProducts.length) {
-            throw new ServerError('BAD PARAMETERS', 'Kunne ikke finne alle hytta produktene. Duplikater er ikke tillat.')
+            throw new ServiceError('BAD PARAMETERS', 'Kunne ikke finne alle hytta produktene. Duplikater er ikke tillat.')
         }
 
         const productsInOrder: CabinProductExtended[] = []
@@ -98,32 +98,32 @@ const create = defineSubOperation({
         for (const paramProduct of params.bookingProducts) {
             const product = products.find(prodItem => prodItem.id === paramProduct.cabinProductId)
             if (!product) {
-                throw new ServerError('UNKNOWN ERROR', 'Kunne ikke finne mengden av produktet.')
+                throw new ServiceError('UNKNOWN ERROR', 'Kunne ikke finne mengden av produktet.')
             }
             productsInOrder.push(product)
 
             if (product.type !== params.bookingType) {
-                throw new ServerError('BAD PARAMETERS', 'Alle produktene må ha samme type som bookingen.')
+                throw new ServiceError('BAD PARAMETERS', 'Alle produktene må ha samme type som bookingen.')
             }
 
             if (product.amount < paramProduct.quantity) {
-                throw new ServerError('BAD PARAMETERS', 'Det er ikke nok av produktet til å oppfylle bookingen.')
+                throw new ServiceError('BAD PARAMETERS', 'Det er ikke nok av produktet til å oppfylle bookingen.')
             }
         }
 
         if (params.bookingType === 'EVENT' && params.bookingProducts.length !== 0) {
-            throw new ServerError('BAD PARAMETERS', 'Arrangementbookinger kan ikke inneholde produkter.')
+            throw new ServiceError('BAD PARAMETERS', 'Arrangementbookinger kan ikke inneholde produkter.')
         }
 
         if (params.bookingType === 'CABIN' &&
             params.bookingProducts.length !== 1 &&
             params.bookingProducts[0].quantity !== 1
         ) {
-            throw new ServerError('BAD PARAMETERS', 'Hyttebookinger kan bare inneholde ett produkt med mengde 1.')
+            throw new ServiceError('BAD PARAMETERS', 'Hyttebookinger kan bare inneholde ett produkt med mengde 1.')
         }
 
         if (params.bookingType === 'BED' && params.bookingProducts.length === 0) {
-            throw new ServerError('BAD PARAMETERS', 'Sengebookinger må inneholde minst ett produkt.')
+            throw new ServiceError('BAD PARAMETERS', 'Sengebookinger må inneholde minst ett produkt.')
         }
 
         const pricePeriods = await cabinPricePeriodOperations.readMany({ bypassAuth: true })
@@ -466,10 +466,23 @@ export const cabinBookingOperations = {
                 // Extends the reservation window to cover the full lifetime a pending attempt is
                 // allowed to stay open for (see stalePendingTransactionMs above), so cabinAvailable
                 // can't release these dates to another booker while this attempt can still succeed.
-                await tx.booking.update({
-                    where: { id: booking.id },
+                // Matching on the window read above also serializes this attempt against a
+                // concurrent release or attempt: whichever of them got to the row first changed
+                // it, and the loser matches nothing.
+                const { count } = await tx.booking.updateMany({
+                    where: {
+                        id: booking.id,
+                        canceled: null,
+                        transactionTimeout: booking.transactionTimeout,
+                    },
                     data: { transactionTimeout: new Date(Date.now() + stalePendingTransactionMs) },
                 })
+                if (count === 0) {
+                    throw new Smorekopp(
+                        'BAD PARAMETERS',
+                        'Reservasjonen ble kansellert eller fikk en annen betaling i mellomtiden.'
+                    )
+                }
 
                 let paymentId: number | undefined
 
@@ -488,10 +501,10 @@ export const cabinBookingOperations = {
                 }
 
                 // Outer authorizer (cabinBookingAuth.createPayment) already covers whether this
-                // caller may pay for this booking, which readOrCreate's own ownership check
+                // caller may pay for this booking, which read's own ownership check
                 // would otherwise re-reject an admin or a guest booking's owner for.
                 const payerAccount = params.amountFromBalance > 0
-                    ? await ledgerAccountOperations.readOrCreate({
+                    ? await ledgerAccountOperations.read({
                         params: { userId: booking.userId! },
                         bypassAuth: true,
                         prisma: tx,
@@ -530,5 +543,78 @@ export const cabinBookingOperations = {
 
             return { payment }
         },
-    })
+    }),
+
+    /**
+     * Gives up a reservation that was never paid for, so its dates free up right away instead of
+     * once its payment window runs out. A payment attempt still under way is canceled with it, so
+     * it can never complete for dates that are no longer held. Releasing it again does nothing;
+     * releasing while a new payment attempt is being started fails and asks for a retry.
+     */
+    releaseReservation: defineOperation({
+        paramsSchema: z.object({
+            bookingId: z.number(),
+            secret: z.string().min(1),
+        }),
+        authorizer: async ({ params, prisma }) => {
+            const booking = await prisma.booking.findUnique({
+                where: { id: params.bookingId },
+                select: { userId: true, secret: true },
+            })
+
+            return cabinBookingAuth.releaseReservation.data({
+                booking: booking ?? { userId: null, secret: '' },
+                providedSecret: params.secret,
+            })
+        },
+        operation: async ({ prisma, params }) => {
+            const booking = await prisma.booking.findUniqueOrThrow({
+                where: { id: params.bookingId },
+                select: { canceled: true, transactionTimeout: true },
+            })
+
+            if (booking.canceled !== null) return
+
+            const attempt = await prisma.ledgerTransaction.findFirst({
+                where: {
+                    bookingId: params.bookingId,
+                    state: { in: ['PENDING', 'SUCCEEDED'] },
+                },
+            })
+            if (booking.transactionTimeout === null || attempt?.state === 'SUCCEEDED') {
+                throw new Smorekopp('BAD PARAMETERS', 'Denne reservasjonen er allerede betalt.')
+            }
+            if (attempt) {
+                // Bypassed: the authorizer above already established the caller holds this
+                // booking, which is the right bar for canceling a payment attempt on it.
+                await ledgerTransactionOperations.cancel({
+                    params: { id: attempt.id },
+                    bypassAuth: true,
+                })
+            }
+
+            // Matching on the window read above protects a booking that got paid for meanwhile
+            // (the window is cleared) or got a new payment attempt (the window is extended) - see
+            // createPayment, which matches the same way.
+            const { count } = await prisma.booking.updateMany({
+                where: {
+                    id: params.bookingId,
+                    canceled: null,
+                    transactionTimeout: booking.transactionTimeout,
+                },
+                data: { canceled: new Date() },
+            })
+            if (count === 0) {
+                const current = await prisma.booking.findUniqueOrThrow({
+                    where: { id: params.bookingId },
+                    select: { canceled: true },
+                })
+                if (current.canceled !== null) return
+                throw new Smorekopp(
+                    'BAD PARAMETERS',
+                    'En betaling for reservasjonen ble startet i mellomtiden. Prøv igjen.'
+                )
+            }
+        },
+    }),
 }

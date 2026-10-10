@@ -173,34 +173,14 @@ export const permissionConfig = {
         description: 'kan sende epost',
         category: 'mail',
     },
-    MAILADDRESS_EXTERNAL_ADMIN: {
-        name: 'Administrere ekstern epostadresse',
-        description: 'kan lage, oppdatere og slette eksterne epostadresser',
+    MAILSERVER_USE: {
+        name: 'Se e-postserveren',
+        description: 'kan se e-postalias, e-postlister, eksterne e-postadresser og hvor e-post havner',
         category: 'mail',
     },
-    MAILADDRESS_EXTERNAL_USE: {
-        name: 'Les ekstern epostadresse',
-        description: 'kan lese eksterne epostadresser',
-        category: 'mail',
-    },
-    MAILALIAS_USE: {
-        name: 'Les epostalias',
-        description: 'kan lese epostalias',
-        category: 'mail',
-    },
-    MAILALIAS_ADMIN: {
-        name: 'Administrere epostalias',
-        description: 'kan opprette, oppdatere og slette epostalias',
-        category: 'mail',
-    },
-    MAILINGLIST_USE: {
-        name: 'Les epostliste',
-        description: 'kan lese epostliste',
-        category: 'mail',
-    },
-    MAILINGLIST_ADMIN: {
-        name: 'Administrere epostliste',
-        description: 'kan administrere epostliste og tilknyttede relasjoner',
+    MAILSERVER_ADMIN: {
+        name: 'Administrere e-postserveren',
+        description: 'kan opprette, endre og slette e-postalias, e-postlister, eksterne adresser og koblingene mellom dem',
         category: 'mail',
     },
     ADMISSION_USE: {

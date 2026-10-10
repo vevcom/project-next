@@ -8,17 +8,15 @@ import TextInput from '@/components/UI/TextInput'
 import { sexConfig } from '@/services/users/constants'
 import { SEX, type User } from '@/prisma-generated-pn-types'
 import { signIn } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 export default function RegistrationForm({
     userData,
+    callbackUrl,
 }: {
     userData: Pick<User, 'id' | 'username' | 'mobile' | 'allergies' | 'sex'>,
+    callbackUrl: string,
 }) {
-    const searchParams = useSearchParams()
-    const callbackUrl = searchParams.get('callbackUrl') || '/users/me'
-
     const [lastPassword, setLastPassword] = useState('')
     const [sexValue, setSexValue] = useState<SEX | undefined>(userData.sex ?? undefined)
 

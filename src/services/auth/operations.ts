@@ -1,12 +1,14 @@
+import '@pn-server-only'
 import { authAuth } from './auth'
 import { authSchemas } from './schemas'
 import { moveFeideAccountToUser } from './feideAccounts/move'
-import { userFilterSelection } from '@/services/users/constants'
+import { userBasicSelection } from '@/services/users/constants'
 import { userSchemas } from '@/services/users/schemas'
 import { sendResetPasswordMail } from '@/lib/email/systemMail/resetPassword'
 import { sendLinkFeideAccountMail } from '@/lib/email/systemMail/linkFeideAccount'
+import { sendEmailChangedMail } from '@/lib/email/systemMail/emailChanged'
 import { defineOperation } from '@/services/serviceOperation'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { userOperations } from '@/services/users/operations'
 import { verifyJWT } from '@/lib/jwt/jwt'
 import logger from '@/lib/logger'
@@ -25,7 +27,7 @@ function readLinkFeideAccountClaims(token: string) {
     const claims = linkFeideAccountClaimsSchema.safeParse(verifyJWT(token, 'linkfeideaccount'))
 
     if (!claims.success) {
-        throw new ServerError('JWT INVALID', 'The JWT does not contain the mandatory fields')
+        throw new ServiceError('JWT INVALID', 'The JWT does not contain the mandatory fields')
     }
 
     return claims.data
@@ -41,7 +43,7 @@ export const authOperations = {
             const payload = verifyJWT(params.token, 'verifyemail')
 
             if (!payload.sub || !payload.email || !payload.iat) {
-                throw new ServerError('JWT INVALID', 'The JWT does not contain the mandatory fields')
+                throw new ServiceError('JWT INVALID', 'The JWT does not contain the mandatory fields')
             }
 
             const userId = Number(payload.sub)
@@ -57,10 +59,10 @@ export const authOperations = {
             })
 
             if (iat < user.updatedAt) {
-                throw new ServerError('JWT INVALID', 'The user has changed since the token was generated.')
+                throw new ServiceError('JWT INVALID', 'The user has changed since the token was generated.')
             }
 
-            return await prisma.user.update({
+            const updatedUser = await prisma.user.update({
                 where: {
                     id: userId,
                 },
@@ -68,8 +70,15 @@ export const authOperations = {
                     emailVerified: new Date(),
                     email,
                 },
-                select: userFilterSelection,
+                select: {
+                    ...userBasicSelection,
+                    email: true,
+                    acceptedTerms: true,
+                },
             })
+            await sendEmailChangedMail(updatedUser, user.email)
+
+            return updatedUser
         }
     }),
 
@@ -82,7 +91,7 @@ export const authOperations = {
             const payload = verifyJWT(params.token, 'resetpassword')
 
             if (!payload.sub || !payload.iat) {
-                throw new ServerError('JWT INVALID', 'The forgot password JWT is not valid')
+                throw new ServiceError('JWT INVALID', 'The forgot password JWT is not valid')
             }
 
             const userId = Number(payload.sub)
@@ -97,7 +106,7 @@ export const authOperations = {
             })
 
             if (user.credentials && user.credentials?.credentialsUpdatedAt > new Date(payload.iat * 1000)) {
-                throw new ServerError('JWT INVALID', 'The password has already been changed')
+                throw new ServiceError('JWT INVALID', 'The password has already been changed')
             }
 
             return userId
@@ -128,7 +137,7 @@ export const authOperations = {
         authorizer: () => authAuth.sendLinkFeideAccountEmail,
         operation: async ({ prisma, data, session }) => {
             if (!session.user) {
-                throw new ServerError('DISSALLOWED', 'This endpoint requires a user connected to the session.')
+                throw new ServiceError('DISSALLOWED', 'This endpoint requires a user connected to the session.')
             }
 
             // Only a user created by a Feide login that has not completed registration may ask
@@ -153,7 +162,7 @@ export const authOperations = {
                 feideUser.credentials ||
                 feideUser.acceptedTerms
             ) {
-                throw new ServerError(
+                throw new ServiceError(
                     'DISSALLOWED',
                     'Bare en ny Feide-innlogging som ikke har fullført registreringen kan kobles til en gammel bruker.'
                 )
@@ -170,7 +179,10 @@ export const authOperations = {
                     credentials: null,
                     NOT: { id: feideUser.id },
                 },
-                select: userFilterSelection,
+                select: {
+                    ...userBasicSelection,
+                    email: true,
+                },
             })
 
             if (targetUser) {
@@ -199,7 +211,7 @@ export const authOperations = {
         authorizer: () => authAuth.readFeideLoginMatch,
         operation: async ({ prisma, session }) => {
             if (!session.user) {
-                throw new ServerError('DISSALLOWED', 'This endpoint requires a user connected to the session.')
+                throw new ServiceError('DISSALLOWED', 'This endpoint requires a user connected to the session.')
             }
 
             const user = await prisma.user.findUniqueOrThrow({

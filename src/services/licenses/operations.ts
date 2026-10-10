@@ -2,14 +2,14 @@ import '@pn-server-only'
 import { licenseSchemas } from './schemas'
 import { standardLicenseNames, standardLicensesConfig, type StandardLicenseName } from './constants'
 import { licenseAuth } from './auth'
-import { ServerError } from '@/services/error'
+import { ServiceError } from '@/services/error'
 import { defineOperation, defineSubOperation } from '@/services/serviceOperation'
 import { z } from 'zod'
 
 const getStandardLicenseConfig = (standardLicenseName: StandardLicenseName) => {
     const licenseConfig = standardLicensesConfig.find((license) => license.name === standardLicenseName)
     if (!licenseConfig) {
-        throw new ServerError('SERVER ERROR', `Unknown standard license: ${standardLicenseName}`)
+        throw new ServiceError('SERVER ERROR', `Unknown standard license: ${standardLicenseName}`)
     }
 
     return licenseConfig
@@ -54,7 +54,7 @@ const readStandardLicense = defineSubOperation({
         } catch (error) {
             // Handle race condition.
             // Just in case two concurrent callers tried at the same time
-            if (error instanceof ServerError && error.errorCode === 'DUPLICATE') {
+            if (error instanceof ServiceError && error.errorCode === 'DUPLICATE') {
                 return await prisma.license.findUniqueOrThrow({
                     where: { name: params.standardLicenseName },
                 })
@@ -94,7 +94,7 @@ export const licenseOperations = {
                 take: 1
             })
             if (imagesOfLicense.length > 0) {
-                throw new ServerError(
+                throw new ServiceError(
                     'UNPERMITTED CASCADE',
                     'Lisensen har bilder tilknyttet - slett bildene først eller endre lisensen på bildene'
                 )

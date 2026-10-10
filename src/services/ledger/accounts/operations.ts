@@ -1,19 +1,14 @@
+import '@pn-server-only'
 import { ledgerAccountSchemas } from './schemas'
 import { ledgerAccountAuth } from './auth'
 import { resolveAccountOwnership, resolveAccountsOwnership } from './ownership'
 import { readPageInputSchemaObject } from '@/lib/paging/schema'
-import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
+import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { defineOperation } from '@/services/serviceOperation'
 import { LedgerAccountType } from '@/prisma-generated-pn-types'
 import { z } from 'zod'
 import type { LedgerAccount, Prisma } from '@/prisma-generated-pn-types'
 import type { Balance, BalanceRecord, ExpandedLedgerAccount } from './types'
-
-// Resolves the account type the same way `create` below actually persists it, so its
-// authorizer can gate on the type a caller who omitted it will really end up with.
-function resolveCreateType(data: { type?: LedgerAccountType, userId?: number }): LedgerAccountType {
-    return data.type ?? (data.userId !== undefined ? 'USER' : 'GROUP')
-}
 
 // Nested calls between these operations are not bypassed unless noted otherwise: the checks
 // involved are cheap (a session permission, or one indexed lookup), so checking access again
@@ -21,46 +16,34 @@ function resolveCreateType(data: { type?: LedgerAccountType, userId?: number }):
 // otherwise reject a caller the outer check already allows.
 export const ledgerAccountOperations = {
     /**
-     * Creates a new ledger account for given user or group.
+     * Creates a new GROUP ledger account. USER accounts are created automatically alongside
+     * their User (see userOperations.create and friends) and can't be created through here.
      *
-     * Will throw an error if both `userId` and `groupId` are set, or if neither are set.
-     *
-     * @param data.userId The ID of the user to create the account for.
      * @param data.groupIds The IDs of the groups to create the account for.
      *
      * @returns The created account.
      */
     create: defineOperation({
-        // A USER account with no group links is a caller creating their own account (LEDGER_USE
-        // is enough - see readOrCreate). A GROUP account, and any create that also links groups
-        // (mirrors update's groupAccess check - see its comment), has no such self-service angle,
-        // so it's admin-only regardless of how `type` was supplied.
-        authorizer: ({ data }) => (
-            resolveCreateType(data) === 'GROUP' || (data.groupIds?.length ?? 0) > 0
-                ? ledgerAccountAuth.create.ledgerAdmin
-                : ledgerAccountAuth.create.ledgerUse
-        ),
+        // Only GROUP accounts are created here, and a group account has no owning user to fall
+        // back on, so there is no self-service angle (unlike a USER account, which readOrCreate
+        // used to cover): this is admin-only.
+        authorizer: () => ledgerAccountAuth.create,
         dataSchema: ledgerAccountSchemas.create,
-        operation: async ({ prisma, data }): Promise<LedgerAccount> => {
-            const type = resolveCreateType(data)
-
-            return prisma.ledgerAccount.create({
-                data: {
-                    type,
-                    name: data.name,
-                    userId: data.userId,
-                    groups: data.groupIds ? {
-                        createMany: {
-                            data: data.groupIds.map(groupId => ({
-                                groupId
-                            }))
-                        },
-                    } : undefined,
-                    payoutAccountNumber: data.payoutAccountNumber,
-                    frozen: data.frozen,
-                }
-            })
-        },
+        operation: async ({ prisma, data }): Promise<LedgerAccount> => prisma.ledgerAccount.create({
+            data: {
+                type: 'GROUP',
+                name: data.name,
+                groups: data.groupIds ? {
+                    createMany: {
+                        data: data.groupIds.map(groupId => ({
+                            groupId
+                        }))
+                    },
+                } : undefined,
+                payoutAccountNumber: data.payoutAccountNumber,
+                frozen: data.frozen,
+            }
+        }),
     }),
 
     /**
@@ -89,7 +72,7 @@ export const ledgerAccountOperations = {
             const account = await prisma.ledgerAccount.findFirstOrThrow({
                 where: {
                     id: params.ledgerAccountId,
-                    userId: params.userId,
+                    user: params.userId !== undefined ? { id: params.userId } : undefined,
                 },
                 include: {
                     groups: { select: { groupId: true } },
@@ -138,7 +121,7 @@ export const ledgerAccountOperations = {
                 filters.push({ id: { in: params.ledgerAccountIds } })
             }
             if (params.userIds?.length) {
-                filters.push({ userId: { in: params.userIds } })
+                filters.push({ user: { id: { in: params.userIds } } })
             }
             if (params.groupIds?.length) {
                 filters.push({ groups: { some: { groupId: { in: params.groupIds } } } })
@@ -150,47 +133,9 @@ export const ledgerAccountOperations = {
         }
     }),
 
-    /**
-     * Reads details of a ledger account by user id.
-     * If the account does not exist it will be created.
-     *
-     * **Note**: The balance of an account is not included in the response.
-     * Use the `calculateBalance` method to get the balance.
-     *
-     * @param params.userId The ID of the user to read the account for.
-     *
-     * @returns The account details.
-     */
-    readOrCreate: defineOperation({
-        authorizer: ({ params }) => ledgerAccountAuth.readOrCreate.data({ userId: params.userId }),
-        paramsSchema: z.object({
-            userId: z.number(),
-        }),
-        operation: async ({ prisma, session, params }): Promise<LedgerAccount> => {
-            const account = await prisma.ledgerAccount.findUnique({
-                where: {
-                    userId: params.userId,
-                },
-            })
-
-            if (account) return account
-
-            // create requires LEDGER_USE, but readOrCreate is exempt from it for transparency.
-            // create's policy is genuinely stricter here, so this bypass isn't a shortcut.
-            return ledgerAccountOperations.create({
-                session,
-                bypassAuth: true,
-                data: {
-                    userId: params.userId,
-                },
-            })
-        },
-    }),
-
     readPage: defineOperation({
         authorizer: () => ledgerAccountAuth.readPage,
         paramsSchema: readPageInputSchemaObject(
-            z.number(),
             z.object({
                 id: z.number(),
             }),
@@ -207,7 +152,7 @@ export const ledgerAccountOperations = {
                     { createdAt: 'desc' },
                     { id: 'desc' },
                 ],
-                ...cursorPageingSelection(paging.page),
+                ...cursorPagingSelection(paging.page),
             })
 
             const balances = accounts.length > 0

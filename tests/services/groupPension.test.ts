@@ -28,6 +28,7 @@ async function createGroupBehindCurrentOrder(shortName: string) {
             username: `pension-${shortName}`,
             email: `pension-${shortName}@omega.ntnu.no`,
             bioParagraph: { create: {} },
+            ledgerAccount: { create: { type: 'USER' } },
         },
     })
 

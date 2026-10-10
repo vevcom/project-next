@@ -92,8 +92,13 @@ export const seedDevUsers = defineSeedOperation(async (prisma: PrismaClient) => 
     })
     const bioParagraphIdByName = new Map(bioParagraphs.map(paragraph => [paragraph.name, paragraph.id]))
 
+    const newLedgerAccounts = await prisma.ledgerAccount.createManyAndReturn({
+        data: newDevUserSpecs.map(() => ({ type: 'USER' as const })),
+        select: { id: true },
+    })
+
     const createdUsers = await prisma.user.createManyAndReturn({
-        data: newDevUserSpecs.map(spec => ({
+        data: newDevUserSpecs.map((spec, index) => ({
             firstname: spec.firstName,
             lastname: spec.lastName,
             email: spec.email,
@@ -101,6 +106,7 @@ export const seedDevUsers = defineSeedOperation(async (prisma: PrismaClient) => 
             studentCard: `${spec.username}s studentkort`,
             acceptedTerms: new Date(),
             bioParagraphId: bioParagraphIdByName.get(`userBio-${spec.username}`)!,
+            ledgerAccountId: newLedgerAccounts[index].id,
         })),
         select: { id: true, username: true },
     })
