@@ -74,7 +74,7 @@ export default async function LoggedOutLandingPage() {
 
             </div>
             <div className={`${styles.part} ${styles.omegamai}`}>
-                <YouTube src="https://www.youtube.com/watch?v=I-zNLW4ILu4" />
+                <YouTube src="https://www.youtube.com/watch?v=I-zNLW4ILu4" title="Master i kybernetikk og robotikk | NTNU" />
                 <Section
                     canEditSpecialCmsImage={canEditSpecialCmsImage}
                     canEditSpecialCmsParagraph={canEditSpecialCmsParagraph}
