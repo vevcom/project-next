@@ -125,11 +125,17 @@ describe('users', () => {
             session: sessionOf(viewer, ['USERS_USE']),
         })).rejects.toThrow(Smorekopp)
 
+        const ownLookups = [
+            { username: target.username },
+            { id: target.id },
+            { email: target.email },
+            { studentCard: 'exposure-card' },
+        ]
         const results = await Promise.all([
-            userOperations.readUserWithBalance({
-                params: { username: target.username },
+            ...ownLookups.map(params => userOperations.readUserWithBalance({
+                params,
                 session: sessionOf(target, []),
-            }),
+            })),
             userOperations.readUserWithBalance({
                 params: { studentCard: 'exposure-card' },
                 session: sessionOf(viewer, ['LEDGER_ADMIN']),

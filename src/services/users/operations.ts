@@ -441,13 +441,12 @@ export const userOperations = {
         operation: async ({ prisma, data, params }) => {
             const passwordHash = await hashAndEncryptPassword(data.password)
 
-            await prisma.credentials.update({
-                where: {
-                    userId: params.id,
-                },
+            await prisma.user.update({
+                where: { id: params.id },
                 data: {
-                    passwordHash,
-                }
+                    sessionEpoch: { increment: 1 },
+                    credentials: { update: { passwordHash } },
+                },
             })
 
             return null
@@ -572,6 +571,10 @@ export const userOperations = {
 
             if (storedUser.acceptedTerms) throw new ServiceError('DUPLICATE', 'Brukeren er allerede registrert.')
 
+            if (!storedUser.emailVerified) {
+                throw new ServiceError('DISSALLOWED', 'Du må bekrefte e-posten din før du kan registrere deg.')
+            }
+
             const passwordHash = await hashAndEncryptPassword(password)
 
             const results = await prisma.$transaction([
@@ -645,8 +648,8 @@ export const userOperations = {
     }),
 
     readUserWithBalance: defineOperation({
-        authorizer: ({ params }) => userAuth.readUserWithBalance.data({
-            userField: { username: params.username || '' },
+        authorizer: async ({ params, prisma }) => userAuth.readUserWithBalance.data({
+            userField: { id: (await prisma.user.findFirst({ where: params, select: { id: true } }))?.id },
         }),
         paramsSchema: z.object({
             username: z.string().optional(),
