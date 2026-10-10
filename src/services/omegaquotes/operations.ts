@@ -33,6 +33,7 @@ export const omegaquoteOperations = {
                 data: {
                     title: 'Ny Omegaquote♪',
                     message: `${results.quote}\n - ${results.author}`,
+                    audience: { permission: 'OMEGAQUOTES_USE' },
                 },
             })
             return results

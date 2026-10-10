@@ -426,7 +426,7 @@ export const eventRegistrationOperations = {
                     data: {
                         title,
                         message,
-                        targetUserIds: [nextInLine.userId],
+                        audience: { userIds: [nextInLine.userId] },
                     },
                 })
             }

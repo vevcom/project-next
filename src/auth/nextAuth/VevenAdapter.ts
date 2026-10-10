@@ -177,7 +177,7 @@ export default function VevenAdapter(prisma: PrismaClient): Adapter {
         },
 
         async linkAccount(account: AdapterAccount) {
-            if (!account.access_token || !account.expires_at || !account.id_token) {
+            if (!account.expires_at || !account.id_token) {
                 throw new Error('Missing required fields in account')
             }
 
@@ -185,7 +185,6 @@ export default function VevenAdapter(prisma: PrismaClient): Adapter {
 
             const feideAccount = await createFeideAccount({
                 id: account.providerAccountId,
-                accessToken: account.access_token,
                 expiresAt: new Date(account.expires_at * 1000),
                 issuedAt: new Date(tokenData.iat * 1000),
                 userId: Number(account.userId),
