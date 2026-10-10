@@ -25,6 +25,7 @@ import {
 import { applicationPeriodOperations } from '@/services/applications/periods/operations'
 import { configureAction } from '@/services/configureAction'
 import { committeeAuth } from '@/services/groups/committees/auth'
+import { runCapabilities } from '@/auth/authorizer/capabilities'
 import { serverPage } from '@/app/serverPage'
 import { faVideo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -92,13 +93,9 @@ const { page, generateMetadata } = serverPage({
                     <h2>{part.committee.name}</h2>
                     <CmsParagraph
                         className={styles.committeeParagraph}
-                        canEdit={
-                            committeeAuth.updateParagraphContent.data(
-                                { groupId: part.committee.groupId }
-                            ).auth(
-                                sessionOfRequest
-                            ).toJsObject()
-                        }
+                        capabilities={runCapabilities(sessionOfRequest, {
+                            canEdit: committeeAuth.updateParagraphContent.data({ groupId: part.committee.groupId }),
+                        })}
                         cmsParagraph={part.committee.paragraph}
                         updateCmsParagraphAction={
                             configureAction(

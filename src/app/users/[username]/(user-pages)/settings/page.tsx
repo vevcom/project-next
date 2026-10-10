@@ -39,19 +39,19 @@ const { page, generateMetadata } = serverPage({
 
         return { profile, studyProgrammes, privateUser }
     },
-    capabilityChecks: {
-        canUpdateProfile: ({ profile }) => userAuth.updateProfile.data({
+    capabilities: ({ profile }) => ({
+        canUpdateProfile: userAuth.updateProfile.data({
             userField: { username: profile.user.username }
         }),
-        canUpdateBio: ({ profile }) => userAuth.updateBioParagraphContent.data({ userId: profile.user.id }),
-        canRegisterNewEmail: ({ profile }) => userAuth.registerNewEmail.data({ userId: profile.user.id }),
-        canUpdateImage: ({ profile }) => userAuth.updateProfileImage.data({
+        canUpdateBio: userAuth.updateBioParagraphContent.data({ userId: profile.user.id }),
+        canRegisterNewEmail: userAuth.registerNewEmail.data({ userId: profile.user.id }),
+        canUpdateImage: userAuth.updateProfileImage.data({
             userField: { username: profile.user.username }
         }),
-        canUpdateUser: () => userAuth.update,
-        canChangeClass: () => classAuth.changeClassOfUser,
-        canManageStudyProgrammes: () => studyProgrammeAuth.update,
-    },
+        canUpdateUser: userAuth.update,
+        canChangeClass: classAuth.changeClassOfUser,
+        canManageStudyProgrammes: studyProgrammeAuth.update,
+    }),
     render: ({ data, capabilities }) => {
         const { profile, studyProgrammes, privateUser } = data
 

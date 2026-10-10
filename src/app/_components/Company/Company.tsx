@@ -1,3 +1,4 @@
+'use client'
 import styles from './Company.module.scss'
 import SelectCompany from './SelectCompany'
 import SponsorBadge from './SponsorBadge'
@@ -6,6 +7,7 @@ import { SettingsHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopU
 import TextInput from '@/UI/TextInput'
 import CmsImage from '@/cms/CmsImage/CmsImage'
 import Form from '@/components/Form/Form'
+import useAuthorizer from '@/hooks/useAuthorizer'
 import { companyAuth } from '@/services/career/companies/auth'
 import {
     destroyCompanyAction,
@@ -15,7 +17,6 @@ import {
 import { configureAction } from '@/services/configureAction'
 import type { CompanySponsorTier } from '@/prisma-generated-pn-types'
 import type { CompanyExpanded } from '@/services/career/companies/types'
-import type { SessionMaybeUser } from '@/auth/session/Session'
 
 const sponsorTierClass = {
     MAIN: styles.tierMain,
@@ -25,7 +26,6 @@ const sponsorTierClass = {
 
 type PropTypes = {
     company: CompanyExpanded,
-    session: SessionMaybeUser,
     disableEdit?: boolean,
     logoWidth?: number,
     squareLogo?: boolean
@@ -34,7 +34,6 @@ type PropTypes = {
 /**
  *
  * @param company - The company to display
- * @param session - The session of the user
  * @param disableEdit - If the edit buttons should be disabled even if the user has the rights
  * @param logoWidth - The width of the logo
  * @param squareLogo - If the logo should be square (contained in center of square frame)
@@ -42,15 +41,14 @@ type PropTypes = {
  */
 export default function Company({
     company,
-    session,
     disableEdit = false,
     logoWidth = 300,
     squareLogo = true,
 }: PropTypes) {
-    const canUpdate = companyAuth.update.auth(session)
-    const canUpdateSponsorTier = companyAuth.updateSponsorTier.auth(session)
-    const canDestroy = companyAuth.destroy.auth(session)
-    const canEditCmsImageLogo = companyAuth.updateCmsImageLogo.auth(session).toJsObject()
+    const canUpdate = useAuthorizer({ authorizer: companyAuth.update })
+    const canUpdateSponsorTier = useAuthorizer({ authorizer: companyAuth.updateSponsorTier })
+    const canDestroy = useAuthorizer({ authorizer: companyAuth.destroy })
+    const canEditCmsImageLogo = useAuthorizer({ authorizer: companyAuth.updateCmsImageLogo })
     const updateCmsImageAction = configureAction(
         updateCompanyCmsLogoAction,
         { implementationParams: { companyId: company.id } }
@@ -62,7 +60,7 @@ export default function Company({
         <div className={`${styles.Company} ${sponsorTierClass[company.sponsorTier]}`}>
             <div className={styles.logoFrame}>
                 <CmsImage
-                    canEdit={canEditCmsImageLogo}
+                    capabilities={{ canEdit: canEditCmsImageLogo }}
                     disableEditor={disableEdit}
                     className={squareLogo ? styles.logoSq : styles.logo}
                     cmsImage={company.logo}

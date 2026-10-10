@@ -7,12 +7,11 @@ import {
 } from './constants'
 import { eventRegistrationAuth } from './auth'
 import { eventRegistrationSchemas } from './schemas'
+import { notifyPromotedFromWaitingList } from './notifyPromotedFromWaitingList'
 import { dotOperations } from '@/services/dots/operations'
 import { displayDate } from '@/lib/dates/displayDate'
 import { Smorekopp } from '@/services/error'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
-import { notificationOperations } from '@/services/notifications/operations'
-import { sendMailOperations } from '@/services/notifications/send-mail/operations'
 import { eventOperations } from '@/services/events/operations'
 import { checkVisibility } from '@/auth/visibility/checkVisibility'
 import { defineOperation, defineSubOperation, type PrismaPossibleTransaction } from '@/services/serviceOperation'
@@ -415,31 +414,7 @@ export const eventRegistrationOperations = {
 
             if (!nextInLine) return
 
-            const title = 'Opprykk fra venteliste ved Omegas nettsider'
-            const message = `Gratulerer! Du har rykket opp fra venteliste på arrangementet ${registration.event.name}.`
-
-            if (nextInLine.userId !== null) {
-                await notificationOperations.createSpecial.internalCall({
-                    params: {
-                        special: 'EVENT_WAITINGLIST_PROMOTION',
-                    },
-                    data: {
-                        title,
-                        message,
-                        audience: { userIds: [nextInLine.userId] },
-                    },
-                })
-            }
-
-            if (nextInLine.contact && nextInLine.contact.email) {
-                await sendMailOperations.internal.sendSystemMail.internalCall({
-                    data: {
-                        to: nextInLine.contact.email,
-                        subject: title,
-                        body: message,
-                    },
-                })
-            }
+            await notifyPromotedFromWaitingList(registration.event.name, [nextInLine])
         }
     }),
 
