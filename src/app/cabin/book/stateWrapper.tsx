@@ -97,13 +97,17 @@ export default function StateWrapper({
     if (!cabinProduct) {
         throw new Error('Ingen produkt med type CABIN.')
     }
-    const bedProducts = cabinProducts.filter(product => product.type === 'BED')
+    const bedProducts = useMemo(() => cabinProducts.filter(product => product.type === 'BED'), [cabinProducts])
 
-    const [bookingType, setBookingType] = useState<BookingType>(canBookCabin ? 'CABIN' : 'BED')
+    // canBookCabin is false until the session has loaded, which is after the first render, so the
+    // default booking type is derived here rather than fixed in the initial state.
+    const [chosenBookingType, setBookingType] = useState<BookingType | null>(null)
+    const bookingType = chosenBookingType ?? (canBookCabin ? 'CABIN' : 'BED')
     const [dateRange, setDateRange] = useState<DateRange>({})
 
-    const [selectedProducts, setSelectedProducts] = useState<CabinProductExtended[]>(
-        canBookCabin ? [cabinProduct] : bedProducts
+    const selectedProducts = useMemo(
+        () => (bookingType === 'CABIN' ? [cabinProduct] : bedProducts),
+        [bookingType, cabinProduct, bedProducts]
     )
     const [bedAmounts, setBedAmounts] = useState<number[]>(Array(bedProducts.length).fill(0))
 
@@ -181,12 +185,12 @@ export default function StateWrapper({
         }))
     }
 
-    if (!canBookCabin && !canBookBed) {
-        return <>Du kan ikke booke hytta.</>
-    }
-
     if (session.loading || !reservationState.checked || !storageKey) {
         return <>Laster session...</>
+    }
+
+    if (!canBookCabin && !canBookBed) {
+        return <>Du kan ikke booke hytta.</>
     }
 
     const { reservation } = reservationState
@@ -313,14 +317,7 @@ export default function StateWrapper({
                     }
                 ]}
                 value={bookingType}
-                onChange={(newType) => {
-                    setBookingType(newType)
-                    if (newType === 'CABIN') {
-                        setSelectedProducts([cabinProduct])
-                    } else {
-                        setSelectedProducts(bedProducts)
-                    }
-                }}
+                onChange={setBookingType}
             />
         }
 
