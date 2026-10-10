@@ -6,6 +6,7 @@ import { paymentOperations } from '@/services/ledger/payments/operations'
 import { stripeWebhookCallback } from '@/services/ledger/payments/stripeWebhookCallback'
 import { ledgerAccountOperations } from '@/services/ledger/accounts/operations'
 import { ledgerMovementOperations } from '@/services/ledger/movements/operations'
+import { ledgerTransactionOperations } from '@/services/ledger/transactions/operations'
 import { userOperations } from '@/services/users/operations'
 import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
 import type Stripe from 'stripe'
@@ -36,9 +37,10 @@ function mockStripe() {
         } as never
     })
     const cancelIntent = jest.spyOn(stripe.paymentIntents, 'cancel').mockResolvedValue({} as never)
+    const retrieveIntent = jest.spyOn(stripe.paymentIntents, 'retrieve')
     jest.spyOn(stripe.charges, 'list').mockImplementation(() => chargesWithStripeFee() as never)
 
-    return { createIntent, cancelIntent }
+    return { createIntent, cancelIntent, retrieveIntent }
 }
 
 let stripeMocks: ReturnType<typeof mockStripe>
@@ -139,6 +141,65 @@ describe('creating payments', () => {
         await expect(paymentOperations.initiate({ params: { paymentId: payment.id }, bypassAuth: true }))
             .rejects.toThrow(new Smorekopp('BAD PARAMETERS'))
         expect(stripeMocks.createIntent).toHaveBeenCalledTimes(1)
+    })
+})
+
+describe('canceling payments', () => {
+    const cancelTransaction = (id: number) => ledgerTransactionOperations.cancel({ params: { id }, bypassAuth: true })
+
+    test('canceling a pending deposit cancels its payment intent', async () => {
+        const account = await createAccount('stripecancel')
+        const { transactionId, paymentIntentId } = await startStripeDeposit(account.id)
+
+        await cancelTransaction(transactionId)
+
+        expect(await readTransaction(transactionId)).toMatchObject({
+            state: 'CANCELED',
+            payment: { state: 'CANCELED' },
+        })
+        expect(stripeMocks.cancelIntent.mock.calls[0][0]).toBe(paymentIntentId)
+    })
+
+    test('an intent Stripe has already canceled is written off here too', async () => {
+        const account = await createAccount('stripecanceledbefore')
+        const { transactionId } = await startStripeDeposit(account.id)
+        stripeMocks.cancelIntent.mockRejectedValueOnce(new Error('Intent is already canceled'))
+        stripeMocks.retrieveIntent.mockResolvedValueOnce({ status: 'canceled' } as never)
+
+        await cancelTransaction(transactionId)
+
+        expect(await readTransaction(transactionId)).toMatchObject({
+            state: 'CANCELED',
+            payment: { state: 'CANCELED' },
+        })
+    })
+
+    test('an intent Stripe would not cancel keeps its payment open', async () => {
+        const account = await createAccount('stripecancelfailed')
+        const { transactionId } = await startStripeDeposit(account.id)
+        stripeMocks.cancelIntent.mockRejectedValueOnce(new Error('Stripe is down'))
+        stripeMocks.retrieveIntent.mockResolvedValueOnce({ status: 'requires_payment_method' } as never)
+
+        await expect(cancelTransaction(transactionId)).rejects.toThrow(new Smorekopp('SERVER ERROR'))
+
+        expect(await readTransaction(transactionId)).toMatchObject({
+            state: 'PENDING',
+            payment: { state: 'PROCESSING' },
+        })
+    })
+
+    test('an intent that succeeded before its webhook arrived cannot be canceled', async () => {
+        const account = await createAccount('stripecancelsucceeded')
+        const { transactionId } = await startStripeDeposit(account.id)
+        stripeMocks.cancelIntent.mockRejectedValueOnce(new Error('Intent has already succeeded'))
+        stripeMocks.retrieveIntent.mockResolvedValueOnce({ status: 'succeeded' } as never)
+
+        await expect(cancelTransaction(transactionId)).rejects.toThrow(new Smorekopp('BAD PARAMETERS'))
+
+        expect(await readTransaction(transactionId)).toMatchObject({
+            state: 'PENDING',
+            payment: { state: 'PROCESSING' },
+        })
     })
 })
 

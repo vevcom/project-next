@@ -160,7 +160,9 @@ export const paymentOperations = {
      * Cancels a payment that is still awaiting completion (e.g. an abandoned Stripe checkout).
      * If it's a STRIPE payment with a live payment intent, cancels that too, so a webhook that
      * arrives late can never later mark it SUCCEEDED. A no-op if the payment already reached a
-     * terminal state (SUCCEEDED/FAILED/CANCELED) by the time this runs.
+     * terminal state (SUCCEEDED/FAILED/CANCELED) by the time this runs. Fails, leaving the
+     * payment as it was, if the intent could not be canceled: the money could still be taken for
+     * something the caller is about to give up.
      */
     cancel: defineOperation({
         authorizer: () => paymentAuth.cancel,
@@ -174,16 +176,25 @@ export const paymentOperations = {
             })
 
             if (payment.provider === 'STRIPE' && payment.stripePayment?.paymentIntentId) {
+                const paymentIntentId = payment.stripePayment.paymentIntentId
                 try {
                     await stripe.paymentIntents.cancel(
-                        payment.stripePayment.paymentIntentId,
+                        paymentIntentId,
                         {},
                         { idempotencyKey: `project-next-payment-id-${params.paymentId}-cancel` },
                     )
                 } catch (error) {
-                    // Tolerate it already being canceled, succeeded, or gone on Stripe's side -
-                    // our own state update below is guarded and will simply no-op if so.
-                    logger.error(`Failed to cancel Stripe payment intent for payment ${params.paymentId}`, { error })
+                    // Stripe refuses to cancel an intent that is already final. That is fine when
+                    // it is canceled. A succeeded one is about to be reported by the webhook, and
+                    // one still open could be paid later, so neither may be written off here.
+                    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId).catch(() => null)
+                    if (paymentIntent?.status === 'succeeded') {
+                        throw new ServiceError('BAD PARAMETERS', 'Betalingen er allerede gjennomført.')
+                    }
+                    if (paymentIntent?.status !== 'canceled') {
+                        logger.error(`Could not cancel Stripe payment intent for payment ${params.paymentId}`, { error })
+                        throw new ServiceError('SERVER ERROR', 'Betalingen kunne ikke avbrytes hos Stripe. Prøv igjen.')
+                    }
                 }
             }
 
