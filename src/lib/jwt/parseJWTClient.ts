@@ -15,7 +15,7 @@ import type { ActionReturn } from '@/services/actionTypes'
  * @returns A promise that resolves to an `ActionReturn` object containing the parsed JWT payload if the JWT is valid,
  * or an error object if the JWT is invalid.
  */
-export async function parseJWT(
+export async function parseJWTClient(
     token: string,
     publicKey: string,
     timeOffset: number,
@@ -40,27 +40,33 @@ export async function parseJWT(
         .replace('-----END PUBLIC KEY-----', '')
         .replace(/\s/g, '')
 
-    const key = await crypto.subtle.importKey(
-        'spki', // Subject Public Key Info
-        decodeBase64Url(keyStripped),
-        {
-            name: 'ECDSA',
-            namedCurve: 'P-256',
-        },
-        true,
-        ['verify']
-    )
+    // Decoding and Web Crypto throw on malformed input. A scanned token must still come back as a
+    // result the reader can show, never as a rejected promise.
+    let signValid: boolean
+    try {
+        const key = await crypto.subtle.importKey(
+            'spki', // Subject Public Key Info
+            decodeBase64Url(keyStripped),
+            {
+                name: 'ECDSA',
+                namedCurve: 'P-256',
+            },
+            true,
+            ['verify']
+        )
 
-    const signValid = await crypto.subtle.verify(
-        {
-            name: 'ECDSA',
-            hash: 'SHA-256'
-        },
-        key,
-        decodeBase64Url(tokenS[2]),
-        new TextEncoder().encode(`${tokenS[0]}.${tokenS[1]}`),
-    )
-
+        signValid = await crypto.subtle.verify(
+            {
+                name: 'ECDSA',
+                hash: 'SHA-256'
+            },
+            key,
+            decodeBase64Url(tokenS[2]),
+            new TextEncoder().encode(`${tokenS[0]}.${tokenS[1]}`),
+        )
+    } catch {
+        return invalidJWT('Malformatted JWT')
+    }
 
     if (!signValid) {
         return invalidJWT('Invalid JWT signature')
