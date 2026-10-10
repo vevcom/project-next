@@ -8,6 +8,13 @@ export const updateArticleCategoryAction = makeAction(articleCategoryOperations.
 export const addArticleToCategoryAction = makeAction(articleCategoryOperations.addArticleToCategory)
 export const removeArticleFromCategoryAction = makeAction(articleCategoryOperations.removeArticleFromCategory)
 
+export const updateArticleCategoryRegularLevelVisibilityAction = makeAction(
+    articleCategoryOperations.visibility.updateRegularLevel
+)
+export const updateArticleCategoryAdminLevelVisibilityAction = makeAction(
+    articleCategoryOperations.visibility.updateAdminLevel
+)
+
 export const updateArticleCategoryArticleAction = makeAction(
     articleCategoryOperations.updateArticle.update
 )
