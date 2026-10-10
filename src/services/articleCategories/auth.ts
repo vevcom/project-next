@@ -13,4 +13,4 @@ export const articleCategoryAuth = {
     addArticleToCategory: Require.nothing(),
     // visibility another vicibility table ....
     readArticleInCategory: Require.nothing(),
-}
+} as const
