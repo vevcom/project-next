@@ -38,8 +38,8 @@ const { page, generateMetadata } = serverPage({
 
         return { articleCategory, article }
     },
-    capabilities: () => ({
-        canEdit: articleCategoryAuth.updateArticle,
+    capabilities: (data) => ({
+        canEdit: articleCategoryAuth.updateArticle.data({ visibility: data.articleCategory.visibility }),
     }),
     metadata: (data) => ({ title: data.article.name }),
     render: ({ data, capabilities }) => (

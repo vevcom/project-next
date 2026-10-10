@@ -23,7 +23,6 @@ import {
     faBook,
     faComment,
     faCamera,
-    faCircleInfo,
     faNewspaper,
     faCalendar,
     faSuitcase,
@@ -144,12 +143,6 @@ export const navDef: NavItem[] = [
         href: '/image-collections',
         icon: faCamera,
         authorizers: () => [dynamicImageAuth.readCollectionPage],
-    },
-    {
-        name: 'Om Omega',
-        href: '/articles/om%20omega',
-        icon: faCircleInfo,
-        authorizers: () => [articleCategoryAuth.read],
     },
     {
         name: 'Interessegrupper',
