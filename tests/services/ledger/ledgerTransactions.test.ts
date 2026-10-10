@@ -1,10 +1,14 @@
-import { allSettledOrThrow } from 'tests/utils'
+import { allSettledOrThrow, recordSentMail } from 'tests/utils'
 import { prisma } from '@/prisma/client'
 import { ledgerAccountOperations } from '@/services/ledger/accounts/operations'
 import { userOperations } from '@/services/users/operations'
 import { paymentOperations } from '@/services/ledger/payments/operations'
 import { ledgerTransactionOperations } from '@/services/ledger/transactions/operations'
+import { defineOperation } from '@/services/serviceOperation'
+import { Require } from '@/auth/authorizer/Require'
 import { beforeAll, beforeEach, afterEach, describe, expect, test } from '@jest/globals'
+import { z } from 'zod'
+import { randomUUID } from 'crypto'
 
 const TEST_ACCOUNT_COUNT = 3
 const INITIAL_BALANCE = { amount: 100_00, fees: 10_00 }
@@ -142,6 +146,73 @@ describe('ledger transactions', () => {
 
                 expect(balance.amount).toBe(INITIAL_BALANCE.amount)
             })
+        })
+    })
+
+    // Paying for the cabin booking of a guest is confirmed by mail, which is what the side
+    // effects of the completion hook are observed through.
+    describe('payment completion', () => {
+        const guestEmail = 'guest@example.com'
+        let sentMail: ReturnType<typeof recordSentMail>
+
+        async function createGuestBooking() {
+            return await prisma.booking.create({
+                data: {
+                    type: 'CABIN',
+                    start: new Date('2030-01-01'),
+                    end: new Date('2030-01-03'),
+                    numberOfMembers: 0,
+                    numberOfNonMembers: 0,
+                    secret: randomUUID(),
+                    transactionTimeout: new Date(Date.now() + 10 * 60 * 1000),
+                    guestUser: {
+                        create: { firstname: 'Test', lastname: 'Guest', email: guestEmail, mobile: '12345678' },
+                    },
+                },
+            })
+        }
+
+        const payForBooking = defineOperation({
+            authorizer: () => Require.nothing(),
+            paramsSchema: z.object({ bookingId: z.number(), rollBack: z.boolean() }),
+            opensTransaction: true,
+            operation: async ({ params }) => prisma.$transaction(async tx => {
+                const transaction = await ledgerTransactionOperations.create({
+                    params: { purpose: 'CABIN_BOOKING', ledgerEntries: [], bookingId: params.bookingId },
+                    prisma: tx,
+                    bypassAuth: true,
+                })
+
+                expect(transaction.state).toBe('SUCCEEDED')
+                expect(sentMail).not.toHaveBeenCalled()
+
+                if (params.rollBack) throw new Error('Rolled back')
+            }),
+        })
+
+        beforeEach(() => {
+            sentMail = recordSentMail()
+        })
+
+        test('confirms the booking once the payment has committed', async () => {
+            const booking = await createGuestBooking()
+
+            await payForBooking({ params: { bookingId: booking.id, rollBack: false } })
+
+            expect(sentMail).toHaveBeenCalledTimes(1)
+            expect(sentMail).toHaveBeenCalledWith(expect.objectContaining({ to: guestEmail }))
+            const paidBooking = await prisma.booking.findUniqueOrThrow({ where: { id: booking.id } })
+            expect(paidBooking.transactionTimeout).toBeNull()
+        })
+
+        test('sends no confirmation when the payment rolls back', async () => {
+            const booking = await createGuestBooking()
+
+            await expect(payForBooking({ params: { bookingId: booking.id, rollBack: true } })).rejects.toThrow()
+
+            expect(sentMail).not.toHaveBeenCalled()
+            const unpaidBooking = await prisma.booking.findUniqueOrThrow({ where: { id: booking.id } })
+            expect(unpaidBooking.transactionTimeout).not.toBeNull()
         })
     })
 })
