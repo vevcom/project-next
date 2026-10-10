@@ -8,7 +8,7 @@ import { SUCCESS_FEEDBACK_TIME } from '@/components/Form/constants'
 import { updateNotificationSubscriptionsAction } from '@/services/notifications/subscription/actions'
 import { notificationMethodsArray, notificationMethodsDisplayMap } from '@/services/notifications/constants'
 import { useState } from 'react'
-import type { UserFiltered } from '@/services/users/types'
+import type { UserBasic } from '@/services/users/types'
 import type { MinimizedSubscription, Subscription } from '@/services/notifications/subscription/types'
 import type { NotificationBranch } from './types'
 import type { ErrorMessage } from '@/services/error'
@@ -132,7 +132,7 @@ function prepareDataForDelivery(tree: NotificationBranch) {
 type PropTypes = {
     channels: ExpandedNotificationChannel[],
     subscriptions: Subscription[],
-    user: UserFiltered
+    user: UserBasic
 }
 
 export default function NotificationSettings({

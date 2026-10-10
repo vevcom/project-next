@@ -1,6 +1,6 @@
 'use client'
 
-import styles from './NotificaionMethodSelector.module.scss'
+import styles from './NotificationMethodSelector.module.scss'
 import NotificationMethodCheckboxes from './NotificationMethodCheckboxes'
 import React from 'react'
 import type { NotificationMethodTypes, NotificationMethodGeneral } from '@/services/notifications/types'

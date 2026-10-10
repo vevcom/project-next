@@ -4,7 +4,7 @@ import { Smorekopp } from '@/services/error'
 import { prisma } from '@/prisma-pn-client-instance'
 import { userOperations } from '@/services/users/operations'
 import { userSchemas } from '@/services/users/schemas'
-import { userFilterSelection } from '@/services/users/constants'
+import { userPrivateSelection } from '@/services/users/constants'
 import { describe, expect, test } from '@jest/globals'
 
 // Sending mail does not work under jest, so these stay on the paths that send no verification mail:
@@ -27,13 +27,12 @@ async function createUser({ withPassword }: { withPassword: boolean }) {
             ledgerAccount: { create: { type: 'USER' } },
             feideAccount: { create: {
                 id: `feide-sub-${username}`,
-                accessToken: '',
                 email: feideEmail,
                 expiresAt: new Date(),
                 issuedAt: new Date(),
             } },
         },
-        select: userFilterSelection,
+        select: userPrivateSelection,
     })
     if (withPassword) {
         await prisma.credentials.create({

@@ -43,57 +43,67 @@ export default function EditJobAd({ jobAd, children }: PropTypes) {
 
     return (
         <div className={styles.EditJobAd}>
-            <div className={styles.update}>
-                <Form
-                    action={updateAction}
-                    navigateOnSuccess={(data) => `/career/jobads/${data ? formatVevenUri(data.articleName, data.id) : ''}`}
-                    submitText="Oppdater"
-                >
-                    <Textarea
-                        defaultValue={jobAd.description || ''}
-                        label="Beskrivelse"
-                        name="description"
-                    />
-                    <TextInput
-                        defaultValue={jobAd.location || ''}
-                        label="Sted"
-                        name="location"
-                    />
-                    <SelectedCompany />
-                    <SelectString
-                        options={jobAdOptions}
-                        label="Type"
-                        name="type"
-                        defaultValue={jobAd.type}
-                    />
-                    <DateInput
-                        includeTime
-                        label="Søknadsfrist"
-                        name="applicationDeadline"
-                        defaultValue={jobAd.applicationDeadline || ''}
-                    />
-                    <Slider
-                        label="Aktiv"
-                        name="active"
-                        defaultChecked={jobAd.active}
-                        color="primary"
-                    />
-                </Form>
-                <Form
-                    action={configureAction(destroyJobAdAction, { params: { id: jobAd.id } })}
-                    navigateOnSuccess="/career/jobads"
-                    submitText="Slett annonse"
-                    confirmation={{
-                        confirm: true,
-                        text: 'Er du sikker på at du vil slette denne annonsen? ' +
-                        'Dette kan ikke angres. Vi anbefaler å sette annonsen ' +
-                        'til inaktiv i stedet.'
-                    }}
-                    submitColor="red"
-                >
-                </Form>
+            <div className={styles.column}>
+                <h3 className={styles.heading}>Annonse</h3>
+                <div className={styles.update}>
+                    <Form
+                        action={updateAction}
+                        navigateOnSuccess={(data) =>
+                            `/career/jobads/${data ? formatVevenUri(data.articleName, data.id) : ''}`
+                        }
+                        submitText="Oppdater"
+                    >
+                        <Textarea
+                            defaultValue={jobAd.description || ''}
+                            label="Beskrivelse"
+                            name="description"
+                        />
+                        <TextInput
+                            defaultValue={jobAd.location || ''}
+                            label="Sted"
+                            name="location"
+                        />
+                        <SelectedCompany />
+                        <SelectString
+                            options={jobAdOptions}
+                            label="Type"
+                            name="type"
+                            defaultValue={jobAd.type}
+                        />
+                        <DateInput
+                            includeTime
+                            label="Søknadsfrist"
+                            name="applicationDeadline"
+                            defaultValue={jobAd.applicationDeadline || ''}
+                        />
+                        <Slider
+                            label="Aktiv"
+                            name="active"
+                            defaultChecked={jobAd.active}
+                            color="primary"
+                        />
+                    </Form>
+                    <div className={styles.destroy}>
+                        <Form
+                            action={configureAction(destroyJobAdAction, { params: { id: jobAd.id } })}
+                            navigateOnSuccess="/career/jobads"
+                            submitText="Slett annonse"
+                            confirmation={{
+                                confirm: true,
+                                text: 'Er du sikker på at du vil slette denne annonsen? ' +
+                                'Dette kan ikke angres. Vi anbefaler å sette annonsen ' +
+                                'til inaktiv i stedet.'
+                            }}
+                            submitColor="red"
+                        >
+                        </Form>
+                    </div>
+                </div>
             </div>
-            <CompanyChooser className={styles.companyChooser} />
+            <div className={styles.column}>
+                <h3 className={styles.heading}>Arbeidsgiver</h3>
+                <CompanyChooser className={styles.companyChooser} />
+            </div>
         </div>
     )
 }

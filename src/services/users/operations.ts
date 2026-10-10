@@ -5,7 +5,10 @@ import {
     defaultSearchResultLimit,
     maxNumberOfGroupsInFilter,
     standardMembershipSelection,
-    userFilterSelection
+    userBasicSelection,
+    userCardSelection,
+    userPrivateSelection,
+    userProfileSelection
 } from './constants'
 import { userProfileImageOperations } from './profileImageCollection'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
@@ -16,11 +19,11 @@ import { NTNUEmailDomain } from '@/services/mail/constants'
 import { sendVerifyEmail } from '@/lib/email/systemMail/verifyEmail'
 import { sendEmailChangedMail } from '@/lib/email/systemMail/emailChanged'
 import { omegaMembershipGroupOperations } from '@/services/groups/omegaMembershipGroups/operations'
-import { sendUserInvitationEmail } from '@/lib/email/systemMail/userInvitivation'
+import { sendUserInvitationEmail } from '@/lib/email/systemMail/userInvitation'
 import { defineOperation } from '@/services/serviceOperation'
 import { ServiceError } from '@/services/error'
 import { getMembershipFilter } from '@/auth/getMembershipFilter'
-import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
+import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { decryptAndComparePassword, hashAndEncryptPassword } from '@/auth/passwordHash'
 import { omegaOrderOperations } from '@/services/omegaOrder/operations'
 import { ledgerAccountOperations } from '@/services/ledger/accounts/operations'
@@ -59,7 +62,7 @@ export const userOperations = {
                         create: { type: 'USER' },
                     },
                 },
-                select: userFilterSelection
+                select: userPrivateSelection
             })
 
             // Don't send mail during testing.
@@ -87,7 +90,22 @@ export const userOperations = {
                 id: params.id,
                 ...params
             },
-            select: userFilterSelection
+            select: userPrivateSelection
+        })
+    }),
+
+    readBasic: defineOperation({
+        paramsSchema: z.object({
+            username: z.string().optional(),
+            id: z.coerce.number().optional(),
+        }),
+        authorizer: ({ params }) => userAuth.readBasic.data({ userField: params }),
+        operation: async ({ prisma, params }) => await prisma.user.findUniqueOrThrow({
+            where: {
+                id: params.id,
+                ...params
+            },
+            select: userBasicSelection
         })
     }),
 
@@ -98,13 +116,13 @@ export const userOperations = {
             email: z.string().trim().toLowerCase().optional(),
             studentCard: z.string().optional(),
         }),
-        authorizer: ({ params }) => userAuth.read.data({ userField: params }),
+        authorizer: ({ params }) => userAuth.readOrNull.data({ userField: params }),
         operation: async ({ prisma, params }) => await prisma.user.findUnique({
             where: {
                 id: params.id, // This is a bit wierd, but now ts is satisfied.
                 ...params
             },
-            select: userFilterSelection
+            select: userPrivateSelection
         })
     }),
 
@@ -132,7 +150,7 @@ export const userOperations = {
             const user = await prisma.user.findUniqueOrThrow({
                 where: { id: userId },
                 select: {
-                    ...userFilterSelection,
+                    ...userProfileSelection,
                     bioParagraph: true,
                     image: { include: expandedImageIncluder },
                 },
@@ -228,9 +246,9 @@ export const userOperations = {
             const groups = [...details.groups, ...(details.selectedGroup ? [details.selectedGroup] : [])]
 
             const users = await prisma.user.findMany({
-                ...cursorPageingSelection(page),
+                ...cursorPagingSelection(page),
                 select: {
-                    ...userFilterSelection,
+                    ...userCardSelection,
                     memberships: {
                         select: {
                             admin: true,
@@ -423,13 +441,12 @@ export const userOperations = {
         operation: async ({ prisma, data, params }) => {
             const passwordHash = await hashAndEncryptPassword(data.password)
 
-            await prisma.credentials.update({
-                where: {
-                    userId: params.id,
-                },
+            await prisma.user.update({
+                where: { id: params.id },
                 data: {
-                    passwordHash,
-                }
+                    sessionEpoch: { increment: 1 },
+                    credentials: { update: { passwordHash } },
+                },
             })
 
             return null
@@ -448,7 +465,9 @@ export const userOperations = {
                     id: params.id,
                 },
                 select: {
-                    ...userFilterSelection,
+                    ...userBasicSelection,
+                    email: true,
+                    emailVerified: true,
                     feideAccount: {
                         select: {
                             email: true,
@@ -486,7 +505,7 @@ export const userOperations = {
                         email: data.email,
                         emailVerified: (new Date()).toISOString()
                     },
-                    select: userFilterSelection,
+                    select: { ...userBasicSelection, email: true },
                 })
                 await sendEmailChangedMail(updatedUser, storedUser.email)
 
@@ -552,6 +571,10 @@ export const userOperations = {
 
             if (storedUser.acceptedTerms) throw new ServiceError('DUPLICATE', 'Brukeren er allerede registrert.')
 
+            if (!storedUser.emailVerified) {
+                throw new ServiceError('DISSALLOWED', 'Du må bekrefte e-posten din før du kan registrere deg.')
+            }
+
             const passwordHash = await hashAndEncryptPassword(password)
 
             const results = await prisma.$transaction([
@@ -566,7 +589,7 @@ export const userOperations = {
                         mobile,
                         allergies,
                     },
-                    select: userFilterSelection
+                    select: userPrivateSelection
                 }),
                 prisma.credentials.upsert({
                     where: {
@@ -625,8 +648,8 @@ export const userOperations = {
     }),
 
     readUserWithBalance: defineOperation({
-        authorizer: ({ params }) => userAuth.read.data({
-            userField: { username: params.username || '' },
+        authorizer: async ({ params, prisma }) => userAuth.readUserWithBalance.data({
+            userField: { id: (await prisma.user.findFirst({ where: params, select: { id: true } }))?.id },
         }),
         paramsSchema: z.object({
             username: z.string().optional(),
@@ -637,7 +660,8 @@ export const userOperations = {
         operation: async ({ prisma: prisma_, params }) => {
             const user = await prisma_.user.findFirstOrThrow({
                 where: params,
-                include: {
+                select: {
+                    ...userBasicSelection,
                     image: { include: expandedImageIncluder },
                 }
             })
@@ -648,8 +672,8 @@ export const userOperations = {
                 })
             }
 
-            // bypassAuth: reading this user's own balance is already covered by userAuth.read
-            // above; ledgerAccountAuth.read/calculateBalance's own ownership check would
+            // bypassAuth: userAuth.readUserWithBalance above already applies the ledger's rule (the
+            // user themselves or LEDGER_ADMIN); ledgerAccountAuth.read/calculateBalance's own check would
             // otherwise reject an API-key caller (no session user) looking up someone else's
             // balance.
             const account = await ledgerAccountOperations.read({

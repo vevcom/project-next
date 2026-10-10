@@ -248,14 +248,14 @@ const { page, generateMetadata } = serverPage({
         )
         return { news, doubleLevelVisibility }
     },
-    capabilityChecks: {
-        canEdit: (data) => newsAuth.updateArticle.data({
+    capabilities: (data) => ({
+        canEdit: newsAuth.updateArticle.data({
             visibility: data.doubleLevelVisibility ?? EMPTY_VISIBILITY
         }),
-    },
+    }),
     metadata: (data) => ({ title: data.news.article.name }),
     render: ({ data, capabilities }) => (
-        <Article article={data.news.article} canEdit={capabilities.canEdit.toJsObject()} />
+        <Article article={data.news.article} capabilities={capabilities} />
     ),
 })
 
@@ -265,7 +265,7 @@ export { generateMetadata }
 
 - `operation` loads everything the page needs. It runs inside a service context seeded with the request's session, so operations called in it pick the session up without it being passed. It runs once per request, shared by the page and `generateMetadata`.
 - A service error thrown from `operation` renders `ServiceErrorView` in place of the page; `NOT FOUND` becomes `notFound()` and `UNAUTHENTICATED` redirects to login. Wrap calls whose failure should not take the page down in `withFallback(promise, fallback)`. It falls back on every service error; pass the error codes as a third argument to fall back only on those, e.g. `withFallback(promise, null, ['NOT FOUND'])`.
-- Access to the page is decided in `operation`, by the authorizers of the operations it calls or explicitly (admin pages call `authorizeAdminPage(path, session)`). `capabilityChecks` do not guard the page: they declare what the user may do on it under `can[Something]` keys, and `render` receives the results as `capabilities`.
+- Access to the page is decided in `operation`, by the authorizers of the operations it calls or explicitly (admin pages call `authorizeAdminPage(path, session)`). `capabilities` does not guard the page: it declares what the user may do on it under `can[Something]` keys, and `render` receives the results as `capabilities` (see [Capabilities](#capabilities)).
 - The page title comes from `metadata` — don't render `PageTitleSetter` in a page built with `serverPage`.
 
 #### Layouts: `serverLayout`
@@ -312,6 +312,14 @@ Never do this manually in client components:
 const session = useSession()
 const canDoThing = !session.loading && someAuth.operation.data({ userId }).auth(session.session).authorized
 ```
+
+### Capabilities
+
+What the user may do on a page is declared as capabilities: `can[Something]` keys mapped to authorizers, run against the session into `AuthResult`s. The types and helpers live in `src/auth/authorizer/capabilities.ts`.
+
+- Pages and layouts declare them in `serverPage`/`serverLayout`'s `capabilities: (data, session) => ({ canEdit: fooAuth.update.data({ ... }) })` and read them in `render` as `capabilities.canEdit.authorized`. A rule that needs the session's own user takes the `session` argument (`session.user ? fooAuth.create.data({ userId: session.user.id }) : Require.user()`) — don't run `.auth(session)` inline in `render`.
+- Server components take one `capabilities: Capabilities<'canEdit' | 'canDestroy'>` prop and read `capabilities.canEdit.authorized`. Never destructure it, and never take `session` to run authorizers in the component or a boolean per ability. A parent passes its own object on when the keys match (`capabilities={capabilities}`), maps them otherwise (`capabilities={{ canEdit: capabilities.canEditParagraph }}`), and builds them per item of a list with `runCapabilities(session, { ... })`.
+- Client components choose: run the rule themselves with `useAuthorizer`/`useEditMode({ authorizer })` when they know it (the parent passes the ids the rule needs, such as `groupId`), or take `capabilities: CapabilitiesJsObject<'canEdit'>` when the rule belongs to whoever renders them (the CMS editors: whether a paragraph may be edited is the owning service's rule). The server side hands those over with `capabilitiesToJsObject(capabilities)` — an `AuthResult` is a class instance and cannot cross to the client as it is.
 
 ### Operation Naming Conventions
 
