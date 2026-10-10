@@ -79,6 +79,17 @@ describe('waiting list promotion on more places', () => {
         expect(sentMail).toHaveBeenCalledWith(expect.objectContaining({ to: guestEmail }))
     })
 
+    test('still saves the places and tells the others when a guest mail cannot be sent', async () => {
+        const event = await createEventWithWaitingList()
+        sentMail.mockRejectedValueOnce(new Error('Mail server down'))
+
+        await eventOperations.update({ params: { id: event.id }, data: { places: 3 }, bypassAuth: true })
+
+        await expect(prisma.event.findUniqueOrThrow({ where: { id: event.id } })).resolves.toMatchObject({ places: 3 })
+        expect(notifySpy).toHaveBeenCalledTimes(1)
+        expect(sentMail).toHaveBeenCalledTimes(1)
+    })
+
     test('tells no one when the places do not grow', async () => {
         const event = await createEventWithWaitingList()
 
