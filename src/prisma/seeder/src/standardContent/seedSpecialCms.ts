@@ -141,7 +141,7 @@ async function upsertSpecialCmsImage(
     imageConfig: ImagesAvailablieForCms
 ) {
     return upsert({
-        checkExistance: () => prisma.cmsImage.findUnique({
+        checkExistence: () => prisma.cmsImage.findUnique({
             where: { special },
             select: { id: true }
         }),
@@ -165,7 +165,7 @@ async function upsertSpecialCmsParagraph(
     file: string
 ) {
     return upsert({
-        checkExistance: () => prisma.cmsParagraph.findUnique({
+        checkExistence: () => prisma.cmsParagraph.findUnique({
             where: { special },
             select: { id: true }
         }),
@@ -188,7 +188,7 @@ async function upsertSpecialCmsLink(
     link: SeedCmsLinkConfig
 ) {
     return upsert({
-        checkExistance: () => prisma.cmsLink.findUnique({
+        checkExistence: () => prisma.cmsLink.findUnique({
             where: { special },
             select: { id: true }
         }),
@@ -211,7 +211,7 @@ async function upsertSpecialCmsArticle(
     article: SeedSpecialArticleConfig
 ) {
     return upsert({
-        checkExistance: () => prisma.article.findUnique({
+        checkExistence: () => prisma.article.findUnique({
             where: { special },
             select: { id: true }
         }),

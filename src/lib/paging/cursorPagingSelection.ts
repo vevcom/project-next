@@ -8,7 +8,7 @@ import type { Page } from '@/lib/paging/types'
  * @param page - the page to cursor-paginate
  * @returns
  */
-export function cursorPageingSelection<const PageSize extends number, Cursor>(
+export function cursorPagingSelection<const PageSize extends number, Cursor>(
     page: Page<PageSize, Cursor>
 ): {
     take: number,

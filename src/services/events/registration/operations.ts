@@ -1,6 +1,6 @@
 import '@pn-server-only'
 import {
-    eventRegistrationIncluderDetailed,
+    eventRegistrationSelectionDetailed,
     eventRegistrationQueueOrder,
     eventRegistrationSelection,
     REGISTRATION_READER_TYPE,
@@ -13,11 +13,10 @@ import { Smorekopp } from '@/services/error'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
 import { notificationOperations } from '@/services/notifications/operations'
 import { sendMailOperations } from '@/services/notifications/send-mail/operations'
-import { userFilterSelection } from '@/services/users/constants'
 import { eventOperations } from '@/services/events/operations'
 import { checkVisibility } from '@/auth/visibility/checkVisibility'
 import { defineOperation, defineSubOperation, type PrismaPossibleTransaction } from '@/services/serviceOperation'
-import { cursorPageingSelection } from '@/lib/paging/cursorPageingSelection'
+import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { paymentOperations } from '@/services/ledger/payments/operations'
 import { ledgerTransactionOperations } from '@/services/ledger/transactions/operations'
 import { stalePendingTransactionMs } from '@/services/ledger/transactions/constants'
@@ -280,7 +279,7 @@ export const eventRegistrationOperations = {
             })
 
             const registrations = await prisma.eventRegistration.findMany({
-                ...cursorPageingSelection(params.paging.page),
+                ...cursorPagingSelection(params.paging.page),
                 where: segment,
                 orderBy: eventRegistrationQueueOrder,
                 select: eventRegistrationSelection,
@@ -303,10 +302,10 @@ export const eventRegistrationOperations = {
             if (!segment) return []
 
             return await prisma.eventRegistration.findMany({
-                ...cursorPageingSelection(params.paging.page),
+                ...cursorPagingSelection(params.paging.page),
                 where: segment,
                 orderBy: eventRegistrationQueueOrder,
-                include: eventRegistrationIncluderDetailed,
+                select: eventRegistrationSelectionDetailed,
             })
         }
     }),
@@ -410,9 +409,6 @@ export const eventRegistrationOperations = {
                 skip: registration.event.places - 1,
                 orderBy: eventRegistrationQueueOrder,
                 include: {
-                    user: {
-                        select: userFilterSelection,
-                    },
                     contact: true,
                 }
             })
@@ -422,7 +418,7 @@ export const eventRegistrationOperations = {
             const title = 'Opprykk fra venteliste ved Omegas nettsider'
             const message = `Gratulerer! Du har rykket opp fra venteliste på arrangementet ${registration.event.name}.`
 
-            if (nextInLine.user) {
+            if (nextInLine.userId !== null) {
                 await notificationOperations.createSpecial.internalCall({
                     params: {
                         special: 'EVENT_WAITINGLIST_PROMOTION',
@@ -430,7 +426,7 @@ export const eventRegistrationOperations = {
                     data: {
                         title,
                         message,
-                        targetUserIds: [nextInLine.user.id],
+                        targetUserIds: [nextInLine.userId],
                     },
                 })
             }

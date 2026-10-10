@@ -51,9 +51,6 @@ const read = defineOperation({
         z.object({ shortName: z.string() })
     ]),
     operation: async ({ prisma, params }) => {
-        const defaultProfileImage = await standardImageCollectionOperations.readStandardImage({
-            params: { standardImage: 'DEFAULT_PROFILE_IMAGE' },
-        })
         const defaultCommitteeLogo = await readDefaultCommitteeLogo()
 
         const result = await prisma.committee.findUniqueOrThrow({
@@ -65,16 +62,6 @@ const read = defineOperation({
             ...result,
             logoImage: result.logoImage ?? defaultCommitteeLogo,
             coverImage: result.committeeArticle.coverImage,
-            group: {
-                ...result.group,
-                memberships: result.group.memberships.map(membership => ({
-                    ...membership,
-                    user: {
-                        ...membership.user,
-                        image: membership.user.image ?? defaultProfileImage
-                    }
-                }))
-            }
         }
     }
 })

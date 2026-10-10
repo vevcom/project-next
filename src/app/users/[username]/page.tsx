@@ -238,10 +238,6 @@ const { page, generateMetadata } = serverPage({
                                     {profile.user.username}
                                 </p>
                                 <p>
-                                    <span className={styles.username}>Mobilnummer:</span>
-                                    {profile.user.mobile}
-                                </p>
-                                <p>
                                     <span className={styles.username}>Klasse:</span>
                                     {profile.class ? ClassLevelConfig[profile.class.level].name : 'Ingen klasse'}
                                 </p>

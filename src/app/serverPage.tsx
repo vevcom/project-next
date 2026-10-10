@@ -11,7 +11,7 @@ import { headers } from 'next/headers'
 import { cache } from 'react'
 import type { ErrorCode } from '@/services/error'
 import type { AuthStatus } from '@/auth/authorizer/AuthResult'
-import type { Authorizer, UserRequieredOutOpt } from '@/auth/authorizer/Authorizer'
+import type { Authorizer, UserRequiredOutOpt } from '@/auth/authorizer/Authorizer'
 import type { Session } from '@/auth/session/Session'
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
@@ -36,7 +36,7 @@ type PageProps<Params extends object> = {
     searchParams: Promise<SearchParams>,
 }
 
-type CapabilityAuthorizer = Authorizer<UserRequieredOutOpt, object | undefined>
+type CapabilityAuthorizer = Authorizer<UserRequiredOutOpt, object | undefined>
 
 /**
  * What the current user may do on a page - same keys as the capabilityChecks object (all of the
