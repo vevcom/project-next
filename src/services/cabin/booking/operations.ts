@@ -466,10 +466,23 @@ export const cabinBookingOperations = {
                 // Extends the reservation window to cover the full lifetime a pending attempt is
                 // allowed to stay open for (see stalePendingTransactionMs above), so cabinAvailable
                 // can't release these dates to another booker while this attempt can still succeed.
-                await tx.booking.update({
-                    where: { id: booking.id },
+                // Matching on the window read above also serializes this attempt against a
+                // concurrent release or attempt: whichever of them got to the row first changed
+                // it, and the loser matches nothing.
+                const { count } = await tx.booking.updateMany({
+                    where: {
+                        id: booking.id,
+                        canceled: null,
+                        transactionTimeout: booking.transactionTimeout,
+                    },
                     data: { transactionTimeout: new Date(Date.now() + stalePendingTransactionMs) },
                 })
+                if (count === 0) {
+                    throw new Smorekopp(
+                        'BAD PARAMETERS',
+                        'Reservasjonen ble kansellert eller fikk en annen betaling i mellomtiden.'
+                    )
+                }
 
                 let paymentId: number | undefined
 
@@ -535,7 +548,8 @@ export const cabinBookingOperations = {
     /**
      * Gives up a reservation that was never paid for, so its dates free up right away instead of
      * once its payment window runs out. A payment attempt still under way is canceled with it, so
-     * it can never complete for dates that are no longer held. Releasing it again does nothing.
+     * it can never complete for dates that are no longer held. Releasing it again does nothing;
+     * releasing while a new payment attempt is being started fails and asks for a retry.
      */
     releaseReservation: defineOperation({
         paramsSchema: z.object({
@@ -579,14 +593,28 @@ export const cabinBookingOperations = {
                 })
             }
 
-            await prisma.booking.updateMany({
+            // Matching on the window read above protects a booking that got paid for meanwhile
+            // (the window is cleared) or got a new payment attempt (the window is extended) - see
+            // createPayment, which matches the same way.
+            const { count } = await prisma.booking.updateMany({
                 where: {
                     id: params.bookingId,
                     canceled: null,
-                    transactionTimeout: { not: null }, // Protect against canceling a booking that just got paid.
+                    transactionTimeout: booking.transactionTimeout,
                 },
                 data: { canceled: new Date() },
             })
+            if (count === 0) {
+                const current = await prisma.booking.findUniqueOrThrow({
+                    where: { id: params.bookingId },
+                    select: { canceled: true },
+                })
+                if (current.canceled !== null) return
+                throw new Smorekopp(
+                    'BAD PARAMETERS',
+                    'En betaling for reservasjonen ble startet i mellomtiden. Prøv igjen.'
+                )
+            }
         },
     }),
 }
