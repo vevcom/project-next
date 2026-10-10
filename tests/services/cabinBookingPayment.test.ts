@@ -76,6 +76,11 @@ async function createStaleAttempt(booking: { id: number, secret: string }) {
     })
 }
 
+/** The error either operation gives up with when the other got to the booking first. */
+function raceLost(message: string) {
+    return { errorCode: 'BAD PARAMETERS', errors: [{ message: expect.stringContaining(message) }] }
+}
+
 async function readBookingState(bookingId: number) {
     const booking = await prisma.booking.findUniqueOrThrow({
         where: { id: bookingId },
@@ -129,7 +134,7 @@ describe('cabin booking payment and release', () => {
             return undefined as never
         })
 
-        await expect(createPayment(booking)).rejects.toThrow('i mellomtiden')
+        await expect(createPayment(booking)).rejects.toMatchObject(raceLost('i mellomtiden'))
 
         await expect(readBookingState(booking.id)).resolves.toEqual({ canceled: true, liveAttempts: 0 })
     })
@@ -142,7 +147,7 @@ describe('cabin booking payment and release', () => {
             return undefined as never
         })
 
-        await expect(releaseReservation(booking)).rejects.toThrow('Prøv igjen')
+        await expect(releaseReservation(booking)).rejects.toMatchObject(raceLost('Prøv igjen'))
 
         await expect(readBookingState(booking.id)).resolves.toEqual({ canceled: false, liveAttempts: 1 })
     })
