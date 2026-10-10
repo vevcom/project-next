@@ -45,7 +45,8 @@
     transition: opacity ohma.$transitionTime ease;
 }
 
-.navIconsPanel:hover .navScrollIndicator {
+.navIconsPanel:hover .navScrollIndicator,
+.navIconsPanel:focus-within .navScrollIndicator {
     opacity: 1;
 }
 
