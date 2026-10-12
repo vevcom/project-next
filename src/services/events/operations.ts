@@ -5,7 +5,6 @@ import { defaultSearchResultLimit, eventListSelection } from './constants'
 import { eventRegistrationQueueOrder } from './registration/constants'
 import { notifyPromotedFromWaitingList } from './registration/notifyPromotedFromWaitingList'
 import { notificationOperations } from '@/services/notifications/operations'
-import { getOsloTime } from '@/lib/dates/getOsloTime'
 import { getLocationMapData } from '@/lib/maps/locationMap'
 import { ServiceError } from '@/services/error'
 import { defineOperation, type PrismaPossibleTransaction } from '@/services/serviceOperation'
@@ -152,8 +151,8 @@ export const eventOperations = {
                         eventEnd: data.eventEnd,
                         takesRegistration: data.takesRegistration,
                         places: data.places,
-                        registrationStart: data.registrationStart ?? getOsloTime(),
-                        registrationEnd: data.registrationEnd ?? new Date(getOsloTime().getTime() + 1000 * 60 * 60 * 24),
+                        registrationStart: data.registrationStart ?? new Date(),
+                        registrationEnd: data.registrationEnd ?? new Date(Date.now() + 1000 * 60 * 60 * 24),
                         canBeViewdBy: data.canBeViewdBy,
                         waitingList: data.waitingList,
                         price: data.price,
@@ -211,7 +210,7 @@ export const eventOperations = {
                 select: eventListSelection,
                 where: {
                     eventEnd: {
-                        gte: getOsloTime()
+                        gte: new Date()
                     },
                     eventTagEvents: eventTagSelector(params.tags),
                     ...visibleEventsFilter(visibilityWhereFilter)
@@ -231,7 +230,7 @@ export const eventOperations = {
                 ...cursorPagingSelection(params.paging.page),
                 where: {
                     eventEnd: {
-                        lt: getOsloTime()
+                        lt: new Date()
                     },
                     name: {
                         contains: params.paging.details.name,
