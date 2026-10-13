@@ -4,9 +4,14 @@ import { determineTransactionState } from './determineTransactionState'
 import { runPaymentCompletionHook } from './paymentCompletionHooks'
 import { ledgerTransactionAuth } from './auth'
 import { ledgerTransactionSchemas } from './schemas'
+import { expandedLedgerTransactionIncluder } from './constants'
 import { ledgerAccountOperations } from '@/services/ledger/accounts/operations'
 import { paymentOperations } from '@/services/ledger/payments/operations'
-import { resolveAccountOwnership, resolveAccountsOwnership } from '@/services/ledger/accounts/ownership'
+import {
+    resolveAccountOwnership,
+    resolveAccountsOwnership,
+    resolveTransactionAccounts,
+} from '@/services/ledger/accounts/ownership'
 import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { Smorekopp, ServiceError } from '@/services/error'
 import { defineOperation } from '@/services/serviceOperation'
@@ -15,46 +20,6 @@ import { Prisma as PrismaRuntime } from '@/prisma-generated-pn-client'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 import type { ExpandedLedgerTransaction } from './types'
 import type { Prisma } from '@/prisma-generated-pn-types'
-
-/**
- * Resolves the owning users/groups of a transaction's ledger entries, for authorizers that need
- * to know whether the caller is a party to it. By default resolves every account the transaction
- * touches, debited or credited (see read below); with `debitedOnly`, resolves only the debited
- * side (see cancel below) - being credited by a transaction was never this caller's money to
- * begin with, so that alone shouldn't let them cancel someone else's attempt at it. A transaction
- * with no debit side at all (e.g. a deposit, whose debit side is external to the ledger - see
- * ledgerTransactionAuth.create) has no debited party to narrow down to, so debitedOnly falls back
- * to every party for it, the same as read: being credited is the only bar there is to be.
- */
-async function resolveTransactionAccounts(
-    prisma: Prisma.TransactionClient,
-    transactionId: number,
-    { debitedOnly = false }: { debitedOnly?: boolean } = {},
-) {
-    const transaction = await prisma.ledgerTransaction.findUnique({
-        where: { id: transactionId },
-        select: {
-            ledgerEntries: {
-                select: {
-                    funds: true,
-                    fees: true,
-                    ledgerAccount: {
-                        select: { user: { select: { id: true } }, groups: { select: { groupId: true } } },
-                    },
-                },
-            },
-        },
-    })
-
-    const entries = transaction?.ledgerEntries ?? []
-    const debitEntries = entries.filter(entry => entry.funds < 0 || (entry.fees ?? 0) < 0)
-    const relevantEntries = debitedOnly && debitEntries.length > 0 ? debitEntries : entries
-
-    return relevantEntries.map(entry => ({
-        userId: entry.ledgerAccount?.user?.id ?? null,
-        groupIds: entry.ledgerAccount?.groups.map(group => group.groupId) ?? [],
-    }))
-}
 
 // Nested calls to other operations are not bypassed unless noted: the checks involved are cheap,
 // so it is worth checking access again rather than assuming the outer check already covered it.
@@ -67,48 +32,12 @@ export const ledgerTransactionOperations = {
             accounts: await resolveTransactionAccounts(prisma, params.id),
         }),
         paramsSchema: ledgerTransactionSchemas.params.read,
-        operation: async ({ prisma, params }) => {
-            const transaction = await prisma.ledgerTransaction.findUniqueOrThrow({
-                where: {
-                    id: params.id,
-                },
-                include: {
-                    ledgerEntries: true,
-                    payment: {
-                        include: {
-                            // See ExpandedLedgerTransaction's comment: no clientSecret/paymentIntentId here.
-                            stripePayment: { select: { createdAt: true, updatedAt: true } },
-                            manualPayment: true,
-                        },
-                    },
-                    // See ExpandedLedgerTransaction's comment: no secret, notes, tenantNotes,
-                    // userId or guestUserId here.
-                    booking: {
-                        select: {
-                            start: true,
-                            end: true,
-                            numberOfMembers: true,
-                            numberOfNonMembers: true,
-                            totalPrice: true,
-                            event: { select: { name: true } },
-                        },
-                    },
-                    eventRegistration: {
-                        include: {
-                            event: { select: { name: true, location: true, eventStart: true, eventEnd: true } },
-                        },
-                    },
-                    purchase: {
-                        include: {
-                            shop: { select: { name: true } },
-                            PurchaseProduct: { include: { product: { select: { name: true } } } },
-                        },
-                    },
-                },
-            })
-
-            return transaction
-        }
+        operation: async ({ prisma, params }) => await prisma.ledgerTransaction.findUniqueOrThrow({
+            where: {
+                id: params.id,
+            },
+            include: expandedLedgerTransactionIncluder,
+        }),
     }),
 
     /**
@@ -177,39 +106,7 @@ export const ledgerTransactionOperations = {
                     },
                 },
             },
-            include: {
-                ledgerEntries: true,
-                payment: {
-                    include: {
-                        // See ExpandedLedgerTransaction's comment: no clientSecret/paymentIntentId here.
-                        stripePayment: { select: { createdAt: true, updatedAt: true } },
-                        manualPayment: true,
-                    },
-                },
-                // See ExpandedLedgerTransaction's comment: no secret, notes, tenantNotes, userId
-                // or guestUserId here.
-                booking: {
-                    select: {
-                        start: true,
-                        end: true,
-                        numberOfMembers: true,
-                        numberOfNonMembers: true,
-                        totalPrice: true,
-                        event: { select: { name: true } },
-                    },
-                },
-                eventRegistration: {
-                    include: {
-                        event: { select: { name: true, location: true, eventStart: true, eventEnd: true } },
-                    },
-                },
-                purchase: {
-                    include: {
-                        shop: { select: { name: true } },
-                        PurchaseProduct: { include: { product: { select: { name: true } } } },
-                    },
-                },
-            },
+            include: expandedLedgerTransactionIncluder,
             orderBy: [
                 { createdAt: 'desc' },
                 { id: 'desc' },
@@ -486,8 +383,9 @@ export const ledgerTransactionOperations = {
                 bypassAuth: true,
             })
 
+            // Every transition to FAILED gives its reason (see determineTransactionState), which is the
+            // message the caller needs, so the fallback is only a safety net.
             if (transaction.state === 'FAILED') {
-                // TODO: Better error message.
                 throw new ServiceError('BAD PARAMETERS', transaction.reason ?? 'Transaksjonen feilet av ukjent årsak.')
             }
 

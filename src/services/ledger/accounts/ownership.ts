@@ -102,3 +102,44 @@ export async function resolveAccountsOwnership(
 
     return ownerships
 }
+
+/**
+ * Resolves the owning users and groups of a transaction's ledger entries, for authorizers that
+ * need to know whether the caller is a party to it (see ledgerTransactionAuth). By default
+ * resolves every account the transaction touches, debited or credited (see read); with
+ * `debitedOnly`, resolves only the debited side (see cancel) - being credited by a transaction
+ * was never this caller's money to begin with, so that alone shouldn't let them cancel someone
+ * else's attempt at it. A transaction with no debit side at all (e.g. a deposit, whose debit side
+ * is external to the ledger - see ledgerTransactionAuth.create) has no debited party to narrow
+ * down to, so debitedOnly falls back to every party for it, the same as read: being credited is
+ * the only bar there is to be. Returns no ownerships if the transaction doesn't exist.
+ */
+export async function resolveTransactionAccounts(
+    prisma: Prisma.TransactionClient,
+    transactionId: number,
+    { debitedOnly = false }: { debitedOnly?: boolean } = {},
+): Promise<LedgerAccountOwnership[]> {
+    const transaction = await prisma.ledgerTransaction.findUnique({
+        where: { id: transactionId },
+        select: {
+            ledgerEntries: {
+                select: {
+                    funds: true,
+                    fees: true,
+                    ledgerAccount: {
+                        select: { user: { select: { id: true } }, groups: { select: { groupId: true } } },
+                    },
+                },
+            },
+        },
+    })
+
+    const entries = transaction?.ledgerEntries ?? []
+    const debitEntries = entries.filter(entry => entry.funds < 0 || (entry.fees ?? 0) < 0)
+    const relevantEntries = debitedOnly && debitEntries.length > 0 ? debitEntries : entries
+
+    return relevantEntries.map(entry => ({
+        userId: entry.ledgerAccount?.user?.id ?? null,
+        groupIds: entry.ledgerAccount?.groups.map(group => group.groupId) ?? [],
+    }))
+}
