@@ -269,6 +269,58 @@ export function getContext() {
 }
 
 /**
+ * The side effects runAfterCommit deferred, collected per call of a service operation that opens a
+ * transaction.
+ */
+const afterCommitStorage = new AsyncLocalStorage<(() => Promise<void>)[]>()
+
+/**
+ * Runs a side effect, such as sending mail, that must only happen once the database writes it
+ * reports on are committed. With a plain client it runs right away. With a transaction client it is
+ * deferred until the service operation that opened the transaction (one declaring opensTransaction)
+ * has returned, and dropped if that operation throws, as the transaction may then have rolled back.
+ *
+ * A deferred effect runs once its work is already committed, so a failure in it is logged rather
+ * than thrown.
+ */
+export async function runAfterCommit(
+    prisma: PrismaClient | Prisma.TransactionClient,
+    effect: () => Promise<void>,
+): Promise<void> {
+    if ('$transaction' in prisma) {
+        await effect()
+        return
+    }
+
+    const deferredEffects = afterCommitStorage.getStore()
+    if (!deferredEffects) {
+        throw new Smorekopp(
+            'SERVER ERROR',
+            'Cannot defer a side effect from a transaction that no service operation declaring opensTransaction opened.'
+        )
+    }
+    deferredEffects.push(effect)
+}
+
+/**
+ * Runs an operation that opens a transaction, followed by the side effects deferred inside it.
+ */
+async function runWithEffectsAfterCommit<Return>(operation: () => Promise<Return>): Promise<Return> {
+    const deferredEffects: (() => Promise<void>)[] = []
+    const result = await afterCommitStorage.run(deferredEffects, operation)
+
+    await Promise.all(deferredEffects.map(async effect => {
+        try {
+            await effect()
+        } catch (error) {
+            logger.error('A side effect deferred until after commit failed.', { error })
+        }
+    }))
+
+    return result
+}
+
+/**
  * This is the return type of the ServiceOperation function. It contains a client function that can be used
  * to pass a specific prisma client to the service operation, and a newClient function that can be used to
  * pass the global prisma client to the service operation.
@@ -512,11 +564,15 @@ export function defineSubOperation<
                         })
                     )
 
-                    return prismaErrorWrapper(() =>
+                    const runOperation = () => prismaErrorWrapper(() =>
                         serviceOperationConfig.operation(
                             implementationArgs.operationImplementationFields!
                         )({ ...args, prisma, bypassAuth, session }, prismaWhereFilter)
                     )
+
+                    return serviceOperationConfig.opensTransaction
+                        ? runWithEffectsAfterCommit(runOperation)
+                        : runOperation()
                 })
         }
 
