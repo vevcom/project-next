@@ -1,6 +1,4 @@
-import styles from './layout.module.scss'
 import { SessionProvider } from '@/auth/session/useSession'
-import MobileNavBar from '@/components/NavBar/MobileNavBar'
 import { authOptions } from '@/auth/nextAuth/authOptions'
 import EditModeProvider from '@/contexts/EditMode'
 import PopUpProvider from '@/contexts/PopUp'
@@ -9,15 +7,9 @@ import { PageTitleProvider } from '@/contexts/PageTitle'
 import GlobalSearchProvider from '@/contexts/GlobalSearch'
 import { permissionOperations } from '@/services/permissions/operations'
 import { standardImageCollectionOperations } from '@/services/images/standard/operations'
-import { userOperations } from '@/services/users/operations'
 import { withFallback, withPageSession } from '@/app/serverPage'
 import ReleaseCountdownGate from '@/components/ReleaseCountdown/ReleaseCountdownGate'
-import { Theme, themeCssVars, themes } from '@/lib/theme'
 import ServiceWorkerRegister from '@/UI/ServiceWorkerRegister'
-import GlobalSearch from '@/UI/GlobalSearch'
-import DesktopSideBar from '@/components/NavBar/DesktopSideBar'
-import { visibleNavItems } from '@/components/NavBar/navDef'
-import NavBar from '@/components/NavBar/NavBar'
 import { Inter } from 'next/font/google'
 import '@/styles/globals.scss'
 import { config } from '@fortawesome/fontawesome-svg-core'
@@ -34,7 +26,7 @@ export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
     // Lets the page paint into the status bar and home indicator areas instead of
-    // being letterboxed between them. The safe-area insets in layout.module.scss
+    // being letterboxed between them. The safe-area insets in (omegaweb)/layout.module.scss
     // are what then keep the nav bars clear of the system UI.
     viewportFit: 'cover',
 }
@@ -60,39 +52,30 @@ type PropTypes = {
     children: ReactNode
 }
 
+/**
+ * The document and what every page shares: the session, the client data and the contexts. What
+ * the pages look like is up to the route groups - (omegaweb) is Omega's site with its navigation
+ * and the user's theme, (contactor) is Contactor's under /career with its own - so nothing here
+ * paints a theme or a nav.
+ */
 export default async function RootLayout({ children }: PropTypes) {
     const nextAuthSession = await getServerSession(authOptions)
 
-    const {
-        serverSession, defaultPermissions, standardImages, navUser,
-    } = await withPageSession(async (session) => {
+    const { serverSession, defaultPermissions, standardImages } = await withPageSession(async (session) => {
         const [defaultPermissions_, standardImages_] = await Promise.all([
             withFallback(permissionOperations.readDefaultPermissions({}), undefined),
             withFallback(standardImageCollectionOperations.readAllStandardImages({}), undefined),
         ])
-        const profileRead = session.user
-            ? await withFallback(userOperations.readProfile({ params: { username: session.user.username } }), null)
-            : null
         return {
             serverSession: session,
             defaultPermissions: defaultPermissions_,
             standardImages: standardImages_,
-            // The nav components get the fields they actually render rather than the whole
-            // profile, so nothing beyond these reaches the client components among them.
-            navUser: profileRead?.user ?? null,
         }
     })
-    const navItems = visibleNavItems(serverSession)
-    // Rendering the theme's variables server side is what keeps the first paint from flashing the
-    // default theme. Anyone not logged in gets the default, which globals.scss already holds.
-    const theme = serverSession.user?.theme ?? Theme.STANDARD
 
     return (
-        <html lang="en" style={themeCssVars(theme)}>
-            <body className={`${inter.className} ${styles.body}`}>
-                {/* Hoisted into the head by React. Keeps the browser chrome in step with the theme;
-                    picking another one refreshes the page, which renders it anew. */}
-                <meta name="theme-color" content={themes[theme]['surface-base']} />
+        <html lang="en">
+            <body className={inter.className}>
                 <ServiceWorkerRegister />
                 <SessionProvider session={nextAuthSession}>
                     <ClientDataProvider
@@ -101,32 +84,11 @@ export default async function RootLayout({ children }: PropTypes) {
                         standardImages={standardImages}
                     >
                         <GlobalSearchProvider>
-                            <GlobalSearch navItems={navItems} />
                             <EditModeProvider>
                                 <PopUpProvider>
                                     <PageTitleProvider>
                                         <ReleaseCountdownGate>
-                                            <div className={styles.wrapper}>
-                                                <div className={styles.navBar}>
-                                                    <NavBar
-                                                        isLoggedIn={navUser !== null}
-                                                        profileImage={navUser?.image ?? null}
-                                                        navItems={navItems}
-                                                    />
-                                                </div>
-                                                <aside className={styles.sideBar}>
-                                                    <DesktopSideBar navItems={navItems} />
-                                                </aside>
-                                                <main className={styles.content}>
-                                                    {children}
-                                                </main>
-                                                <div className={styles.mobileNavBar}>
-                                                    <MobileNavBar
-                                                        isLoggedIn={navUser !== null}
-                                                        navItems={navItems}
-                                                    />
-                                                </div>
-                                            </div>
+                                            {children}
                                         </ReleaseCountdownGate>
                                     </PageTitleProvider>
                                 </PopUpProvider>
