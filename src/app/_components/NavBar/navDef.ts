@@ -78,7 +78,7 @@ export const navDef: NavItem[] = [
         name: 'For bedrifter',
         href: '/career',
         icon: faSuitcase,
-        authorizers: () => [careerAuth.readSpecialCmsParagraphCareerInfo],
+        authorizers: () => [careerAuth.readSpecialCmsParagraph],
         audience: 'loggedOut',
     },
     {
@@ -104,7 +104,7 @@ export const navDef: NavItem[] = [
         name: 'Karriere',
         href: '/career',
         icon: faSuitcase,
-        authorizers: () => [careerAuth.readSpecialCmsParagraphCareerInfo],
+        authorizers: () => [careerAuth.readSpecialCmsParagraph],
         audience: 'loggedIn',
     },
     {
