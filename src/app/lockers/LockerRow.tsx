@@ -1,4 +1,3 @@
-import styles from './LockerRow.module.scss'
 // import { checkGroupValidity, inferGroupName } from '@/services/groups/read'
 import Link from 'next/link'
 import type { LockerWithReservation } from '@/services/lockers/types'
@@ -24,14 +23,17 @@ export default function LockerRow({ locker }: PropTypes) {
     }
 
     return (
-        <Link href={`/lockers/${locker.id}`} className={styles.lockerRow}>
+        <Link href={`/lockers/${locker.id}`} className={[
+            'grid grid-cols-6 no-underline text-inherit hover:bg-[rgba(0,0,0,0.05)] [&_p]:py-[.5rem] [&_p]:px-[1rem]',
+            'max-[600px]:grid-cols-5 max-[500px]:grid-cols-4',
+        ].join(' ')}>
             <p>{locker.id}</p>
             <p>{locker.building}</p>
             <p>{locker.floor}</p>
-            <p className={styles.hideSecond}>
+            <p className="max-[500px]:hidden">
                 {isReserved ? `${reservation.user.firstname} ${reservation.user.lastname}` : ''}
             </p>
-            <p className={styles.hideFirst}>{groupName}</p>
+            <p className="max-[600px]:hidden">{groupName}</p>
             <p>{endDateText}</p>
         </Link>
     )

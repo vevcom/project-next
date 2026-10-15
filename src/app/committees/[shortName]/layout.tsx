@@ -1,6 +1,5 @@
 import getCommittee from './getCommittee'
 import Nav from './Nav'
-import styles from './layout.module.scss'
 import PageTitleSetter from '@/contexts/PageTitleSetter'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
 import CommitteeImage from '@/components/Committee/CommitteeImage/CommitteeImage'
@@ -23,18 +22,18 @@ export default serverLayout({
         ),
     }),
     render: ({ data: { committee, shortNameParam }, capabilities, children }) => (
-        <div className={styles.pageLayout}>
-            <div className={styles.main}>
+        <div className="grid grid-rows-[1fr_auto] h-full min-h-0">
+            <div className="min-h-0 rounded-round mb-2 overflow-y-scroll">
                 <CommitteeImage
                     capabilities={capabilities}
                     shortName={committee.shortName}
                     logoImage={committee.logoImage}
                     coverImage={committee.coverImage}
                 />
-                <PageWrapper className={styles.pageWrapper}>
+                <PageWrapper className="rounded-round">
                     <PageTitleSetter title={committee.name} />
                     {committee.pensioned && (
-                        <p className={styles.pensioned}>
+                        <p className="py-2 px-4 mb-4 rounded-round border border-text-muted text-text-muted">
                             Denne komiteen er pensjonert. Den har ingen aktive medlemmer, og
                             innholdet står som det var.
                         </p>

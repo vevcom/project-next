@@ -1,5 +1,4 @@
 'use client'
-import styles from './LockerIdForm.module.scss'
 import Button from '@/components/UI/Button'
 import NumberInput from '@/components/UI/NumberInput'
 import React, { useState } from 'react'
@@ -31,7 +30,7 @@ export default function LockerIdForm() {
             >
                 <Link
                     href={`/lockers/${lockerId}`}
-                    className={styles.goToLockerLink}
+                    className="no-underline text-inherit"
                 >
                     Gå til skap
                 </Link>
