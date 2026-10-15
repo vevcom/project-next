@@ -50,7 +50,13 @@ export default async function NavBar({ isLoggedIn, profileImage, navItems }: Pro
                 </li>
 
                 <PageTitleSetter title="" />
-                <li className="min-w-0 ml-2 flex items-center" data-nav-title>
+                <li
+                    className={[
+                        'min-w-0 ml-2 flex items-center',
+                        'max-mobile:[body:has([data-slide-sidebar-toggle])_&]:pr-[calc(44px+2*var(--gap))]',
+                    ].join(' ')}
+                    data-nav-title
+                >
                     <NavBarTitle />
                 </li>
                 <li className="grow"></li>

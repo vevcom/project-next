@@ -1,4 +1,3 @@
-import styles from './page.module.scss'
 import CreateLockerForm from './CreateLockerForm'
 import { lockerLocationOperations } from '@/services/lockers/locations/operations'
 import { lockerAuth } from '@/services/lockers/auth'
@@ -15,7 +14,7 @@ const { page, generateMetadata } = serverPage({
         canCreateLocker: lockerAuth.create,
     }),
     render: ({ data: locations, capabilities }) => (
-        <div className={styles.wrapper}>
+        <div className="w-[30%] grid place-items-center">
             {capabilities.canCreateLocker.authorized && <CreateLockerForm locations={locations}/>}
         </div>
     ),
