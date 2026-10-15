@@ -1,6 +1,6 @@
 'use client'
 
-import styles from './DesktopSideBar.module.scss'
+import { navIconClassName, navIconIconClassName, navIconLabelClassName } from './sideBarClassNames'
 import NavTooltip from './NavTooltip'
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -13,9 +13,9 @@ type PropTypes = {
 
 export default function SideBarNavItem({ item, expanded }: PropTypes) {
     const link = (
-        <Link href={item.href} className={styles.navIcon} aria-label={item.name}>
-            <FontAwesomeIcon icon={item.icon} className={styles.icon} />
-            <span className={styles.label}>{item.name}</span>
+        <Link href={item.href} className={navIconClassName} aria-label={item.name}>
+            <FontAwesomeIcon icon={item.icon} className={navIconIconClassName} />
+            <span className={navIconLabelClassName}>{item.name}</span>
         </Link>
     )
 

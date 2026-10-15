@@ -1,5 +1,4 @@
 'use client'
-import styles from './ReportButton.module.scss'
 import useAuthorizer from '@/hooks/useAuthorizer'
 import { reportAuth } from '@/services/report/auth'
 import Link from 'next/link'
@@ -12,9 +11,12 @@ export default function ReportButton() {
     if (!canRead) return <></>
 
     return (
-        <div className={styles.reportButton}>
+        <div className="cursor-pointer mx-2">
             <Link href="/report">
-                <FontAwesomeIcon className={styles.reportPicture} icon={faShieldHeart} />
+                <FontAwesomeIcon className={[
+                    'w-[40px]! h-[40px]! p-2 rounded-[calc(2*var(--gap))] text-text transition-all duration-300',
+                    'hover:bg-accent-red',
+                ].join(' ')} icon={faShieldHeart} />
             </Link>
         </div>
 
