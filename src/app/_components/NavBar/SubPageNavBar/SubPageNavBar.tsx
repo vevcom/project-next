@@ -20,9 +20,8 @@ export function SubPageNavBarItem({ children, icon, href }:SubPageNavBarProps) {
         <div className="m-0 grow-0 last:mb-0 [&>a]:no-underline">
             <Link href={href}>
                 <div className={[
-                    // Hovering shows the accent background with plain text, selected or not.
-                    'inline-flex items-center justify-center h-[calc(64px-2*var(--gap))] px-2 max-mobile:px-1 border-0 rounded-inner',
-                    'bg-transparent',
+                    'inline-flex items-center justify-center h-[calc(64px-2*var(--gap))] px-2 border-0 rounded-inner',
+                    'max-mobile:px-1 bg-transparent',
                     'transition-[background,color] duration-200 ease-[ease] hover:bg-accent-blue hover:text-text',
                     page === thisPage ? 'text-accent-blue [&_*]:text-accent-blue hover:[&_*]:text-text' : 'text-text',
                 ].join(' ')}>

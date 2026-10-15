@@ -67,8 +67,6 @@ export default function Article({
                 ].join(' ')}>
                     <CmsImage
                         className={[
-                            // CmsImage's own wrapper divs size themselves off the image's intrinsic width rather than this
-                            // container, so every wrapper div is forced to fill the cover box, at whatever nesting depth.
                             'relative w-full h-full after:absolute after:top-0 after:left-0 after:w-full after:h-full',
                             'after:z-1',
                             'after:bg-[linear-gradient(to_bottom,rgba(0,0,0,0),var(--surface-base))] [&_div]:w-full',

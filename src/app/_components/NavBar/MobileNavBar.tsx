@@ -18,7 +18,6 @@ export default async function MobileNavBar({ isLoggedIn, navItems }: PropTypes) 
 
     return (
         <nav className={[
-            // Every cell but the edit-mode one (Menu's button and open panel included) is centred, with bare buttons.
             'relative hidden max-mobile:grid grid-cols-5 grid-rows-[auto] w-full h-full p-4 overflow-hidden',
             'bg-surface-base text-text',
             '[&>*:not(:last-child)]:grid [&>*:not(:last-child)]:place-items-center',

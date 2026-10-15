@@ -62,7 +62,6 @@ export default async function NavBar({ isLoggedIn, profileImage, navItems }: Pro
                     <SearchButton/>
                     <ReportButton/>
                     <div className={[
-                        // Overrides of btn's own margin, radius and padding need ! to win regardless of utility order.
                         'btn relative m-0! h-[64px] flex items-center justify-center',
                         'rounded-[calc(2*var(--gap))]! whitespace-nowrap',
                         isLoggedIn ? 'w-[64px] p-0!' : 'w-auto px-4! py-0! font-medium',

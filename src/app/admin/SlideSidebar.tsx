@@ -36,7 +36,6 @@ export default function SlideSidebar({ navigation }: PropTypes) {
             'max-mobile:p-0 max-mobile:m-0 max-mobile:min-w-0 max-mobile:max-h-none max-mobile:overflow-visible',
         ].join(' ')}
     >
-        {/* ponytail: the SCSS never un-hid this backdrop on mobile either; add max-mobile:block to turn it on. */}
         <div
             className={[
                 'hidden fixed inset-0 z-4 bg-black/50 transition-[opacity,visibility] duration-300 ease-[ease]',

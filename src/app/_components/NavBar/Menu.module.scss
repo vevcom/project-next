@@ -1,6 +1,5 @@
 @use "@/styles/ohma";
 
-// Kept as SCSS for the open/close @keyframes; closeMenu is added imperatively before unmounting.
 .Menu {
     animation: radiate .4s ease-out forwards;
 
