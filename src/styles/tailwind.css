@@ -126,6 +126,47 @@
     }
 }
 
+@utility header-pill {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: calc(1.5 * var(--gap));
+    height: 40px;
+    border-radius: calc(var(--rounding) - var(--gap));
+    background-color: var(--surface-hover);
+    color: var(--ink-strong);
+}
+
+@utility header-pill-link {
+    @apply header-pill;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .3s, color .3s, box-shadow .3s;
+
+    &:hover {
+        background-color: var(--surface-subtle);
+        color: var(--ink-strong);
+        text-decoration: none;
+    }
+
+    & span {
+        font-size: var(--text-m);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    & svg {
+        width: 16px;
+        height: 16px;
+        color: var(--text);
+        transition: color .3s;
+    }
+
+    &:hover svg {
+        color: var(--accent-blue);
+    }
+}
+
 @utility ohma-table {
     width: 100%;
     border-collapse: collapse;

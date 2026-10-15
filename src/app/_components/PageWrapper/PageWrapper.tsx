@@ -1,4 +1,3 @@
-import styles from './PageWrapper.module.scss'
 import React from 'react'
 
 export default function PageWrapper({
@@ -19,23 +18,31 @@ export default function PageWrapper({
     className?: string,
 }) {
     const wrapperClass = [
-        styles.wrapper,
-        fillHeight && styles.fillHeight,
-        transparent && styles.transparent,
+        'min-h-full size-full overflow-y-auto self-start',
+        '[&_h1]:font-secondary [&_h1]:text-xxl [&_h1]:capitalize',
+        // Island pages paint their own panels and own their spacing, so the wrapper drops both.
+        transparent ? 'bg-transparent p-0' : 'bg-surface-base p-4',
+        // For pages sizing a scrollable body against the height left under the title bar.
+        fillHeight && 'flex flex-col',
         className,
+    ].filter(Boolean).join(' ')
+    const headerClass = [
+        'flex flex-row justify-between items-center [&>div]:flex [&>div]:flex-row [&>div]:items-center [&>div]:flex-1',
+        transparent && 'pt-4 px-4',
+        fillHeight && 'shrink-0',
     ].filter(Boolean).join(' ')
 
     return (
         <div className={wrapperClass}>
             {!hideTitle && (
-                <div className={styles.inlineHeader}>
+                <div className={headerClass}>
                     <div>
                         { headerItem }
                     </div>
                 </div>
             )}
 
-            <div className={styles.body}>
+            <div className={`min-h-0 ${fillHeight ? 'flex-1' : ''}`}>
                 { children }
             </div>
         </div>
