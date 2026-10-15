@@ -16,13 +16,6 @@ type PropTypes = {
 }
 
 
-const menuClassName = [
-    'fixed top-[60px] left-0 z-9 layer max-w-[50dvw] w-132 h-[calc(100dvh-60px)]',
-    'flex justify-start items-start overflow-y-auto overflow-x-hidden',
-    'max-mobile:w-auto max-mobile:max-w-none max-mobile:top-[calc(64px+2*var(--gap))] max-mobile:left-2 max-mobile:right-2',
-    'max-mobile:h-[calc(100dvh-128px-4*var(--gap))] max-mobile:rounded-round',
-].join(' ')
-const listClassName = 'm-2 relative flex flex-row justify-start flex-wrap max-mobile:top-0 max-mobile:justify-center'
 const entryClassName = 'm-2 relative flex flex-row justify-start flex-wrap list-none max-mobile:w-full'
 const entryLinkClassName = [
     'w-60 flex items-center p-4 border-none rounded-round bg-surface-base text-text text-l font-bold',
@@ -50,8 +43,18 @@ export default function Menu({ items, openBtnVariant }: PropTypes) {
             {
                 isOpen ? (
                     <>
-                        <div ref={menuRef} className={`${styles.Menu} ${menuClassName}`}>
-                            <div className={listClassName}>
+                        <div ref={menuRef} className={[
+                            styles.Menu,
+                            'fixed top-[60px] left-0 z-9 layer max-w-[50dvw] w-132 h-[calc(100dvh-60px)]',
+                            'flex justify-start items-start overflow-y-auto overflow-x-hidden',
+                            'max-mobile:w-auto max-mobile:max-w-none max-mobile:top-[calc(64px+2*var(--gap))]',
+                            'max-mobile:left-2 max-mobile:right-2',
+                            'max-mobile:h-[calc(100dvh-128px-4*var(--gap))] max-mobile:rounded-round',
+                        ].join(' ')}>
+                            <div className={[
+                                'm-2 relative flex flex-row justify-start flex-wrap',
+                                'max-mobile:top-0 max-mobile:justify-center',
+                            ].join(' ')}>
                                 <div className={entryClassName}>
                                     <button
                                         type="button"

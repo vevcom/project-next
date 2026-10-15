@@ -17,18 +17,6 @@ export type PropTypes = {
     navItems: NavLink[],
 }
 
-const logoContainerClassName = [
-    'flex items-center justify-center h-full relative',
-    'bg-surface-base rounded-[calc(2*var(--gap))] p-2',
-].join(' ')
-// Overrides of btn's own margin, radius and padding need ! to win regardless of utility order.
-const magicHatClassName = [
-    'btn relative m-0! h-[64px] flex items-center justify-center',
-    'rounded-[calc(2*var(--gap))]! whitespace-nowrap',
-].join(' ')
-const loggedInClassName = 'w-[64px] p-0!'
-const loggedOutClassName = 'w-auto px-4! py-0! font-medium'
-
 export default async function NavBar({ isLoggedIn, profileImage, navItems }: PropTypes) {
     const navSize = 4
     const itemsForNav = navItems.slice(0, navSize - 1)
@@ -36,7 +24,10 @@ export default async function NavBar({ isLoggedIn, profileImage, navItems }: Pro
     return (
         <nav className="text-text text-m w-full h-[64px]">
             <ul className="w-full h-full flex flex-row justify-start items-center list-none">
-                <li className={logoContainerClassName}>
+                <li className={[
+                    'flex items-center justify-center h-full relative',
+                    'bg-surface-base rounded-[calc(2*var(--gap))] p-2',
+                ].join(' ')}>
                     <Link aria-label={'Gå til hjemmesiden'} href="/" className="flex items-center justify-center">
                         <div className="size-[48px] rounded-(--gap) bg-accent-blue p-2 flex items-center justify-center">
                             <StandardImageServer
@@ -70,7 +61,12 @@ export default async function NavBar({ isLoggedIn, profileImage, navItems }: Pro
                 <li className="flex w-auto ml-auto items-center max-mobile:hidden">
                     <SearchButton/>
                     <ReportButton/>
-                    <div className={`${magicHatClassName} ${isLoggedIn ? loggedInClassName : loggedOutClassName}`}>
+                    <div className={[
+                        // Overrides of btn's own margin, radius and padding need ! to win regardless of utility order.
+                        'btn relative m-0! h-[64px] flex items-center justify-center',
+                        'rounded-[calc(2*var(--gap))]! whitespace-nowrap',
+                        isLoggedIn ? 'w-[64px] p-0!' : 'w-auto px-4! py-0! font-medium',
+                    ].join(' ')}>
                         {
                             profileImage ? (
                                 <ProfilePicture

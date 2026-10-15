@@ -11,17 +11,6 @@ type SubPageNavBarProps = {
     href: string
 }
 
-// Hovering shows the accent background with plain text, selected or not.
-const itemClassName = [
-    'inline-flex items-center justify-center h-[calc(64px-2*var(--gap))] px-2 max-mobile:px-1 border-0 rounded-inner bg-transparent',
-    'transition-[background,color] duration-200 ease-[ease] hover:bg-accent-blue hover:text-text',
-].join(' ')
-const selectedClassName = 'text-accent-blue [&_*]:text-accent-blue hover:[&_*]:text-text'
-const navBarClassName = [
-    'grid grid-flow-col auto-cols-max col-span-full justify-center gap-1 w-full mx-auto p-2 h-[64px]',
-    'sticky bottom-0 z-2 rounded-round bg-surface-base overflow-x-auto',
-].join(' ')
-
 export function SubPageNavBarItem({ children, icon, href }:SubPageNavBarProps) {
     const pathname = usePathname()
     const page = pathname.split('/').pop()
@@ -30,7 +19,13 @@ export function SubPageNavBarItem({ children, icon, href }:SubPageNavBarProps) {
     return (
         <div className="m-0 grow-0 last:mb-0 [&>a]:no-underline">
             <Link href={href}>
-                <div className={`${itemClassName} ${page === thisPage ? selectedClassName : 'text-text'}`}>
+                <div className={[
+                    // Hovering shows the accent background with plain text, selected or not.
+                    'inline-flex items-center justify-center h-[calc(64px-2*var(--gap))] px-2 max-mobile:px-1 border-0 rounded-inner',
+                    'bg-transparent',
+                    'transition-[background,color] duration-200 ease-[ease] hover:bg-accent-blue hover:text-text',
+                    page === thisPage ? 'text-accent-blue [&_*]:text-accent-blue hover:[&_*]:text-text' : 'text-text',
+                ].join(' ')}>
                     {icon && <FontAwesomeIcon icon={icon} className="w-[24px]! h-[24px]!" />}
                     <p className="leading-[calc(64px-32px)] text-center pl-[16px] max-mobile:hidden">{children}</p>
                 </div>
@@ -41,7 +36,10 @@ export function SubPageNavBarItem({ children, icon, href }:SubPageNavBarProps) {
 
 export function SubPageNavBar({ children }: {children: ReactNode}) {
     return (<>
-        <div className={navBarClassName}>
+        <div className={[
+            'grid grid-flow-col auto-cols-max col-span-full justify-center gap-1 w-full mx-auto p-2 h-[64px]',
+            'sticky bottom-0 z-2 rounded-round bg-surface-base overflow-x-auto',
+        ].join(' ')}>
             {children}
         </div>
     </>)

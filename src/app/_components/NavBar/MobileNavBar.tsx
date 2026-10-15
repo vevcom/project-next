@@ -12,23 +12,21 @@ type PropTypes = {
     navItems: NavLink[]
 }
 
-// Every cell but the edit-mode one (Menu's button and open panel included) is centred, with bare buttons.
-const mobileNavBarClassName = [
-    'relative hidden max-mobile:grid grid-cols-5 grid-rows-[auto] w-full h-full p-4 overflow-hidden',
-    'bg-surface-base text-text',
-    '[&>*:not(:last-child)]:grid [&>*:not(:last-child)]:place-items-center',
-    '[&>*:not(:last-child)>button]:[background:none] [&>*:not(:last-child)>button]:text-inherit',
-    '[&>*:not(:last-child)>button]:border-none [&>*:not(:last-child)>button]:p-0',
-    '[&>*:not(:last-child)>button]:[font:inherit] [&>*:not(:last-child)>button]:cursor-pointer',
-    '[&>*:not(:last-child)>button]:[outline:inherit]',
-].join(' ')
-
 export default async function MobileNavBar({ isLoggedIn, navItems }: PropTypes) {
     const itemsForNav = navItems.slice(0, 2)
     const itemsForMenu = navItems.slice(2, navItems.length)
 
     return (
-        <nav className={mobileNavBarClassName}>
+        <nav className={[
+            // Every cell but the edit-mode one (Menu's button and open panel included) is centred, with bare buttons.
+            'relative hidden max-mobile:grid grid-cols-5 grid-rows-[auto] w-full h-full p-4 overflow-hidden',
+            'bg-surface-base text-text',
+            '[&>*:not(:last-child)]:grid [&>*:not(:last-child)]:place-items-center',
+            '[&>*:not(:last-child)>button]:[background:none] [&>*:not(:last-child)>button]:text-inherit',
+            '[&>*:not(:last-child)>button]:border-none [&>*:not(:last-child)>button]:p-0',
+            '[&>*:not(:last-child)>button]:[font:inherit] [&>*:not(:last-child)>button]:cursor-pointer',
+            '[&>*:not(:last-child)>button]:[outline:inherit]',
+        ].join(' ')}>
             {
                 itemsForNav.map((item) => (
                     <div key={item.name}>
