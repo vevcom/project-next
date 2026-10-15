@@ -144,19 +144,12 @@ const { page, generateMetadata } = serverPage({
         const attendanceTakerId = capabilities.canTakeAttendance.authorized && session.user ? session.user.id : null
 
         return (
-            <div
-                className={[
-                    'grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] h-full',
-                    'max-mobile:grid-cols-1 max-mobile:grid-rows-[auto_auto_auto_auto]',
-                ].join(' ')}
-            >
-                <span
-                    className={[
-                        styles.coverImage,
-                        'col-[1/3] row-[1/2] flex justify-center items-center relative rounded-round overflow-hidden',
-                        'min-h-80 [&_img]:object-cover!',
-                    ].join(' ')}
-                >
+            <div className="w-full flex flex-wrap items-stretch gap-2">
+                <span className={[
+                    styles.coverImage,
+                    'flex-[0_0_100%] block relative h-[20em] max-mobile:h-[14em]',
+                    'bg-surface-base rounded-round overflow-hidden',
+                ].join(' ')}>
                     <CmsImage
                         capabilities={{ canEdit: capabilities.canEditCmsCoverImage }}
                         cmsImage={event.coverImage}
@@ -167,15 +160,13 @@ const { page, generateMetadata } = serverPage({
                                 { implementationParams: { eventId: event.id } }
                             )}
                     />
-                    <div
-                        className={[
-                            styles.overlay,
-                            'absolute w-full h-[8em] left-0 bottom-0 layer py-[1em] px-[2em] flex flex-row gap-x-[1em]',
-                            '[&_h1]:text-xxl! [&_h1]:text-white!',
-                        ].join(' ')}
-                    >
+                    <div className={[
+                        styles.overlay,
+                        'absolute inset-[auto_0_0_0] flex flex-wrap items-baseline gap-x-[1em] gap-y-0 pt-8 px-6 pb-4',
+                        'layer rounded-b-round [&_h1]:text-xxl [&_h1]:text-white',
+                    ].join(' ')}>
                         <ShowAndEditName event={event} capabilities={{ canUpdate: capabilities.canUpdate.toJsObject() }} />
-                        <ul className="list-none flex gap-x-[1em] [&_a]:no-underline">
+                        <ul className="list-none flex flex-wrap gap-x-[1em] gap-y-0 [&_a]:no-underline">
                             {event.tags.map(tag => (
                                 <li key={tag.id}>
                                     <Link href={`/events?${QueryParams.eventTags.encodeUrl([tag.name])}`}>
@@ -185,9 +176,7 @@ const { page, generateMetadata } = serverPage({
                             ))}
                         </ul>
                     </div>
-                    <div
-                        className={`${styles.overlay} absolute top-[1em] right-[3em] [&_svg]:size-[3em]! [&>button]:ml-4!`}
-                    >
+                    <div className={`${styles.overlay} absolute top-2 right-2 z-1 flex gap-2 [&_svg]:size-14`}>
                         {event.takesRegistration && (
                             capabilities.canRegisterAsAdmin.authorized || capabilities.canRegisterGuest.authorized
                         ) &&
@@ -208,7 +197,7 @@ const { page, generateMetadata } = serverPage({
                             <EventVisibilityAdmin event={event} doubleLevelVisibility={doubleLevelVisibility} />
                             {event.takesRegistration && capabilities.canTakeAttendance.authorized &&
                                 <Link
-                                    className={styles.attendanceLink}
+                                    className="block p-2 text-center rounded-round bg-surface-raised text-text"
                                     href={`/events/${formatVevenUri(event.name, event.id)}/attendance`}
                                 >
                                     Registrer oppmøte
@@ -229,13 +218,11 @@ const { page, generateMetadata } = serverPage({
                         </SettingsHeaderItemPopUp>
                     </div>
                 </span>
-                <aside
-                    className={[
-                        'col-[1/2] row-[2/3] min-w-[350px] bg-surface-base mt-2 rounded-round p-[calc(3*var(--rounding))]',
-                        'min-h-fit flex flex-col gap-4 max-mobile:p-4',
-                        '[&>p]:flex [&>p]:items-center [&>p]:gap-[1em] [&>p]:text-l [&>p_svg]:size-[1.5em]!',
-                    ].join(' ')}
-                >
+                <aside className={[
+                    'flex-[1_1_650px] max-mobile:basis-full bg-surface-base rounded-round',
+                    'pt-8 px-8 pb-2 flex flex-col gap-4',
+                    '[&>p]:flex [&>p]:items-center [&>p]:gap-[1em] [&>p]:text-l [&>p_svg]:size-[1.5em]',
+                ].join(' ')}>
                     <p>
                         <FontAwesomeIcon icon={faCalendar} />
                         <Date date={event.eventStart} includeTime /> - <Date date={event.eventEnd} includeTime />
@@ -275,12 +262,7 @@ const { page, generateMetadata } = serverPage({
                     </p>}
 
                 </aside>
-                <main
-                    className={[
-                        'col-[2/3] row-[2/3] ml-2 mt-2 p-4 bg-surface-base rounded-round',
-                        'max-mobile:col-[1/2] max-mobile:row-[3/4] max-mobile:ml-0 max-mobile:my-2',
-                    ].join(' ')}
-                >
+                <main className="flex-[999_1_420px] max-mobile:basis-full min-w-0 p-4 bg-surface-base rounded-round">
                     <CmsParagraph
                         capabilities={{ canEdit: capabilities.canEditCmsParagraph }}
                         cmsParagraph={event.paragraph}
@@ -298,10 +280,7 @@ const { page, generateMetadata } = serverPage({
                 </main>
 
                 {event.takesRegistration && capabilities.canReadRegistrations.authorized && (
-                    <div className={[
-                        'bg-surface-base p-2 rounded-round col-[1/3] row-[4/4] mt-2 max-mobile:mt-0',
-                        '[&>h4]:text-xl [&>h4]:font-bold',
-                    ].join(' ')}>
+                    <div className="flex-[0_0_100%] bg-surface-base p-2 rounded-round [&>h4]:text-xl [&>h4]:font-bold">
                         <RegistrationsList
                             event={event}
                             canReadDetailed={capabilities.canReadRegistrationsDetailed.authorized}
