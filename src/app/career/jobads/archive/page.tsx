@@ -1,4 +1,3 @@
-import styles from './page.module.scss'
 import JobAdInactiveList from './JobAdInactiveList'
 import PageTitleSetter from '@/contexts/PageTitleSetter'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
@@ -10,7 +9,7 @@ import Link from 'next/link'
 export default async function JobAdsArchive() {
     return (
         <PageWrapper headerItem={
-            <Link href="/career/jobads" className={styles.backLink}>
+            <Link href="/career/jobads" className="text-text [&_svg]:size-[30px]!">
                 <FontAwesomeIcon icon={faArrowLeft} />
             </Link>
         }>

@@ -144,8 +144,19 @@ const { page, generateMetadata } = serverPage({
         const attendanceTakerId = capabilities.canTakeAttendance.authorized && session.user ? session.user.id : null
 
         return (
-            <div className={styles.wrapper}>
-                <span className={styles.coverImage}>
+            <div
+                className={[
+                    'grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] h-full',
+                    'max-mobile:grid-cols-1 max-mobile:grid-rows-[auto_auto_auto_auto]',
+                ].join(' ')}
+            >
+                <span
+                    className={[
+                        styles.coverImage,
+                        'col-[1/3] row-[1/2] flex justify-center items-center relative rounded-round overflow-hidden',
+                        'min-h-80 [&_img]:object-cover!',
+                    ].join(' ')}
+                >
                     <CmsImage
                         capabilities={{ canEdit: capabilities.canEditCmsCoverImage }}
                         cmsImage={event.coverImage}
@@ -156,9 +167,15 @@ const { page, generateMetadata } = serverPage({
                                 { implementationParams: { eventId: event.id } }
                             )}
                     />
-                    <div className={styles.infoInImage}>
+                    <div
+                        className={[
+                            styles.overlay,
+                            'absolute w-full h-[8em] left-0 bottom-0 layer py-[1em] px-[2em] flex flex-row gap-x-[1em]',
+                            '[&_h1]:text-xxl! [&_h1]:text-white!',
+                        ].join(' ')}
+                    >
                         <ShowAndEditName event={event} capabilities={{ canUpdate: capabilities.canUpdate.toJsObject() }} />
-                        <ul className={styles.tags}>
+                        <ul className="list-none flex gap-x-[1em] [&_a]:no-underline">
                             {event.tags.map(tag => (
                                 <li key={tag.id}>
                                     <Link href={`/events?${QueryParams.eventTags.encodeUrl([tag.name])}`}>
@@ -168,7 +185,9 @@ const { page, generateMetadata } = serverPage({
                             ))}
                         </ul>
                     </div>
-                    <div className={styles.settings}>
+                    <div
+                        className={`${styles.overlay} absolute top-[1em] right-[3em] [&_svg]:size-[3em]! [&>button]:ml-4!`}
+                    >
                         {event.takesRegistration && (
                             capabilities.canRegisterAsAdmin.authorized || capabilities.canRegisterGuest.authorized
                         ) &&
@@ -199,8 +218,6 @@ const { page, generateMetadata } = serverPage({
                                 <Form
                                     action={configureAction(destroyEventAction, { params: { id: event.id } })}
                                     navigateOnSuccess="/events"
-                                    className={styles.destroyForm}
-                                    buttonClassName={styles.destroyButton}
                                     submitText="Slett"
                                     submitColor="red"
                                     confirmation={{
@@ -212,7 +229,13 @@ const { page, generateMetadata } = serverPage({
                         </SettingsHeaderItemPopUp>
                     </div>
                 </span>
-                <aside>
+                <aside
+                    className={[
+                        'col-[1/2] row-[2/3] min-w-[350px] bg-surface-base mt-2 rounded-round p-[calc(3*var(--rounding))]',
+                        'min-h-fit flex flex-col gap-4 max-mobile:p-4',
+                        '[&>p]:flex [&>p]:items-center [&>p]:gap-[1em] [&>p]:text-l [&>p_svg]:size-[1.5em]!',
+                    ].join(' ')}
+                >
                     <p>
                         <FontAwesomeIcon icon={faCalendar} />
                         <Date date={event.eventStart} includeTime /> - <Date date={event.eventEnd} includeTime />
@@ -252,7 +275,12 @@ const { page, generateMetadata } = serverPage({
                     </p>}
 
                 </aside>
-                <main>
+                <main
+                    className={[
+                        'col-[2/3] row-[2/3] ml-2 mt-2 p-4 bg-surface-base rounded-round',
+                        'max-mobile:col-[1/2] max-mobile:row-[3/4] max-mobile:ml-0 max-mobile:my-2',
+                    ].join(' ')}
+                >
                     <CmsParagraph
                         capabilities={{ canEdit: capabilities.canEditCmsParagraph }}
                         cmsParagraph={event.paragraph}
@@ -270,7 +298,10 @@ const { page, generateMetadata } = serverPage({
                 </main>
 
                 {event.takesRegistration && capabilities.canReadRegistrations.authorized && (
-                    <div className={styles.registrationList}>
+                    <div className={[
+                        'bg-surface-base p-2 rounded-round col-[1/3] row-[4/4] mt-2 max-mobile:mt-0',
+                        '[&>h4]:text-xl [&>h4]:font-bold',
+                    ].join(' ')}>
                         <RegistrationsList
                             event={event}
                             canReadDetailed={capabilities.canReadRegistrationsDetailed.authorized}

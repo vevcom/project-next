@@ -1,4 +1,3 @@
-import styles from './page.module.scss'
 import NotificationSettings from './notificationSettings'
 import { getProfileForUserPage } from '@/app/users/[username]/(user-pages)/getProfileForUserPage'
 import { notificationChannelOperations } from '@/services/notifications/channel/operations'
@@ -22,7 +21,7 @@ const { page, generateMetadata } = serverPage({
         return { profile, channels, subscriptions }
     },
     render: ({ data }) => (
-        <div className={styles.wrapper}>
+        <div className="bg-surface-base rounded-round p-[calc(1.5*var(--rounding))]">
             <h2>Notifikasjoner</h2>
             <NotificationSettings
                 user={data.profile.user}
