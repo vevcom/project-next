@@ -4,40 +4,22 @@ import { determineTransactionState } from './determineTransactionState'
 import { runPaymentCompletionHook } from './paymentCompletionHooks'
 import { ledgerTransactionAuth } from './auth'
 import { ledgerTransactionSchemas } from './schemas'
+import { expandedLedgerTransactionIncluder } from './constants'
 import { ledgerAccountOperations } from '@/services/ledger/accounts/operations'
 import { paymentOperations } from '@/services/ledger/payments/operations'
-import { resolveAccountOwnership, resolveAccountsOwnership } from '@/services/ledger/accounts/ownership'
+import {
+    resolveAccountOwnership,
+    resolveAccountsOwnership,
+    resolveTransactionAccounts,
+} from '@/services/ledger/accounts/ownership'
 import { cursorPagingSelection } from '@/lib/paging/cursorPagingSelection'
 import { Smorekopp, ServiceError } from '@/services/error'
 import { defineOperation } from '@/services/serviceOperation'
 import logger from '@/lib/logger'
+import { Prisma as PrismaRuntime } from '@/prisma-generated-pn-client'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 import type { ExpandedLedgerTransaction } from './types'
 import type { Prisma } from '@/prisma-generated-pn-types'
-
-/**
- * Resolves the owning users/groups of every account a transaction's ledger entries touch, for
- * authorizers that need to know whether the caller is a party to it (see read/cancel below).
- */
-async function resolveTransactionAccounts(prisma: Prisma.TransactionClient, transactionId: number) {
-    const transaction = await prisma.ledgerTransaction.findUnique({
-        where: { id: transactionId },
-        select: {
-            ledgerEntries: {
-                select: {
-                    ledgerAccount: {
-                        select: { user: { select: { id: true } }, groups: { select: { groupId: true } } },
-                    },
-                },
-            },
-        },
-    })
-
-    return (transaction?.ledgerEntries ?? []).map(entry => ({
-        userId: entry.ledgerAccount?.user?.id ?? null,
-        groupIds: entry.ledgerAccount?.groups.map(group => group.groupId) ?? [],
-    }))
-}
 
 // Nested calls to other operations are not bypassed unless noted: the checks involved are cheap,
 // so it is worth checking access again rather than assuming the outer check already covered it.
@@ -50,40 +32,12 @@ export const ledgerTransactionOperations = {
             accounts: await resolveTransactionAccounts(prisma, params.id),
         }),
         paramsSchema: ledgerTransactionSchemas.params.read,
-        operation: async ({ prisma, params }) => {
-            const transaction = await prisma.ledgerTransaction.findUniqueOrThrow({
-                where: {
-                    id: params.id,
-                },
-                include: {
-                    ledgerEntries: true,
-                    payment: {
-                        include: {
-                            stripePayment: true,
-                            manualPayment: true,
-                        },
-                    },
-                    booking: {
-                        include: {
-                            event: { select: { name: true } },
-                        },
-                    },
-                    eventRegistration: {
-                        include: {
-                            event: { select: { name: true, location: true, eventStart: true, eventEnd: true } },
-                        },
-                    },
-                    purchase: {
-                        include: {
-                            shop: { select: { name: true } },
-                            PurchaseProduct: { include: { product: { select: { name: true } } } },
-                        },
-                    },
-                },
-            })
-
-            return transaction
-        }
+        operation: async ({ prisma, params }) => await prisma.ledgerTransaction.findUniqueOrThrow({
+            where: {
+                id: params.id,
+            },
+            include: expandedLedgerTransactionIncluder,
+        }),
     }),
 
     /**
@@ -94,7 +48,7 @@ export const ledgerTransactionOperations = {
      */
     cancel: defineOperation({
         authorizer: async ({ params, prisma }) => ledgerTransactionAuth.cancel.data({
-            accounts: await resolveTransactionAccounts(prisma, params.id),
+            accounts: await resolveTransactionAccounts(prisma, params.id, { debitedOnly: true }),
         }),
         paramsSchema: ledgerTransactionSchemas.params.cancel,
         operation: async ({ prisma, params }) => {
@@ -137,6 +91,29 @@ export const ledgerTransactionOperations = {
     }),
 
     /**
+     * Same as cancel, opening its own transaction around it - for the client-facing cancel
+     * button, the only caller that doesn't already run inside one (every other caller, e.g.
+     * createPayment, nests cancel in its own). cancel's two writes - its payment's, and the
+     * transaction's own - are otherwise only atomic together by accident of whichever
+     * transaction happens to already be ambient when it's called. Deliberately reuses cancel's
+     * own params schema and authorizer rather than declaring matching ones under this name: it's
+     * the exact same check and shape, not a different operation that happens to look similar.
+     */
+    cancelOwn: defineOperation({
+        authorizer: async ({ params, prisma }) => ledgerTransactionAuth.cancel.data({
+            accounts: await resolveTransactionAccounts(prisma, params.id, { debitedOnly: true }),
+        }),
+        paramsSchema: ledgerTransactionSchemas.params.cancel,
+        opensTransaction: true,
+        operation: async ({ prisma, params }): Promise<ExpandedLedgerTransaction> => prisma.$transaction(tx =>
+            ledgerTransactionOperations.cancel({
+                params,
+                prisma: tx,
+                bypassAuth: true,
+            })),
+    }),
+
+    /**
      * Read several ledger transactions including its ledger entries, payment and manual transfer (if any).
      */
     readPage: defineOperation({
@@ -152,36 +129,41 @@ export const ledgerTransactionOperations = {
                     },
                 },
             },
-            include: {
-                ledgerEntries: true,
-                payment: {
-                    include: {
-                        stripePayment: true,
-                        manualPayment: true,
-                    },
-                },
-                booking: {
-                    include: {
-                        event: { select: { name: true } },
-                    },
-                },
-                eventRegistration: {
-                    include: {
-                        event: { select: { name: true, location: true, eventStart: true, eventEnd: true } },
-                    },
-                },
-                purchase: {
-                    include: {
-                        shop: { select: { name: true } },
-                        PurchaseProduct: { include: { product: { select: { name: true } } } },
-                    },
-                },
-            },
+            include: expandedLedgerTransactionIncluder,
             orderBy: [
                 { createdAt: 'desc' },
                 { id: 'desc' },
             ],
             ...cursorPagingSelection(params.paging.page)
+        })
+    }),
+
+    /**
+     * Lists transactions a human needs to look at: either explicitly flagged (see
+     * needsManualReview, e.g. a Stripe dispute or an external refund), or a FAILED transaction
+     * whose Stripe payment nonetheless shows SUCCEEDED - a late success after a local failure
+     * that reimburseOrLogManualAction couldn't resolve on its own. Admin-only, across every
+     * account, not scoped to one the caller is a party to.
+     */
+    readNeedingAttention: defineOperation({
+        authorizer: () => ledgerTransactionAuth.readNeedingAttention,
+        operation: async ({ prisma }) => prisma.ledgerTransaction.findMany({
+            where: {
+                OR: [
+                    { needsManualReview: { not: null } },
+                    { state: 'FAILED', payment: { stripePayment: { isNot: null }, state: 'SUCCEEDED' } },
+                ],
+            },
+            select: {
+                id: true,
+                purpose: true,
+                state: true,
+                reason: true,
+                needsManualReview: true,
+                createdAt: true,
+                ledgerEntries: { select: { ledgerAccountId: true, funds: true } },
+            },
+            orderBy: { createdAt: 'desc' },
         })
     }),
 
@@ -247,6 +229,25 @@ export const ledgerTransactionOperations = {
                 }
             }
 
+            // Lock the accounts this transaction debits before reading their balance below, so a
+            // concurrent advance() on the same account waits its turn instead of racing: both
+            // would otherwise compute their balance from the same committed state and could both
+            // conclude there's enough left. Sorted ascending so two transactions that debit the
+            // same two accounts always lock them in the same order, avoiding a deadlock. Credit-only
+            // entries never need this - crediting an account can't make its balance insufficient.
+            const debitLedgerAccountIds = Array.from(new Set(transaction.ledgerEntries
+                .filter(entry => entry.funds < 0 || (entry.fees ?? 0) < 0)
+                .map(entry => entry.ledgerAccountId)))
+                .sort((one, other) => one - other)
+            if (debitLedgerAccountIds.length > 0) {
+                await prisma.$queryRaw`
+                    SELECT id FROM "LedgerAccount"
+                    WHERE id IN (${PrismaRuntime.join(debitLedgerAccountIds)})
+                    ORDER BY id
+                    FOR UPDATE
+                `
+            }
+
             const balances = transaction.ledgerEntries.length > 0
                 ? await ledgerAccountOperations.calculateBalances({
                     params: {
@@ -268,7 +269,31 @@ export const ledgerTransactionOperations = {
             })
             const frozenAccountIds = new Set(frozenAccounts.map(account => account.id))
 
-            const transition = await determineTransactionState({ transaction, balances, frozenAccountIds })
+            let transition = await determineTransactionState({ transaction, balances, frozenAccountIds })
+
+            // A payment may be shared by more than one transaction, see Payment.ledgerTransactions,
+            // but only one of them may ever succeed with it. Claim it atomically here, the moment
+            // this transaction is about to become the one. `transaction.state` is still the state
+            // from the read at the top of this function, so this only runs on the call that's
+            // actually driving a fresh PENDING -> SUCCEEDED transition, never on a retry of an
+            // already-terminal transaction. The lock above already serializes two concurrent
+            // advance() calls for this same transaction (e.g. a duplicate webhook delivery), but
+            // the `where` below still has to recognize a retry of this transaction's own already-
+            // successful claim as success too, not a loss - otherwise the second call, now running
+            // after the first already committed, would see claimedByTransactionId === params.id
+            // (its own id, not null) and wrongly fail a transaction that already succeeded.
+            if (transaction.state === 'PENDING' && transition.state === 'SUCCEEDED' && transaction.payment) {
+                const { count: claimed } = await prisma.payment.updateMany({
+                    where: {
+                        id: transaction.payment.id,
+                        OR: [{ claimedByTransactionId: null }, { claimedByTransactionId: params.id }],
+                    },
+                    data: { claimedByTransactionId: params.id },
+                })
+                if (claimed === 0) {
+                    transition = { state: 'FAILED', reason: 'Betalingen er allerede brukt av en annen transaksjon.' }
+                }
+            }
 
             // We use `updateMany` in stead of just `update` here because
             // we don't want to throw in case the record is not found.
@@ -297,6 +322,12 @@ export const ledgerTransactionOperations = {
             if (count > 0 && transaction.state === 'SUCCEEDED') {
                 await runPaymentCompletionHook(transaction, { prisma })
             }
+
+            // A transaction whose payment already succeeded but which still ends up FAILED here,
+            // for example because an account was frozen after the webhook arrived, needs the
+            // payer credited back. See stripeWebhookCallback.ts, which checks for exactly this
+            // right after its own call to advance. Not handled here, to avoid transactions/ and
+            // refunds/ needing to import each other.
 
             return transaction
         }
@@ -375,8 +406,9 @@ export const ledgerTransactionOperations = {
                 bypassAuth: true,
             })
 
+            // Every transition to FAILED gives its reason (see determineTransactionState), which is the
+            // message the caller needs, so the fallback is only a safety net.
             if (transaction.state === 'FAILED') {
-                // TODO: Better error message.
                 throw new ServiceError('BAD PARAMETERS', transaction.reason ?? 'Transaksjonen feilet av ukjent årsak.')
             }
 

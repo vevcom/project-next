@@ -10,7 +10,7 @@ import { manualGroupAuth } from '@/services/groups/manualGroups/auth'
 import { permissionsAuth } from '@/services/permissions/auth'
 import { apiKeyAuth } from '@/services/apiKeys/auth'
 import { notificationAuth } from '@/services/notifications/auth'
-import { sendMailAuth } from '@/services/notifications/send-mail/auth'
+import { sendMailAuth } from '@/services/notifications/sendMail/auth'
 import { notificationChannelAuth } from '@/services/notifications/channel/auth'
 import { mailAliasAuth } from '@/services/mail/alias/auth'
 import { mailingListAuth } from '@/services/mail/list/auth'
@@ -22,6 +22,7 @@ import { cabinReleasePeriodAuth } from '@/services/cabin/releasePeriod/auth'
 import { cabinProductAuth } from '@/services/cabin/product/auth'
 import { cabinBookingAuth } from '@/services/cabin/booking/auth'
 import { ledgerAccountAuth } from '@/services/ledger/accounts/auth'
+import { ledgerTransactionAuth } from '@/services/ledger/transactions/auth'
 import { promoAuth } from '@/services/promo/auth'
 import { licenseAuth } from '@/services/licenses/auth'
 import { flairAuth } from '@/services/flairs/auth'
@@ -95,7 +96,7 @@ export const adminNavDef: AdminNavGroup[] = [
             },
             {
                 title: 'Omegas tilstand',
-                path: 'stateOfOmega',
+                path: 'state-of-omega',
                 authorizers: () => [omegaOrderAuth.create],
             },
         ],
@@ -264,6 +265,11 @@ export const adminNavDef: AdminNavGroup[] = [
                 title: 'Kontoer',
                 path: 'accounts',
                 authorizers: () => [ledgerAccountAuth.readPage],
+            },
+            {
+                title: 'Trenger oppfølging',
+                path: 'ledger-review',
+                authorizers: () => [ledgerTransactionAuth.readNeedingAttention],
             },
         ],
     },

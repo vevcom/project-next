@@ -1,11 +1,9 @@
-import Form from '@/components/Form/Form'
+import ConnectStudentCardForm from './ConnectStudentCardForm'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
-import { configureAction } from '@/services/configureAction'
-import { connectStudentCardAction } from '@/services/users/actions'
 import { userAuth } from '@/services/users/auth'
 import { Require } from '@/auth/authorizer/Require'
-import { serverPage } from '@/app/serverPage'
-import type { PageOperationArgs } from '@/app/serverPage'
+import { serverPage } from '@/app/ServerPage'
+import type { PageOperationArgs } from '@/app/ServerPage'
 
 const { page, generateMetadata } = serverPage({
     operation: async ({ params }: PageOperationArgs<{ newCard: string }>) => ({
@@ -27,16 +25,7 @@ const { page, generateMetadata } = serverPage({
             <p>Trykk på knappen under for å registrere kortet ditt: <b>{studentCard}</b></p>
 
             {capabilities.canConnectStudentCard.authorized && session.user && (
-                <Form
-                    submitText="Registrer kort"
-                    action={configureAction(connectStudentCardAction, {
-                        params: {
-                            id: session.user.id
-                        }
-                    })}
-                >
-                    <input type="hidden" name="studentCard" value={studentCard} />
-                </Form>
+                <ConnectStudentCardForm studentCard={studentCard} userId={session.user.id} />
             )}
         </PageWrapper>
     },

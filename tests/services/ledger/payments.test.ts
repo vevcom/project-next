@@ -7,9 +7,10 @@ import { stripeWebhookCallback } from '@/services/ledger/payments/stripeWebhookC
 import { ledgerAccountOperations } from '@/services/ledger/accounts/operations'
 import { ledgerMovementOperations } from '@/services/ledger/movements/operations'
 import { ledgerTransactionOperations } from '@/services/ledger/transactions/operations'
+import { refundOperations } from '@/services/ledger/refunds/operations'
 import { userOperations } from '@/services/users/operations'
 import { afterEach, beforeEach, describe, expect, jest, test } from '@jest/globals'
-import type Stripe from 'stripe'
+import Stripe from 'stripe'
 
 const DEPOSIT = 100_00
 const STRIPE_FEE = 1_23
@@ -83,7 +84,10 @@ async function startStripeDeposit(ledgerAccountId: number) {
         params: { ledgerAccountId, provider: 'STRIPE', funds: DEPOSIT },
         bypassAuth: true,
     })
-    const paymentIntentId = transaction.payment?.stripePayment?.paymentIntentId
+    const stripePayment = transaction.payment
+        ? await prisma.stripePayment.findUnique({ where: { paymentId: transaction.payment.id } })
+        : null
+    const paymentIntentId = stripePayment?.paymentIntentId
     if (!paymentIntentId) throw new Error('The deposit was not sent to Stripe.')
 
     return { transactionId: transaction.id, paymentIntentId }
@@ -93,6 +97,40 @@ const readTransaction = (id: number) => prisma.ledgerTransaction.findUniqueOrThr
     where: { id },
     include: { payment: true },
 })
+
+/**
+ * A SUCCEEDED transfer between two ledger accounts, no payment involved - the shape `refund`
+ * actually reverses in production (a purchase/booking/payment, destination credited and payer
+ * debited). `fromAccountId` must already hold at least `funds`.
+ */
+async function createSucceededTransfer(fromAccountId: number, toAccountId: number, funds: number) {
+    return ledgerTransactionOperations.create({
+        params: {
+            purpose: 'CABIN_BOOKING',
+            ledgerEntries: [
+                { ledgerAccountId: toAccountId, funds },
+                { ledgerAccountId: fromAccountId, funds: -funds },
+            ],
+        },
+        bypassAuth: true,
+    })
+}
+
+/** A SUCCEEDED manual deposit, with nothing refunded against it yet. */
+async function createSucceededDeposit(ledgerAccountId: number, funds: number) {
+    const payment = await paymentOperations.create({
+        params: { provider: 'MANUAL', funds, manualFees: 0 },
+        bypassAuth: true,
+    })
+    return ledgerTransactionOperations.create({
+        params: {
+            purpose: 'DEPOSIT',
+            ledgerEntries: [{ ledgerAccountId, funds }],
+            paymentId: payment.id,
+        },
+        bypassAuth: true,
+    })
+}
 
 describe('creating payments', () => {
     test('a manual payment succeeds at once with the given fees, and is never sent to Stripe', async () => {
@@ -179,6 +217,26 @@ describe('canceling payments', () => {
         expect(stripeMocks.cancelIntent.mock.calls[0][0]).toBe(paymentIntentId)
     })
 
+    test('cancelOwn cancels a pending deposit the same way', async () => {
+        const account = await createAccount('stripecancelown')
+        const { transactionId, paymentIntentId } = await startStripeDeposit(account.id)
+
+        await ledgerTransactionOperations.cancelOwn({
+            params: { id: transactionId },
+            session: Session.fromJsObject({
+                user: { id: account.ownership.userId! } as NonNullable<Parameters<typeof Session.fromJsObject>[0]['user']>,
+                permissions: [],
+                memberships: [],
+            }),
+        })
+
+        expect(await readTransaction(transactionId)).toMatchObject({
+            state: 'CANCELED',
+            payment: { state: 'CANCELED' },
+        })
+        expect(stripeMocks.cancelIntent.mock.calls[0][0]).toBe(paymentIntentId)
+    })
+
     test('an intent Stripe has already canceled is written off here too', async () => {
         const account = await createAccount('stripecanceledbefore')
         const { transactionId } = await startStripeDeposit(account.id)
@@ -219,6 +277,52 @@ describe('canceling payments', () => {
             state: 'PENDING',
             payment: { state: 'PROCESSING' },
         })
+    })
+})
+
+describe('canceling a transaction is restricted to its debited side', () => {
+    const sessionOf = (userId: number) => Session.fromJsObject({
+        user: { id: userId } as NonNullable<Parameters<typeof Session.fromJsObject>[0]['user']>,
+        permissions: [],
+        memberships: [],
+    })
+
+    test('the credited side cannot cancel the debited side\'s pending attempt, but the debited side can', async () => {
+        const payer = await createAccount('cancelauthpayer')
+        const receiver = await createAccount('cancelauthreceiver')
+
+        const pending = await prisma.ledgerTransaction.create({
+            data: {
+                purpose: 'CABIN_BOOKING',
+                state: 'PENDING',
+                ledgerEntries: {
+                    create: [
+                        { ledgerAccountId: receiver.id, funds: 50_00 },
+                        { ledgerAccountId: payer.id, funds: -50_00 },
+                    ],
+                },
+            },
+        })
+
+        await expect(ledgerTransactionOperations.cancel({
+            params: { id: pending.id },
+            session: sessionOf(receiver.ownership.userId!),
+        })).rejects.toThrow(new Smorekopp('UNAUTHORIZED'))
+
+        await expect(ledgerTransactionOperations.cancel({
+            params: { id: pending.id },
+            session: sessionOf(payer.ownership.userId!),
+        })).resolves.toMatchObject({ state: 'CANCELED' })
+    })
+
+    test('a depositor may still cancel their own stuck deposit, which has no debited side at all', async () => {
+        const account = await createAccount('cancelauthdepositor')
+        const { transactionId } = await startStripeDeposit(account.id)
+
+        await expect(ledgerTransactionOperations.cancel({
+            params: { id: transactionId },
+            session: sessionOf(account.ownership.userId!),
+        })).resolves.toMatchObject({ state: 'CANCELED' })
     })
 })
 
@@ -299,5 +403,226 @@ describe('the Stripe webhook', () => {
             payment: { state: 'PROCESSING' },
         })
         expect(await balanceOf(account.id)).toEqual({ amount: 0, fees: 0 })
+    })
+
+    test('a failure whose intent already succeeded on Stripe is ignored rather than marked FAILED', async () => {
+        const account = await createAccount('stripefailedraced')
+        const { transactionId, paymentIntentId } = await startStripeDeposit(account.id)
+        stripeMocks.cancelIntent.mockRejectedValueOnce(
+            new Stripe.errors.StripeInvalidRequestError({
+                type: 'invalid_request_error',
+                payment_intent: { status: 'succeeded' } as never,
+            })
+        )
+
+        const response = await stripeWebhookCallback(stripeEvent('payment_intent.payment_failed', paymentIntentId))
+
+        expect(response.status).toBe(200)
+        expect(await readTransaction(transactionId)).toMatchObject({
+            state: 'PENDING',
+            payment: { state: 'PROCESSING' },
+        })
+    })
+
+    test('a dispute flags the transaction for manual review instead of being silently dropped', async () => {
+        const account = await createAccount('stripedispute')
+        const { transactionId, paymentIntentId } = await startStripeDeposit(account.id)
+        await stripeWebhookCallback(stripeEvent('payment_intent.succeeded', paymentIntentId))
+
+        const disputeEvent = {
+            type: 'charge.dispute.created',
+            data: { object: { id: 'ch_test', payment_intent: paymentIntentId } },
+        } as unknown as Stripe.Event
+
+        const response = await stripeWebhookCallback(disputeEvent)
+
+        expect(response.status).toBe(200)
+        expect(await readTransaction(transactionId)).toMatchObject({
+            state: 'SUCCEEDED',
+            needsManualReview: expect.stringContaining('bestridt'),
+        })
+    })
+})
+
+describe('refunding transactions', () => {
+    test('a refund reverses the full transaction', async () => {
+        const payer = await createAccount('refundfullpayer')
+        const destination = await createAccount('refundfulldest')
+        await createSucceededDeposit(payer.id, DEPOSIT)
+        const transaction = await createSucceededTransfer(payer.id, destination.id, DEPOSIT)
+
+        const refundTransaction = await refundOperations.refund({
+            params: {
+                originalTransactionId: transaction.id,
+                reason: 'full refund',
+                ledgerEntries: [
+                    { ledgerAccountId: destination.id, funds: -DEPOSIT },
+                    { ledgerAccountId: payer.id, funds: DEPOSIT },
+                ],
+            },
+            bypassAuth: true,
+        })
+
+        expect(await balanceOf(payer.id)).toEqual({ amount: DEPOSIT, fees: 0 })
+        expect(await balanceOf(destination.id)).toEqual({ amount: 0, fees: 0 })
+        expect(await prisma.refund.findUnique({ where: { originalTransactionId: transaction.id } }))
+            .toMatchObject({ type: 'REVERSAL', refundTransactionId: refundTransaction.id })
+    })
+
+    test('a transaction may only be refunded once', async () => {
+        const payer = await createAccount('refundtwicepayer')
+        const destination = await createAccount('refundtwicedest')
+        await createSucceededDeposit(payer.id, DEPOSIT)
+        // Padding so the destination still has enough balance for a second (duplicate) reversal
+        // attempt's debit to pass the balance check and reach the real guard this test is about:
+        // Refund.originalTransactionId's uniqueness.
+        await createSucceededDeposit(destination.id, DEPOSIT)
+        const transaction = await createSucceededTransfer(payer.id, destination.id, DEPOSIT)
+
+        const reversalEntries = [
+            { ledgerAccountId: destination.id, funds: -DEPOSIT },
+            { ledgerAccountId: payer.id, funds: DEPOSIT },
+        ]
+        await refundOperations.refund({
+            params: { originalTransactionId: transaction.id, reason: 'first attempt', ledgerEntries: reversalEntries },
+            bypassAuth: true,
+        })
+
+        await expect(refundOperations.refund({
+            params: { originalTransactionId: transaction.id, reason: 'second attempt', ledgerEntries: reversalEntries },
+            bypassAuth: true,
+        })).rejects.toThrow(new Smorekopp('DUPLICATE'))
+
+        expect(await prisma.refund.count({ where: { originalTransactionId: transaction.id } })).toBe(1)
+    })
+
+    test('only a SUCCEEDED transaction can be refunded this way', async () => {
+        const account = await createAccount('refundwrongstate')
+        const payment = await paymentOperations.create({
+            params: { provider: 'STRIPE', funds: DEPOSIT },
+            bypassAuth: true,
+        })
+        const transaction = await ledgerTransactionOperations.create({
+            params: {
+                purpose: 'DEPOSIT',
+                ledgerEntries: [{ ledgerAccountId: account.id, funds: DEPOSIT }],
+                paymentId: payment.id,
+            },
+            bypassAuth: true,
+        })
+        expect(transaction.state).toBe('PENDING')
+
+        await expect(refundOperations.refund({
+            params: {
+                originalTransactionId: transaction.id,
+                reason: 'not succeeded yet',
+                ledgerEntries: [{ ledgerAccountId: account.id, funds: -DEPOSIT }],
+            },
+            bypassAuth: true,
+        })).rejects.toThrow(new Smorekopp('BAD PARAMETERS'))
+    })
+})
+
+describe('reimbursing an unapplied payment', () => {
+    test('a late Stripe success after a local cancel is reimbursed to the payer', async () => {
+        const account = await createAccount('reimburselate')
+        const { transactionId, paymentIntentId } = await startStripeDeposit(account.id)
+        const paymentCountBefore = await prisma.payment.count()
+
+        await ledgerTransactionOperations.cancel({ params: { id: transactionId }, bypassAuth: true })
+        // Stripe's own cancel call is mocked, so despite our side canceling, the intent still
+        // reports success, which is the exact race this reimbursement path exists for.
+        const response = await stripeWebhookCallback(stripeEvent('payment_intent.succeeded', paymentIntentId))
+
+        expect(response.status).toBe(200)
+        expect(await readTransaction(transactionId)).toMatchObject({ state: 'CANCELED' })
+        expect(await balanceOf(account.id)).toEqual({ amount: DEPOSIT, fees: STRIPE_FEE })
+
+        const refund = await prisma.refund.findUnique({ where: { originalTransactionId: transactionId } })
+        expect(refund).toMatchObject({ type: 'REIMBURSEMENT' })
+
+        // No new Payment row was fabricated. The reimbursement reuses the original Stripe
+        // payment directly, which is also now the one that claimed it.
+        expect(await prisma.payment.count()).toBe(paymentCountBefore)
+        const refundTransaction = await prisma.ledgerTransaction.findUniqueOrThrow({
+            where: { id: refund!.refundTransactionId },
+            select: { paymentId: true },
+        })
+        const original = await prisma.ledgerTransaction.findUniqueOrThrow({
+            where: { id: transactionId },
+            select: { paymentId: true, payment: { select: { claimedByTransactionId: true } } },
+        })
+        expect(refundTransaction.paymentId).toBe(original.paymentId)
+        expect(original.payment?.claimedByTransactionId).toBe(refund!.refundTransactionId)
+    })
+
+    test('a webhook retry for an already-reimbursed intent does nothing further', async () => {
+        const account = await createAccount('reimbursetwice')
+        const { transactionId, paymentIntentId } = await startStripeDeposit(account.id)
+
+        await ledgerTransactionOperations.cancel({ params: { id: transactionId }, bypassAuth: true })
+        await stripeWebhookCallback(stripeEvent('payment_intent.succeeded', paymentIntentId))
+        await stripeWebhookCallback(stripeEvent('payment_intent.succeeded', paymentIntentId))
+
+        expect(await balanceOf(account.id)).toEqual({ amount: DEPOSIT, fees: STRIPE_FEE })
+        expect(await prisma.refund.count({ where: { originalTransactionId: transactionId } })).toBe(1)
+    })
+
+    test('a SUCCEEDED transaction cannot be reimbursed this way - use refund instead', async () => {
+        const account = await createAccount('reimbursenothing')
+        const transaction = await createSucceededDeposit(account.id, DEPOSIT)
+
+        await expect(refundOperations.reimburseUnappliedPayment({
+            params: { originalTransactionId: transaction.id, reason: 'nothing to reimburse' },
+            bypassAuth: true,
+        })).rejects.toThrow(new Smorekopp('BAD PARAMETERS'))
+    })
+})
+
+describe('a payment can only be claimed by one succeeding transaction', () => {
+    test('a second transaction against an already-claimed payment fails instead of succeeding', async () => {
+        const account = await createAccount('paymentclaim')
+        const payment = await paymentOperations.create({
+            params: { provider: 'MANUAL', funds: DEPOSIT, manualFees: 0 },
+            bypassAuth: true,
+        })
+
+        const first = await ledgerTransactionOperations.create({
+            params: {
+                purpose: 'DEPOSIT',
+                ledgerEntries: [{ ledgerAccountId: account.id, funds: DEPOSIT }],
+                paymentId: payment.id,
+            },
+            bypassAuth: true,
+        })
+        expect(first.state).toBe('SUCCEEDED')
+
+        await expect(ledgerTransactionOperations.create({
+            params: {
+                purpose: 'DEPOSIT',
+                ledgerEntries: [{ ledgerAccountId: account.id, funds: DEPOSIT }],
+                paymentId: payment.id,
+            },
+            bypassAuth: true,
+        })).rejects.toThrow(new Smorekopp('BAD PARAMETERS'))
+
+        expect(await prisma.payment.findUniqueOrThrow({ where: { id: payment.id } }))
+            .toMatchObject({ claimedByTransactionId: first.id })
+        // Only the first transaction's deposit ever actually applied.
+        expect(await balanceOf(account.id)).toEqual({ amount: DEPOSIT, fees: 0 })
+    })
+
+    test('two concurrent deliveries of the same succeeded webhook never end the transaction FAILED', async () => {
+        const account = await createAccount('claimconcurrent')
+        const { transactionId, paymentIntentId } = await startStripeDeposit(account.id)
+
+        const responses = await Promise.all([
+            stripeWebhookCallback(stripeEvent('payment_intent.succeeded', paymentIntentId)),
+            stripeWebhookCallback(stripeEvent('payment_intent.succeeded', paymentIntentId)),
+        ])
+
+        responses.forEach(response => expect(response.status).toBe(200))
+        expect(await readTransaction(transactionId)).toMatchObject({ state: 'SUCCEEDED' })
+        expect(await balanceOf(account.id)).toEqual({ amount: DEPOSIT, fees: STRIPE_FEE })
     })
 })
