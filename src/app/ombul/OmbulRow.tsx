@@ -1,4 +1,3 @@
-import styles from './OmbulRow.module.scss'
 import Image from '@/components/Image/Image'
 import Link from 'next/link'
 import type { ExpandedOmbul } from '@/services/ombul/types'
@@ -14,8 +13,8 @@ type PropTypes = {
  */
 export default function OmbulRow({ ombul }: PropTypes) {
     return (
-        <Link href={`/ombul/${ombul.year}/${ombul.name}`} className={styles.OmbulRow}>
-            <div className={styles.thumb}>
+        <Link href={`/ombul/${ombul.year}/${ombul.name}`} className="list-row">
+            <div className="list-row-thumb">
                 <Image
                     disableLinkingToLicense
                     creditPlacement="top"
@@ -24,17 +23,17 @@ export default function OmbulRow({ ombul }: PropTypes) {
                 />
             </div>
 
-            <div className={styles.lead}>
+            <div className="list-row-lead">
                 <b>{ombul.issueNumber}</b>
                 <span>utgave</span>
             </div>
 
-            <div className={styles.main}>
+            <div className="list-row-main">
                 <h2>{ombul.name}</h2>
                 <p>{ombul.description}</p>
             </div>
 
-            <div className={styles.meta}>
+            <div className="list-row-meta">
                 <span>{ombul.year}</span>
             </div>
         </Link>

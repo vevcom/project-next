@@ -1,4 +1,3 @@
-import styles from './page.module.scss'
 import CreateOrUpdateEventForm from './CreateOrUpdateEventForm'
 import TagHeaderItem from './TagHeaderItem'
 import { AddHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopUp'
@@ -39,8 +38,13 @@ const { page, generateMetadata } = serverPage({
 
         return (
             <PageWrapper headerItem={
-                <div className={styles.header}>
-                    <div className={styles.tags}>
+                <div className="flex justify-between items-center w-full gap-[1em]">
+                    <div className={[
+                        'flex items-center gap-[1em] [&_a]:no-underline [&_a]:relative',
+                        "[&_a:hover]:after:content-['✖'] [&_a:hover]:after:text-[4em] [&_a:hover]:after:text-text",
+                        '[&_a:hover]:after:absolute [&_a:hover]:after:left-1/2 [&_a:hover]:after:top-1/2',
+                        '[&_a:hover]:after:-translate-1/2',
+                    ].join(' ')}>
                         {currentTags.map(tag => {
                             const remainingTags = currentTags
                                 .filter(currentTag => currentTag.name !== tag.name)
@@ -56,7 +60,7 @@ const { page, generateMetadata } = serverPage({
                             )
                         })}
                     </div>
-                    <div className={styles.actions}>
+                    <div className="flex items-center gap-[1em]">
                         <TagHeaderItem
                             eventTags={eventTags}
                             currentTags={currentTags}
@@ -65,7 +69,7 @@ const { page, generateMetadata } = serverPage({
                         />
                         {capabilities.canCreate.authorized && (
                             <AddHeaderItemPopUp popUpKey="CreateEventPopUp">
-                                <div className={styles.createEvent}>
+                                <div className="min-w-[50vw] grid place-content-center">
                                     <CreateOrUpdateEventForm eventTags={eventTags} />
                                 </div>
                             </AddHeaderItemPopUp>
@@ -78,7 +82,7 @@ const { page, generateMetadata } = serverPage({
                     </div>
                 </div>
             }>
-                <div className={styles.wrapper}>
+                <div className="row-list">
                     {
                         currentEvents.map(event =>
                             <EventCard event={event} key={event.id} />

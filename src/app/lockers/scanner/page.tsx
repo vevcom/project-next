@@ -1,5 +1,4 @@
 'use client'
-import styles from './page.module.scss'
 import Button from '@/components/UI/Button'
 import CameraFeed from '@/components/Camera/CameraFeed'
 import { useRouter } from 'next/navigation'
@@ -59,8 +58,8 @@ export default function Scanner() {
 
     return (
         <>
-            <h1 className={styles.title}>Skann QR-kode</h1>
-            <div className={styles.camera}>
+            <h1 className="w-full text-center my-[1em]">Skann QR-kode</h1>
+            <div className="flex flex-col items-center justify-center">
                 <CameraFeed
                     videoRef={videoRef}
                     cameraState={cameraState}
@@ -72,7 +71,7 @@ export default function Scanner() {
                 />
 
                 <Button
-                    className={styles.button}
+                    className="w-auto m-[1em]!"
                     onClick={() => { setCameraState('Off') }}
                 >
                     Avbryt

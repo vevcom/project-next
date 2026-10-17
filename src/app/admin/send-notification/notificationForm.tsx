@@ -1,5 +1,4 @@
 'use client'
-import styles from './notificaionForm.module.scss'
 import { SelectNumber } from '@/components/UI/Select'
 import Form from '@/components/Form/Form'
 import TextInput from '@/components/UI/TextInput'
@@ -19,7 +18,7 @@ export default function NotificationForm({
     return <>
         <Form
             submitText="Send varsel"
-            className={styles.notificaionForm}
+            className="w-full"
             action={createNotificationAction}
             successCallback={data => {
                 if (data) {
@@ -36,12 +35,12 @@ export default function NotificationForm({
                     value: channel.id,
                     label: channel.name,
                 }))}
-                className={styles.select}
+                className="max-w-[20rem]"
                 label="Varslingskanal"
             />
 
             <TextInput name="title" label="Tittel" />
-            <Textarea name="message" label="Melding" className={styles.textArea} />
+            <Textarea name="message" label="Melding" className="max-h-[500px] h-[200px]" />
 
             <p>
                 Dersom du ønsker å gjøre varselet mer personlig kan man bruke brukerinformasjon i varselet.

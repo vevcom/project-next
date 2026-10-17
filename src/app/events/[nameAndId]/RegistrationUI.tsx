@@ -1,5 +1,4 @@
 'use client'
-import styles from './RegistrationUI.module.scss'
 import CountDown from '@/components/countDown/CountDown'
 import Form from '@/components/Form/Form'
 import TextInput from '@/components/UI/TextInput'
@@ -217,7 +216,7 @@ export default function RegistrationUI({
                     ? 'red'
                     : 'primary'
             }
-            className={styles.registrationButton}
+            className="w-full! m-0!"
             onClick={buttonOnClick}
             pending={btnPending}
             key={btnKey}
@@ -244,7 +243,7 @@ export default function RegistrationUI({
             <SubmitButton
                 success={false}
                 color="secondary"
-                className={styles.registrationButton}
+                className="w-full! m-0!"
                 onClick={adminButtonOnClick}
                 pending={btnPending}
                 key={`admin-${btnKey}`}

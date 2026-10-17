@@ -1,4 +1,3 @@
-import styles from './OmbulCover.module.scss'
 import Image from '@/components/Image/Image'
 import Link from 'next/link'
 import type { ExpandedOmbul } from '@/services/ombul/types'
@@ -10,6 +9,19 @@ export type PropTypesPreview = {
     pIssueNumber: string,
     pDescription: string
 }
+
+const coverImgClassName = [
+    'w-full mb-2 [&>*]:rounded-round [&>*]:overflow-hidden [&>*]:w-full [&>*]:h-full',
+    '[&>*>*]:rounded-round [&>*>*]:overflow-hidden [&>*>*]:w-full [&>*>*]:h-full',
+    '[&_img]:transition-[scale] [&_img]:duration-300 [&_img]:w-full [&_img]:h-full [&_img]:object-cover',
+    '[&_img]:min-h-[50px]',
+].join(' ')
+
+const ombulCoverClassName = [
+    'flex flex-col items-center relative text-text no-underline [&>*]:text-center [&>*]:w-full [&>p]:font-light',
+    "[&>h2]:after:content-[''] [&>h2]:after:block [&>h2]:after:w-full [&>h2]:after:h-[2px]",
+    '[&>h2]:after:bg-surface-subtle [&>h2]:after:mb-2 max-mobile:[&>h2]:text-xl',
+].join(' ')
 
 type PropTypes = {
     ombul: ExpandedOmbul
@@ -35,17 +47,17 @@ export default function OmbulCover(props: PropTypes) {
         coverImage instanceof File && coverImage.size ? (
             <img src={URL.createObjectURL(coverImage)} />
         ) : (
-            <div className={styles.noCoverImage}>Cover ikke valgt</div>
+            <div className="border-[3px] border-surface-subtle aspect-[5/7] grid place-items-center">Cover ikke valgt</div>
         )
     )
 
     const content = <>
-        <div className={styles.coverImg}>
+        <div className={coverImgClassName}>
             {
                 coverImage instanceof File ? (
                     placeholderCover
                 ) : (
-                    <Image width={250} image={coverImage} className={styles.coverImg} />
+                    <Image width={250} image={coverImage} className={coverImgClassName} />
                 )
             }
         </div>
@@ -55,11 +67,14 @@ export default function OmbulCover(props: PropTypes) {
     </>
 
     return props.ombul ? (
-        <Link className={styles.OmbulCover} href={`/ombul/${props.ombul.year}/${props.ombul.name}`}>
+        <Link
+            className={`${ombulCoverClassName} hover:[&_img]:scale-110`}
+            href={`/ombul/${props.ombul.year}/${props.ombul.name}`}
+        >
             { content }
         </Link>
     ) : (
-        <div className={styles.OmbulCover}>
+        <div className={ombulCoverClassName}>
             { content }
         </div>
     )

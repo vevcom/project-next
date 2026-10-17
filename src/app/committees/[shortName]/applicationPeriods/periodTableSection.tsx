@@ -1,5 +1,4 @@
 'use client' //Use client to show user correct local time
-import styles from './page.module.scss'
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
@@ -10,9 +9,10 @@ export type CommitteeParticipationPeriodType =
 
 
 export function PeriodSection({ period, shortName }: { period: CommitteeParticipationPeriodType, shortName: string }) {
-    const entriesClassName = `${styles.tableEntry} ${period.isOpen && styles.currentPeriodEntry}`
+    const currentPeriodClassName = period.isOpen ? 'font-bold bg-[hsla(120,100%,70%,0.288)]' : ''
+    const entriesClassName = `border-2 border-[hsla(0,0%,70%,0.507)] p-[1em] ${currentPeriodClassName}`
     return (
-        <tr className={styles.periodSection}>
+        <tr>
             <td className={entriesClassName} >
                 {period.startDate.toLocaleDateString('en-GB')},
                 kl: {period.startDate.toLocaleTimeString('en-GB')}

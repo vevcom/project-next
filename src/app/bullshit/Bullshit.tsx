@@ -1,4 +1,3 @@
-import styles from './Bullshit.module.scss'
 import Date from '@/components/Date/Date'
 import type { BullshitFiltered } from '@/services/bullshit/types'
 
@@ -6,13 +5,21 @@ export type BullshitPropTypes = {
     quote: BullshitFiltered
 }
 
+// The speech bubble: the ::after is the tail, tucked under the rounded text box.
+const bubble = [
+    'relative after:absolute after:left-10 after:bottom-0 after:z-1 after:size-[20px] after:bg-surface-raised',
+    'after:translate-y-1/2 after:rotate-45',
+    '[&>p]:relative [&>p]:z-2 [&>p]:block [&>p]:py-[2rem] [&>p]:px-[3rem] [&>p]:rounded-[25px] [&>p]:bg-surface-raised',
+    '[&>p]:font-secondary [&>p]:text-xl [&>p]:font-[lighter] [&>p]:italic [&>p]:text-left [&>p]:text-text',
+].join(' ')
+
 export default function Bullshit({ quote }: BullshitPropTypes) {
-    return <div className={styles.Bullshit}>
-        <div className={styles.BullshitBubble}>
+    return <div className="relative my-[1.5rem]">
+        <div className={bubble}>
             <p>&quot; Ryktes at { quote.quote }&quot;</p>
         </div>
 
-        <span className={styles.timestamp}>
+        <span className="ml-[2rem]">
             <Date date={quote.timestamp} includeTime={false} />
         </span>
     </div>

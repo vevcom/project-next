@@ -1,6 +1,5 @@
 import UpdateStudyProgrammeForm from './updateStudyProgrammeForm'
 import StudyProgrammeTableBody from './studyProgrammeTable'
-import styles from './page.module.scss'
 import { studyProgrammeOperations } from '@/services/groups/studyProgrammes/operations'
 import { AddHeaderItemPopUp } from '@/components/HeaderItems/HeaderItemPopUp'
 import PageWrapper from '@/components/PageWrapper/PageWrapper'
@@ -29,7 +28,7 @@ const { page, generateMetadata } = serverPage({
                 )
             }
         >
-            <table className={styles.table}>
+            <table className="ohma-table">
                 <thead>
                     <tr>
                         {capabilities.canEdit.authorized && <th>Rediger</th>}

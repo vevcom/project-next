@@ -1,4 +1,3 @@
-import styles from './page.module.scss'
 import UserSettingsForm from './UserProfileSettingsForm'
 import UserProfileSettingsCard from './UserProfileSettingsCard'
 import ChangeEmailForm from './ChangeEmailForm'
@@ -56,7 +55,7 @@ const { page, generateMetadata } = serverPage({
         const { profile, studyProgrammes, privateUser } = data
 
         return (
-            <div className={styles.wrapper}>
+            <div className="flex flex-col gap-2">
                 {privateUser && capabilities.canUpdateProfile.authorized && (
                     <UserProfileSettingsCard>
                         <UserSettingsForm user={privateUser} emailDomain={process.env.EMAIL_DOMAIN} />
@@ -82,7 +81,7 @@ const { page, generateMetadata } = serverPage({
                 {capabilities.canUpdateImage.authorized && (
                     <UserProfileSettingsCard>
                         <h2>Profilbilde</h2>
-                        <div className={styles.profileImage}>
+                        <div className="flex flex-wrap items-start gap-[1em]">
                             <Image width={300} image={profile.user.image} alt={profile.user.image.alt} />
                             <ImageUploader
                                 title="Endre profilbilde"

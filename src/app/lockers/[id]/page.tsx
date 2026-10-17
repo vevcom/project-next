@@ -1,4 +1,3 @@
-import styles from './page.module.scss'
 import LockerNotFound from './LockerNotFound'
 import CreateLockerReservationForm from './CreateLockerReservationForm'
 import UpdateLockerReservationForm from './UpdateLockerReservationForm'
@@ -86,7 +85,10 @@ const { page, generateMetadata } = serverPage({
 
         return (
             <PageWrapper>
-                <div className={styles.lockerCard}>
+                <div className={[
+                    'my-[3em] mx-[1em] py-[1em] px-[2em] justify-center items-center max-w-[500px] layer',
+                    'drop-shadow-[5px_15px_5px_rgba(0,0,0,0.3)] border border-surface-subtle rounded-[10px]',
+                ].join(' ')}>
                     <h2>Skap nr. {lockerId}</h2>
                     <p>{locker.building} {locker.floor}. etasje</p>
                     {

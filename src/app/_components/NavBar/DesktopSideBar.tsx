@@ -1,6 +1,5 @@
 'use client'
 
-import styles from './DesktopSideBar.module.scss'
 import { adminNavItemHref } from './adminNavItemHref'
 import SideBarNavItem from './SideBarNavItem'
 import AdminNav from './AdminNav'
@@ -23,19 +22,29 @@ export default function DesktopSideBar({ navItems }: PropTypes) {
     const showAdmin = navItems.some(item => item.href === adminNavItemHref)
     const sideBarItems = navItems.filter(item => item.href !== adminNavItemHref)
     return (
-        <aside className={styles.DesktopSideBar} data-expanded={expanded}>
-            <div className={styles.navIconsPanel}>
-                <nav ref={navIconsRef} className={styles.navIcons} aria-label="Desktop navigation">
+        <aside className="group/sidebar h-full w-full flex flex-col items-stretch gap-2 min-h-0" data-expanded={expanded}>
+            <div className="group/panel relative rounded-round p-2 bg-surface-base w-full flex-auto min-h-0">
+                <nav ref={navIconsRef} className={[
+                    'h-full w-full flex flex-col items-stretch gap-1 overflow-y-auto overflow-x-hidden',
+                    '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+                ].join(' ')} aria-label="Desktop navigation">
                     {sideBarItems.map((item) => (
                         <SideBarNavItem key={item.name} item={item} expanded={expanded} />
                     ))}
                 </nav>
-                <ScrollIndicator scrollRef={navIconsRef} className={styles.navScrollIndicator} />
+                <ScrollIndicator scrollRef={navIconsRef} className={[
+                    'top-2 bottom-2 right-0.5 opacity-0 transition-opacity duration-300 ease-[ease]',
+                    'group-hover/panel:opacity-100 group-focus-within/panel:opacity-100',
+                ].join(' ')} />
             </div>
             <AdminNav showAdmin={showAdmin} expanded={expanded} />
             <button
                 type="button"
-                className={styles.expandToggle}
+                className={[
+                    'w-full h-10 flex items-center justify-center shrink-0 border-none rounded-round',
+                    'bg-surface-base text-text cursor-pointer transition-[background,color] duration-300 ease-[ease]',
+                    'hover:bg-accent-blue hover:text-text-inv',
+                ].join(' ')}
                 onClick={() => setExpanded(prev => !prev)}
                 aria-label={expanded ? 'Collapse navigation' : 'Expand navigation'}
             >

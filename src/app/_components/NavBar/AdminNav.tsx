@@ -1,5 +1,5 @@
 'use client'
-import styles from './DesktopSideBar.module.scss'
+import { navIconClassName, navIconIconClassName, navIconLabelClassName } from './sideBarClassNames'
 import NavTooltip from './NavTooltip'
 import EditModeNavIcon from './EditModeNavIcon'
 import { EditModeContext } from '@/contexts/EditMode'
@@ -26,15 +26,18 @@ export default function AdminNav({ showAdmin, expanded = false }: PropTypes) {
     if (!showAdmin && !editModeCtx?.somethingToEdit) return null
 
     const adminLink = (
-        <Link href="/admin" className={styles.navIcon} aria-label="Admin">
-            <FontAwesomeIcon icon={faCog} className={styles.icon} />
-            <span className={styles.label}>Admin</span>
+        <Link href="/admin" className={navIconClassName} aria-label="Admin">
+            <FontAwesomeIcon icon={faCog} className={navIconIconClassName} />
+            <span className={navIconLabelClassName}>Admin</span>
         </Link>
     )
 
     return (
-        <nav className={styles.adminNav} aria-label="Adminnavigasjon">
-            <EditModeNavIcon className={styles.navIcon} expanded={expanded} />
+        <nav
+            className="rounded-round p-2 bg-surface-base w-full flex flex-col items-stretch shrink-0"
+            aria-label="Adminnavigasjon"
+        >
+            <EditModeNavIcon className={navIconClassName} expanded={expanded} />
             {showAdmin && (
                 expanded ? adminLink : <NavTooltip content="Admin">{adminLink}</NavTooltip>
             )}
